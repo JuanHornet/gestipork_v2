@@ -12,14 +12,14 @@
         android:orientation="vertical"
         android:gravity="center"
         android:padding="20dp"
-        android:background="#000000">
+        android:background="white">
 
         <!-- Título de la aplicación -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Gestión de Explotaciones Porcinas"
-            android:textColor="#FFFFFF"
+            android:textColor="azul"
             android:textSize="35sp"
             android:gravity="center"
             android:layout_marginBottom="20dp"/>
@@ -39,7 +39,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="30dp"
+            android:textSize="50dp"
             android:text="Usuario"
 
             android:paddingTop="10dp"/>
@@ -48,9 +48,10 @@
             android:id="@+id/editTextUsername"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textSize="30dp"
             android:hint="Inserte su email"
-            android:textColor="@color/white"
-            android:textColorHint="@color/gray" />
+            android:textColor="@color/black"
+            android:textColorHint="@color/black" />
 
 
 
@@ -59,7 +60,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="30dp"
+            android:textSize="50dp"
             android:text="Contraseña"
 
             android:paddingTop="10dp"/>
