@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_itaca"
+        android:title="Añadir Explotación" />
+    <item
+        android:id="@+id/menu_cubricion"
+        android:title="otra opcion" />
+    <item
+        android:id="@+id/menu_paridera"
+        android:title="otra opcion" />
+    <item
+        android:id="@+id/menu_eliminar"
+        android:title="Salir de la Aplicación" />
+</menu>
