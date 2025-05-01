@@ -3,13 +3,13 @@ package com.example.proyecto_gestipork.modelo;
 public class Lotes {
 
     private int id, cod_explotacion, nDisponibles, nIniciales;
-    private String cod_lote, cod_paridera, cod_cubricion, cod_itaca, raza;
+    private String cod_lote, cod_paridera, cod_cubricion, cod_itaca, raza, color;
     private boolean estado;
 
     public Lotes() {
     }
 
-    public Lotes(int id, int cod_explotacion, int nDisponibles, int nIniciales, String cod_lote, String cod_paridera, String cod_cubricion, String cod_itaca, String raza, boolean estado) {
+    public Lotes(int id, int cod_explotacion, int nDisponibles, int nIniciales, String cod_lote, String cod_paridera, String cod_cubricion, String cod_itaca, String raza, String color, boolean estado) {
         this.id = id;
         this.cod_explotacion = cod_explotacion;
         this.nDisponibles = nDisponibles;
@@ -19,6 +19,7 @@ public class Lotes {
         this.cod_cubricion = cod_cubricion;
         this.cod_itaca = cod_itaca;
         this.raza = raza;
+        this.color = color;
         this.estado = estado;
     }
 
@@ -92,6 +93,14 @@ public class Lotes {
 
     public void setRaza(String raza) {
         this.raza = raza;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 
     public boolean isEstado() {

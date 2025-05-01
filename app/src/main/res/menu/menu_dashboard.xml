@@ -1,15 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <item
-        android:id="@+id/menu_itaca"
-        android:title="Añadir Explotación" />
+        android:id="@+id/menu_add_explotacion"
+        android:title="Añadir Explotación"
+        android:icon="@drawable/ic_add"
+        app:showAsAction="never" />
     <item
-        android:id="@+id/menu_cubricion"
-        android:title="otra opcion" />
+        android:id="@+id/menu_edit_explotacion"
+        android:title="Editar Explotación"
+        app:showAsAction="never" />
+
     <item
-        android:id="@+id/menu_paridera"
-        android:title="otra opcion" />
+        android:id="@+id/menu_delete_explotacion"
+        android:title="Eliminar Explotación"
+        app:showAsAction="never" />
+
     <item
-        android:id="@+id/menu_eliminar"
-        android:title="Salir de la Aplicación" />
+        android:id="@+id/menu_logout"
+        android:title="Cerrar sesión"
+        android:icon="@drawable/ic_logout"
+        app:showAsAction="never" />
 </menu>

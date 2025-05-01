@@ -11,14 +11,20 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.proyecto_gestipork.data.DBHelper;
+import com.example.proyecto_gestipork.modelo.DashboardActivity;
+
+import com.google.android.material.textfield.TextInputEditText;
+
 import com.example.proyecto_gestipork.MainActivity;
 import com.example.proyecto_gestipork.R;
 
 public class LoginActivity extends AppCompatActivity {
-    EditText txtEmail, txtPassword;
+
+    TextInputEditText txtEmail, txtPassword;
     Button btnLogin;
     TextView txtRegistro;
-    DBHelperLogin dbHelper;
+    DBHelper dbHelper;
     SharedPreferences preferences;
 
     @Override
@@ -31,7 +37,7 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
         txtRegistro = findViewById(R.id.txtRegistro);
 
-        dbHelper = new DBHelperLogin(this);
+        dbHelper = new DBHelper(this);
 
         preferences = getSharedPreferences("loginPrefs", MODE_PRIVATE);
 
@@ -47,15 +53,18 @@ public class LoginActivity extends AppCompatActivity {
         // Si ya estaba logueado, entrar directamente
         boolean isLoggedIn = preferences.getBoolean("isLoggedIn", false);
         if (isLoggedIn) {
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
             finish();
         }
 
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String email = txtEmail.getText().toString().trim();
-                String password = txtPassword.getText().toString().trim();
+                EditText emailField = findViewById(R.id.editTextUsername);
+                EditText passwordField = findViewById(R.id.editTextPassword);
+
+                String email = emailField.getText().toString().trim();
+                String password = passwordField.getText().toString().trim();
 
                 if (email.isEmpty() || password.isEmpty()) {
                     Toast.makeText(LoginActivity.this, "Todos los campos son obligatorios", Toast.LENGTH_SHORT).show();
@@ -70,21 +79,27 @@ public class LoginActivity extends AppCompatActivity {
                     editor.putString("userEmail", email);
                     editor.apply();
 
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                    Intent intent = new Intent(LoginActivity.this, DashboardActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-                    finish();
+
                 } else {
                     Toast.makeText(LoginActivity.this, "Credenciales incorrectas", Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
+
+
         txtRegistro.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Toast.makeText(LoginActivity.this, "Registro pulsado", Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
+                finish(); // cerrar el Login actual
             }
         });
+
     }
 }

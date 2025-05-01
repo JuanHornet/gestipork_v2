@@ -6,7 +6,7 @@
     android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".DashboardActivity">
+    tools:context=".modelo.DashboardActivity">
 
     <!-- Toolbar superior -->
     <com.google.android.material.appbar.MaterialToolbar
@@ -30,7 +30,7 @@
         <Spinner
             android:id="@+id/spinner_explotaciones"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:spinnerMode="dropdown" />
 
         <!-- RecyclerView para mostrar los resúmenes -->
