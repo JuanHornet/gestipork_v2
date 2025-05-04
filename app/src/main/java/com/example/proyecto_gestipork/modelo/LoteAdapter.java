@@ -33,9 +33,11 @@ public class LoteAdapter extends RecyclerView.Adapter<LoteAdapter.LoteViewHolder
     public void onBindViewHolder(@NonNull LoteViewHolder holder, int position) {
         Lotes lote = listaLotes.get(position);
         holder.txtCodLote.setText(lote.getCod_lote());
-        holder.txtCodItaca.setText("Código ITACA: " + lote.getCod_itaca());
-        holder.txtRaza.setText("Raza: " + lote.getRaza());
-        holder.txtDisponibles.setText(lote.getnDisponibles() + " disponibles");
+        holder.txtCodItaca.setText("AA123456 " + lote.getCod_itaca());
+        holder.txtRaza.setText(lote.getRaza());
+        Integer disponibles = lote.getnDisponibles();
+        holder.txtDisponibles.setText(disponibles != null ? String.valueOf(disponibles) : "0");
+
 
         // Aplicar color desde el campo 'color' que viene de la tabla itaca
         try {

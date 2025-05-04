@@ -16,11 +16,24 @@
         app:navigationIcon="@drawable/ic_arrow_back"
         app:menu="@menu/menu_lotes" />
 
-    <!-- Contenido -->
+    <!-- RecyclerView de lotes -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_lotes"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="16dp"
         android:layout_marginTop="?attr/actionBarSize"/>
+
+    <!-- Texto vacío -->
+    <TextView
+        android:id="@+id/txt_vacio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No hay lotes. Pulsa + para añadir uno."
+        android:textSize="16sp"
+        android:textColor="#888888"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:padding="24dp"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

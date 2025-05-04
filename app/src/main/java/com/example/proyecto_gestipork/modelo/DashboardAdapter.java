@@ -31,12 +31,16 @@ import com.example.proyecto_gestipork.R;
 
         @Override
         public void onBindViewHolder(@NonNull ResumenViewHolder holder, int position) {
-            // ✅ Botón que navega a LotesActivity
-            holder.btnVerLotes.setOnClickListener(v -> {
-                Intent intent = new Intent(context, LotesActivity.class);
-                context.startActivity(intent);
+            holder.btnVerLotes.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (context instanceof DashboardActivity) {
+                        ((DashboardActivity) context).irALotes(); // 👈 Llama al método de la activity
+                    }
+                }
             });
         }
+
 
         @Override
         public int getItemCount() {

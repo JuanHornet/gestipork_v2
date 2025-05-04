@@ -44,7 +44,7 @@ public class DashboardActivity extends AppCompatActivity {
 
         RecyclerView recyclerResumen = findViewById(R.id.recycler_resumen);
         recyclerResumen.setLayoutManager(new LinearLayoutManager(this));
-        DashboardAdapter adapterD = new DashboardAdapter(this);
+        DashboardAdapter adapterD = new DashboardAdapter(DashboardActivity.this);
         recyclerResumen.setAdapter(adapterD);
 
 
@@ -57,6 +57,7 @@ public class DashboardActivity extends AppCompatActivity {
 
         // Referencia ya creada arriba
         spinnerExplotaciones = findViewById(R.id.spinner_explotaciones);
+
 
         // Obtener ID del usuario logado
         SharedPreferences prefs = getSharedPreferences("loginPrefs", MODE_PRIVATE);
@@ -260,6 +261,38 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
 
+
+    public void irALotes() {
+        int posicion = spinnerExplotaciones.getSelectedItemPosition();
+        if (posicion == -1) {
+            Toast.makeText(this, "Selecciona una explotación", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String nombreSeleccionado = spinnerExplotaciones.getSelectedItem().toString();
+
+        SharedPreferences prefs = getSharedPreferences("loginPrefs", MODE_PRIVATE);
+        String email = prefs.getString("userEmail", "");
+        DBHelper dbHelper = new DBHelper(this);
+        int idUsuario = dbHelper.obtenerIdUsuarioDesdeEmail(email);
+
+        Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
+                "SELECT cod_explotacion FROM explotaciones WHERE nombre = ? AND iduser = ?",
+                new String[]{nombreSeleccionado, String.valueOf(idUsuario)}
+        );
+
+        if (cursor.moveToFirst()) {
+            String cod = cursor.getString(0); // ✅ usa solo getString si cod_explotacion es tipo TEXT
+            cursor.close();
+
+            Intent intent = new Intent(this, LotesActivity.class);
+            intent.putExtra("cod_explotacion", cod);
+            startActivity(intent);
+        } else {
+            cursor.close();
+            Toast.makeText(this, "Error al obtener la explotación", Toast.LENGTH_SHORT).show();
+        }
+    }
 
 
 

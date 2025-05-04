@@ -13,7 +13,7 @@ import java.security.NoSuchAlgorithmException;
 public class DBHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "gestipork.db";
-    private static final int DB_VERSION = 2;
+    private static final int DB_VERSION = 3;
 
     public DBHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -58,7 +58,7 @@ public class DBHelper extends SQLiteOpenHelper {
     // TABLA LOTES
     private static final String CREATE_TABLE_LOTES = "CREATE TABLE lotes (" +
             "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            "cod_explotacion INTEGER, " +
+            "cod_explotacion TEXT, " +
             "nDisponibles INTEGER, " +
             "nIniciales INTEGER, " +
             "cod_lote TEXT, " +
@@ -66,7 +66,8 @@ public class DBHelper extends SQLiteOpenHelper {
             "cod_cubricion TEXT, " +
             "cod_itaca TEXT, " +
             "raza TEXT, " +
-            "estado INTEGER" +
+            "estado INTEGER, " +
+            "color TEXT" +
             ")";
 
     // TABLA ITACA
