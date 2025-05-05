@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.proyecto_gestipork.modelo.DetalleLoteActivity;
@@ -55,9 +56,10 @@ public class LoteAdapter extends RecyclerView.Adapter<LoteAdapter.LoteViewHolder
         // Clic para ir a DetalleLoteActivity
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, com.example.proyecto_gestipork.modelo.DetalleLoteActivity.class);
+            intent.putExtra("cod_lote", lote.getCod_lote());
+            intent.putExtra("cod_explotacion", lote.getCod_explotacion());
+            ((AppCompatActivity) context).startActivityForResult(intent, 1001);
 
-            intent.putExtra("lote_id", lote.getId());
-            context.startActivity(intent);
         });
     }
 

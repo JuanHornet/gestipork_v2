@@ -7,14 +7,25 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/menu_ver_cubricion"
+        android:title="Ver Cubrición"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_ver_paridera"
+        android:title="Ver Paridera"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_ver_itaca"
+        android:title="Ver Itaca"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/menu_eliminar_lote"
         android:title="Eliminar Lote"
         app:showAsAction="never" />
 
-    <item
-        android:id="@+id/menu_ver_historial"
-        android:title="Ver Historial"
-        app:showAsAction="never" />
 
     <!-- truco para forzar overflow -->
     <item

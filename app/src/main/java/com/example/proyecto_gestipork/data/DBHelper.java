@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.widget.Toast;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -212,6 +213,76 @@ public class DBHelper extends SQLiteOpenHelper {
         int filas = db.delete("explotaciones", "nombre = ? AND iduser = ?", new String[]{nombre, String.valueOf(idUsuario)});
         return filas > 0;
     }
+    public void insertarRegistrosRelacionadosLote(Context context, SQLiteDatabase db, String codLote, String codExplotacion, String raza) {
+        // 1. Insertar en parideras
+        String codParidera = "P" + codLote + codExplotacion;
+        ContentValues paridera = new ContentValues();
+        paridera.put("cod_paridera", codParidera);
+        paridera.put("cod_lote", codLote);
+        paridera.put("cod_explotacion", codExplotacion);
+        paridera.put("fechaInicioParidera", "");
+        paridera.put("fechaFinParidera", "");
+        paridera.put("nacidosVivos", 0);
+        paridera.put("nParidas", 0);
+        paridera.put("nVacias", 0);
+
+        long resultadoParidera = db.insert("parideras", null, paridera);
+        if (resultadoParidera == -1) {
+            Toast.makeText(context, "Lote guardado, pero error en parideras", Toast.LENGTH_SHORT).show();
+        }
+
+        // 2. Insertar en cubriciones
+        String codCubricion = "C" + codLote + codExplotacion;
+        ContentValues cubricion = new ContentValues();
+        cubricion.put("cod_cubricion", codCubricion);
+        cubricion.put("cod_lote", codLote);
+        cubricion.put("cod_explotacion", codExplotacion);
+        cubricion.put("nMadres", 0);
+        cubricion.put("nPadres", 0);
+        cubricion.put("fechaInicioCubricion", "");
+        cubricion.put("fechaFinCubricion", "");
+
+        long resultadoCubricion = db.insert("cubriciones", null, cubricion);
+        if (resultadoCubricion == -1) {
+            Toast.makeText(context, "Lote guardado, pero error en cubriciones", Toast.LENGTH_SHORT).show();
+        }
+
+        // 3. Insertar en itaca
+        String codItaca = "I" + codLote + codExplotacion;
+        ContentValues itaca = new ContentValues();
+        itaca.put("cod_itaca", codItaca);
+        itaca.put("cod_lote", codLote);
+        itaca.put("cod_explotacion", codExplotacion);
+        itaca.put("raza", raza);
+        itaca.put("nAnimales", 0);
+        itaca.put("nMadres", 0);
+        itaca.put("nPadres", 0);
+        itaca.put("fechaPNacimiento", "");
+        itaca.put("fechaUltNacimiento", "");
+        itaca.put("color", "#CCCCCC");
+        itaca.put("crotalesSolicitados", 0);
+
+        long resultadoItaca = db.insert("itaca", null, itaca);
+        if (resultadoItaca == -1) {
+            Toast.makeText(context, "Lote guardado, pero error en itaca", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public boolean eliminarLoteConRelaciones(String codLote, String codExplotacion) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // Eliminar primero las relaciones
+        int filasItaca = db.delete("itaca", "cod_lote = ? AND cod_explotacion = ?", new String[]{codLote, codExplotacion});
+        int filasParideras = db.delete("parideras", "cod_lote = ? AND cod_explotacion = ?", new String[]{codLote, codExplotacion});
+        int filasCubriciones = db.delete("cubriciones", "cod_lote = ? AND cod_explotacion = ?", new String[]{codLote, codExplotacion});
+
+        // Luego eliminar el lote
+        int filasLotes = db.delete("lotes", "cod_lote = ? AND cod_explotacion = ?", new String[]{codLote, codExplotacion});
+
+        return filasLotes > 0;
+    }
+
+
 
     // ---------------------------------------------------------------------------------------------
     // Más tablas en el futuro...

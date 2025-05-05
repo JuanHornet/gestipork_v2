@@ -1,6 +1,7 @@
 package com.example.proyecto_gestipork.modelo;
 
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -194,26 +195,30 @@ public class LotesActivity extends BaseActivity {
             return;
         }
 
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT id FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?", new String[]{codLote});
+        SQLiteDatabase db = dbHelper.getWritableDatabase(); // ✔️ Solo una vez
+
+        // Verificar si ya existe el lote
+        Cursor cursor = db.rawQuery(
+                "SELECT id FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?",
+                new String[]{codLote, codExplotacionSeleccionada}
+        );
 
         if (cursor.moveToFirst()) {
-            Toast.makeText(this, "Este lote ya existe en esta explotación", Toast.LENGTH_SHORT).show();
             cursor.close();
+            db.close(); // ✔️ cerrar aquí si salimos
+            Toast.makeText(this, "Este lote ya existe en esta explotación", Toast.LENGTH_SHORT).show();
             return;
         }
 
         cursor.close();
 
-        db = dbHelper.getWritableDatabase();
+        // Insertar en LOTES
         ContentValues values = new ContentValues();
         values.put("cod_lote", codLote);
         values.put("raza", raza);
         values.put("cod_explotacion", codExplotacionSeleccionada);
         values.put("estado", 1);
         values.put("color", "#F7F1F9");
-
-        // ✅ Valores por defecto
         values.put("nDisponibles", 0);
         values.put("nIniciales", 0);
         values.put("cod_paridera", "");
@@ -223,78 +228,25 @@ public class LotesActivity extends BaseActivity {
         long resultado = db.insert("lotes", null, values);
 
         if (resultado != -1) {
+            dbHelper.insertarRegistrosRelacionadosLote(this, db, codLote, codExplotacionSeleccionada, raza);
             Toast.makeText(this, "Lote guardado", Toast.LENGTH_SHORT).show();
-            cargarLotes(); // refresca la lista
+            cargarLotes();
             adapter.notifyDataSetChanged();
         } else {
             Toast.makeText(this, "Error al guardar lote", Toast.LENGTH_SHORT).show();
         }
 
-        // Insertar también en la tabla parideras
-        String codParidera = "P" + codLote + codExplotacionSeleccionada;
+        db.close(); //  cerrar al final
+    }
 
-        ContentValues parideraValues = new ContentValues();
-        parideraValues.put("cod_paridera", codParidera);
-        parideraValues.put("cod_lote", codLote);
-        parideraValues.put("cod_explotacion", codExplotacionSeleccionada);
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-        // Los demás campos quedan vacíos/null por ahora (se podrán actualizar después)
-        parideraValues.put("fechaInicioParidera", "");
-        parideraValues.put("fechaFinParidera", "");
-        parideraValues.put("nacidosVivos", 0);
-        parideraValues.put("nParidas", 0);
-        parideraValues.put("nVacias", 0);
-
-        long resultadoParidera = db.insert("parideras", null, parideraValues);
-
-        if (resultadoParidera == -1) {
-            Toast.makeText(this, "Lote guardado, pero error en parideras", Toast.LENGTH_SHORT).show();
+        if (requestCode == 1001 && resultCode == RESULT_OK) {
+            cargarLotes(); // actualiza la lista
+            adapter.notifyDataSetChanged();
         }
-        // Insertar también en la tabla cubriciones
-        String codCubricion = "C" + codLote + codExplotacionSeleccionada;
-
-        ContentValues cubricionValues = new ContentValues();
-        cubricionValues.put("cod_cubricion", codCubricion);
-        cubricionValues.put("cod_lote", codLote);
-        cubricionValues.put("cod_explotacion", codExplotacionSeleccionada);
-
-        // Campos iniciales vacíos o por defecto
-        cubricionValues.put("nMadres", 0);
-        cubricionValues.put("nPadres", 0);
-        cubricionValues.put("fechaInicioCubricion", "");
-        cubricionValues.put("fechaFinCubricion", "");
-
-        long resultadoCubricion = db.insert("cubriciones", null, cubricionValues);
-
-        if (resultadoCubricion == -1) {
-            Toast.makeText(this, "Lote guardado, pero error en cubriciones", Toast.LENGTH_SHORT).show();
-        }
-
-        // Insertar también en la tabla itaca
-        String codItaca = "I" + codLote + codExplotacionSeleccionada;
-
-        ContentValues itacaValues = new ContentValues();
-        itacaValues.put("cod_itaca", codItaca);
-        itacaValues.put("cod_lote", codLote);
-        itacaValues.put("cod_explotacion", codExplotacionSeleccionada);
-        itacaValues.put("raza", raza); // ✅ Igual que la del lote
-
-        // Inicializa campos opcionales o en blanco
-        itacaValues.put("nAnimales", 0);
-        itacaValues.put("nMadres", 0);
-        itacaValues.put("nPadres", 0);
-        itacaValues.put("fechaPNacimiento", "");
-        itacaValues.put("fechaUltNacimiento", "");
-        itacaValues.put("color", "#CCCCCC");
-        itacaValues.put("crotalesSolicitados", 0);
-
-        long resultadoItaca = db.insert("itaca", null, itacaValues);
-
-        if (resultadoItaca == -1) {
-            Toast.makeText(this, "Lote guardado, pero error en itaca", Toast.LENGTH_SHORT).show();
-        }
-
-
     }
 
 
