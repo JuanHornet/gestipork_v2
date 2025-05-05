@@ -14,8 +14,10 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.example.proyecto_gestipork.R;
+import com.example.proyecto_gestipork.base.BaseActivity;
 import com.example.proyecto_gestipork.data.DBHelper;
 import com.example.proyecto_gestipork.login.LoginActivity;
+import com.google.android.material.appbar.MaterialToolbar;
 
 
 import androidx.annotation.NonNull;
@@ -32,7 +34,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DashboardActivity extends AppCompatActivity {
+public class DashboardActivity extends BaseActivity {
 
     private Spinner spinnerExplotaciones;
     private RecyclerView recyclerResumen;
@@ -48,7 +50,7 @@ public class DashboardActivity extends AppCompatActivity {
         recyclerResumen.setAdapter(adapterD);
 
 
-        Toolbar toolbar = findViewById(R.id.toolbar_dashboard);
+        MaterialToolbar toolbar = findViewById(R.id.toolbar_estandar);
         setSupportActionBar(toolbar);
         // Cambiar el color del icono de los tres puntos (overflow)
         toolbar.setOverflowIcon(ContextCompat.getDrawable(this, R.drawable.ic_more_vert));

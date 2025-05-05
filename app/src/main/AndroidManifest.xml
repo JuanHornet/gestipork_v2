@@ -32,6 +32,7 @@
 
         <activity android:name=".modelo.DashboardActivity" android:exported="true"/>
         <activity android:name=".modelo.LotesActivity" android:exported="true"/>
+        <activity android:name=".modelo.DetalleLoteActivity" android:exported="true"/>
     </application>
 
 </manifest>

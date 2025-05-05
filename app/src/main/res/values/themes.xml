@@ -7,6 +7,13 @@
 
     </style>
 
+    <style name="PopupMenuOverlayWhiteIcon" parent="ThemeOverlay.Material3.Light">
+        <!-- Evita heredar iconos oscuros -->
+        <!-- Esto puede afectar el color del icono de overflow -->
+        <item name="android:textColor">@android:color/black</item> <!-- texto del menú -->
+        <item name="android:tint">@android:color/white</item>     <!-- icono de overflow -->
+    </style>
+
 
     <style name="Theme.Proyecto_Gestipork" parent="Base.Theme.Proyecto_Gestipork" />
 </resources>

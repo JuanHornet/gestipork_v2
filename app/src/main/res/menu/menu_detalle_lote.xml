@@ -1,0 +1,25 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_editar_lote"
+        android:title="Editar Lote"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_eliminar_lote"
+        android:title="Eliminar Lote"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_ver_historial"
+        android:title="Ver Historial"
+        app:showAsAction="never" />
+
+    <!-- truco para forzar overflow -->
+    <item
+        android:id="@+id/menu_dummy"
+        android:title=""
+        android:visible="false"
+        app:showAsAction="always" />
+</menu>

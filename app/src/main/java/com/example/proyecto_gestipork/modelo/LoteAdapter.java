@@ -1,5 +1,7 @@
 package com.example.proyecto_gestipork.modelo;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.view.LayoutInflater;
@@ -10,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.proyecto_gestipork.modelo.DetalleLoteActivity;
 import com.example.proyecto_gestipork.R;
 
 import java.util.List;
@@ -17,8 +20,10 @@ import java.util.List;
 public class LoteAdapter extends RecyclerView.Adapter<LoteAdapter.LoteViewHolder> {
 
     private List<Lotes> listaLotes;
+    private Context context;
 
-    public LoteAdapter(List<Lotes> listaLotes) {
+    public LoteAdapter(Context context, List<Lotes> listaLotes) {
+        this.context = context;
         this.listaLotes = listaLotes;
     }
 
@@ -46,6 +51,14 @@ public class LoteAdapter extends RecyclerView.Adapter<LoteAdapter.LoteViewHolder
         } catch (Exception e) {
             holder.viewColor.getBackground().setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN); // color por defecto
         }
+
+        // Clic para ir a DetalleLoteActivity
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, com.example.proyecto_gestipork.modelo.DetalleLoteActivity.class);
+
+            intent.putExtra("lote_id", lote.getId());
+            context.startActivity(intent);
+        });
     }
 
     @Override

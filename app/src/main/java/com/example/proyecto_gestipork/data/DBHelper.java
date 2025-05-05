@@ -26,7 +26,8 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_EXPLOTACIONES);
         db.execSQL(CREATE_TABLE_LOTES);
         db.execSQL(CREATE_TABLE_ITACA);
-        // Aquí irás añadiendo más db.execSQL para nuevas tablas
+        db.execSQL(CREATE_TABLE_PARIDERAS);
+        db.execSQL(CREATE_TABLE_CUBRICIONES);
     }
 
     @Override
@@ -36,6 +37,8 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS explotaciones");
         db.execSQL("DROP TABLE IF EXISTS itaca");
         db.execSQL("DROP TABLE IF EXISTS lotes");
+        db.execSQL("DROP TABLE IF EXISTS parideras");
+        db.execSQL("DROP TABLE IF EXISTS cubriciones");
         onCreate(db);
     }
 
@@ -83,8 +86,35 @@ public class DBHelper extends SQLiteOpenHelper {
             "color TEXT, " +
             "crotalesSolicitados INTEGER, " +
             "cod_lote TEXT, " +
-            "FOREIGN KEY (cod_lote) REFERENCES lotes(cod_lote)" +
+            "cod_explotacion TEXT " +
             ")";
+
+
+    // TABLA CUBRICIONES
+    private static final String CREATE_TABLE_CUBRICIONES = "CREATE TABLE cubriciones (" +
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "cod_cubricion TEXT, " +
+            "nMadres INTEGER, " +
+            "nPadres INTEGER, " +
+            "fechaInicioCubricion TEXT, " +  // Usamos TEXT para fechas
+            "fechaFinCubricion TEXT, " +
+            "cod_explotacion TEXT, " +
+            "cod_lote TEXT" +
+            ")";
+
+    // TABLA PARIDERAS
+    private static final String CREATE_TABLE_PARIDERAS = "CREATE TABLE parideras (" +
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "cod_paridera TEXT, " +
+            "fechaInicioParidera TEXT, " +
+            "fechaFinParidera TEXT, " +
+            "nacidosVivos INTEGER, " +
+            "nParidas INTEGER, " +
+            "nVacias INTEGER, " +
+            "cod_lote TEXT, " +
+            "cod_explotacion TEXT" +
+            ")";
+
 
 
     public boolean registrarUsuario(String email, String password) {

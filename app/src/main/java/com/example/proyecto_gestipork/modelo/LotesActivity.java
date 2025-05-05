@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.proyecto_gestipork.base.BaseActivity;
 import com.example.proyecto_gestipork.modelo.LoteAdapter;
 import com.example.proyecto_gestipork.data.DBHelper;
 import com.example.proyecto_gestipork.modelo.Lotes;
@@ -31,7 +32,7 @@ import com.example.proyecto_gestipork.R;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LotesActivity extends AppCompatActivity {
+public class LotesActivity extends BaseActivity {
 
     private RecyclerView recyclerView;
     private LoteAdapter adapter;
@@ -59,7 +60,7 @@ public class LotesActivity extends AppCompatActivity {
 
 
         // Configurar toolbar
-        MaterialToolbar toolbar = findViewById(R.id.toolbar_lotes);
+        MaterialToolbar toolbar = findViewById(R.id.toolbar_estandar);
         setSupportActionBar(toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
 
@@ -75,7 +76,7 @@ public class LotesActivity extends AppCompatActivity {
         txtVacio = findViewById(R.id.txt_vacio);
         cargarLotes();
 
-        adapter = new LoteAdapter(listaLotes);
+        adapter = new LoteAdapter(this, listaLotes);
         recyclerView.setAdapter(adapter);
 
 
@@ -194,10 +195,10 @@ public class LotesActivity extends AppCompatActivity {
         }
 
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT id FROM lotes WHERE cod_lote = ?", new String[]{codLote});
+        Cursor cursor = db.rawQuery("SELECT id FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?", new String[]{codLote});
 
         if (cursor.moveToFirst()) {
-            Toast.makeText(this, "Ese código de lote ya existe", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Este lote ya existe en esta explotación", Toast.LENGTH_SHORT).show();
             cursor.close();
             return;
         }
@@ -228,6 +229,72 @@ public class LotesActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "Error al guardar lote", Toast.LENGTH_SHORT).show();
         }
+
+        // Insertar también en la tabla parideras
+        String codParidera = "P" + codLote + codExplotacionSeleccionada;
+
+        ContentValues parideraValues = new ContentValues();
+        parideraValues.put("cod_paridera", codParidera);
+        parideraValues.put("cod_lote", codLote);
+        parideraValues.put("cod_explotacion", codExplotacionSeleccionada);
+
+        // Los demás campos quedan vacíos/null por ahora (se podrán actualizar después)
+        parideraValues.put("fechaInicioParidera", "");
+        parideraValues.put("fechaFinParidera", "");
+        parideraValues.put("nacidosVivos", 0);
+        parideraValues.put("nParidas", 0);
+        parideraValues.put("nVacias", 0);
+
+        long resultadoParidera = db.insert("parideras", null, parideraValues);
+
+        if (resultadoParidera == -1) {
+            Toast.makeText(this, "Lote guardado, pero error en parideras", Toast.LENGTH_SHORT).show();
+        }
+        // Insertar también en la tabla cubriciones
+        String codCubricion = "C" + codLote + codExplotacionSeleccionada;
+
+        ContentValues cubricionValues = new ContentValues();
+        cubricionValues.put("cod_cubricion", codCubricion);
+        cubricionValues.put("cod_lote", codLote);
+        cubricionValues.put("cod_explotacion", codExplotacionSeleccionada);
+
+        // Campos iniciales vacíos o por defecto
+        cubricionValues.put("nMadres", 0);
+        cubricionValues.put("nPadres", 0);
+        cubricionValues.put("fechaInicioCubricion", "");
+        cubricionValues.put("fechaFinCubricion", "");
+
+        long resultadoCubricion = db.insert("cubriciones", null, cubricionValues);
+
+        if (resultadoCubricion == -1) {
+            Toast.makeText(this, "Lote guardado, pero error en cubriciones", Toast.LENGTH_SHORT).show();
+        }
+
+        // Insertar también en la tabla itaca
+        String codItaca = "I" + codLote + codExplotacionSeleccionada;
+
+        ContentValues itacaValues = new ContentValues();
+        itacaValues.put("cod_itaca", codItaca);
+        itacaValues.put("cod_lote", codLote);
+        itacaValues.put("cod_explotacion", codExplotacionSeleccionada);
+        itacaValues.put("raza", raza); // ✅ Igual que la del lote
+
+        // Inicializa campos opcionales o en blanco
+        itacaValues.put("nAnimales", 0);
+        itacaValues.put("nMadres", 0);
+        itacaValues.put("nPadres", 0);
+        itacaValues.put("fechaPNacimiento", "");
+        itacaValues.put("fechaUltNacimiento", "");
+        itacaValues.put("color", "#CCCCCC");
+        itacaValues.put("crotalesSolicitados", 0);
+
+        long resultadoItaca = db.insert("itaca", null, itacaValues);
+
+        if (resultadoItaca == -1) {
+            Toast.makeText(this, "Lote guardado, pero error en itaca", Toast.LENGTH_SHORT).show();
+        }
+
+
     }
 
 
