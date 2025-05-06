@@ -4,17 +4,25 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.proyecto_gestipork.R;
 import com.example.proyecto_gestipork.base.BaseActivity;
 import com.example.proyecto_gestipork.data.DBHelper;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.bottomnavigation.LabelVisibilityMode;
+import com.google.android.material.navigation.NavigationBarView;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 public class DetalleLoteActivity extends BaseActivity {
 
@@ -40,6 +48,19 @@ public class DetalleLoteActivity extends BaseActivity {
 
         codLote = getIntent().getStringExtra("cod_lote");
         codExplotacion = getIntent().getStringExtra("cod_explotacion");
+
+        BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
+        bottomNav.setLabelVisibilityMode(NavigationBarView.LABEL_VISIBILITY_LABELED);
+
+        ViewPager2 viewPager = findViewById(R.id.view_pager);
+        TabLayout tabLayout = findViewById(R.id.tab_layout);
+
+        viewPager.setAdapter(new DetalleLotePagerAdapter(this));
+
+        new TabLayoutMediator(tabLayout, viewPager,
+                (tab, position) -> {
+                    tab.setText(position == 0 ? "Acciones" : "Salidas");
+                }).attach();
 
     }
 
