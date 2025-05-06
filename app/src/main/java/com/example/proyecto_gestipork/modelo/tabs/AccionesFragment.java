@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -64,19 +65,42 @@ public class AccionesFragment extends Fragment {
             String tipo = cursor.getString(cursor.getColumnIndexOrThrow("tipoAccion"));
             String fecha = cursor.getString(cursor.getColumnIndexOrThrow("fechaAccion"));
             int cantidad = cursor.getInt(cursor.getColumnIndexOrThrow("nAnimales"));
+            String observacion = cursor.getString(cursor.getColumnIndexOrThrow("observacion"));
 
-            listaAcciones.add(new Accion(id,tipo, fecha, cantidad));
+
+            listaAcciones.add(new Accion(id, tipo, fecha, cantidad, observacion));
+
         }
         cursor.close();
 
-        adapter = new AccionAdapter(listaAcciones, accion -> {
-
-            boolean eliminada = dbHelper.eliminarAccion(accion.getId());
-
-            if (eliminada) {
-                cargarAcciones(); // Recargar lista
+        adapter = new AccionAdapter(listaAcciones, new AccionAdapter.OnAccionLongClickListener() {
+            @Override
+            public void onEditarAccion(Accion accion) {
+                AccionDialogFragment dialog = new AccionDialogFragment(
+                        codLote,
+                        codExplotacion,
+                        accion,
+                        AccionesFragment.this::cargarAcciones
+                );
+                dialog.show(getChildFragmentManager(), "EditarAccion");
             }
+
+            @Override
+            public void onEliminarAccion(Accion accion) {
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Eliminar acción")
+                        .setMessage("¿Estás seguro de que quieres eliminar esta acción?")
+                        .setPositiveButton("Eliminar", (dialog, which) -> {
+                            DBHelper dbHelper = new DBHelper(getContext());
+                            boolean eliminado = dbHelper.eliminarAccion(accion.getId());
+                            if (eliminado) cargarAcciones();
+                        })
+                        .setNegativeButton("Cancelar", null)
+                        .show();
+            }
+
         });
+
 
         recyclerView.setAdapter(adapter);
     }

@@ -55,7 +55,7 @@ public class DetalleLoteActivity extends BaseActivity {
         ViewPager2 viewPager = findViewById(R.id.view_pager);
         TabLayout tabLayout = findViewById(R.id.tab_layout);
 
-        viewPager.setAdapter(new DetalleLotePagerAdapter(this));
+        viewPager.setAdapter(new DetalleLotePagerAdapter(this, codLote, codExplotacion));
 
         new TabLayoutMediator(tabLayout, viewPager,
                 (tab, position) -> {

@@ -152,7 +152,7 @@ public class DBHelper extends SQLiteOpenHelper {
             "nAnimales INTEGER, " +
             "fechaSalida TEXT, " +
             "cod_lote TEXT, " +
-            "cod_explotacion TEXT" +
+            "cod_explotacion, TEXT" +
             "tipoAlimentacion TEXT" +
             ")";
 
@@ -326,7 +326,7 @@ public class DBHelper extends SQLiteOpenHelper {
         return db.rawQuery("SELECT * FROM acciones WHERE cod_lote = ? AND cod_explotacion = ?",
                 new String[]{codLote, codExplotacion});
     }
-    public void insertarAccion(String tipo, int cantidad, String fecha, String codLote, String codExplotacion) {
+    public void insertarAccion(String tipo, int cantidad, String fecha, String codLote, String codExplotacion, String observacion) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("tipoAccion", tipo);
@@ -334,19 +334,24 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put("fechaAccion", fecha);
         values.put("cod_lote", codLote);
         values.put("cod_explotacion", codExplotacion);
+        values.put("observacion", observacion);
+        values.put("estado", 1); // o el valor por defecto que manejes
         db.insert("acciones", null, values);
         db.close();
     }
 
-    public void actualizarAccion(int id, String tipo, int cantidad, String fecha) {
+
+    public void actualizarAccion(int id, String tipo, int cantidad, String fecha, String observacion) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("tipoAccion", tipo);
         values.put("nAnimales", cantidad);
         values.put("fechaAccion", fecha);
+        values.put("observacion", observacion);
         db.update("acciones", values, "id = ?", new String[]{String.valueOf(id)});
         db.close();
     }
+
     public boolean eliminarAccion(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
         int filas = db.delete("acciones", "id = ?", new String[]{String.valueOf(id)});

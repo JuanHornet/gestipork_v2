@@ -18,6 +18,15 @@
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">#000000</item> <!-- o usa @color/black -->
     </style>
+    <style name="CustomDatePickerDialog" parent="Theme.MaterialComponents.Light.Dialog">
+        <item name="android:datePickerStyle">@style/CustomDatePicker</item>
+    </style>
+
+    <style name="CustomDatePicker" parent="android:Widget.Material.DatePicker">
+        <item name="android:calendarViewShown">true</item>
+        <item name="android:spinnersShown">false</item>
+    </style>
+
 
 
     <style name="Theme.Proyecto_Gestipork" parent="Base.Theme.Proyecto_Gestipork" />
