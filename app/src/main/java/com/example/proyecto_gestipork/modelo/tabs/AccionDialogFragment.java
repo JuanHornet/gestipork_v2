@@ -1,6 +1,7 @@
 package com.example.proyecto_gestipork.modelo.tabs;
 
 import android.app.DatePickerDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.ContextThemeWrapper;
@@ -15,6 +16,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
 import com.example.proyecto_gestipork.R;
@@ -101,18 +103,46 @@ public class AccionDialogFragment extends DialogFragment {
             }
 
             int cantidad = Integer.parseInt(cantidadStr);
-
             DBHelper dbHelper = new DBHelper(getContext());
 
-            if (accionExistente == null) {
-                dbHelper.insertarAccion(tipo, cantidad, fecha, codLote, codExplotacion, observacion);
-            } else {
-                dbHelper.actualizarAccion(accionExistente.getId(), tipo, cantidad, fecha, observacion);
-            }
+            // 👉 Si es edición y tipo es "Destete", mostrar advertencia
+            if (accionExistente != null && tipo.equalsIgnoreCase("Destete")) {
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Modificar acción Destete")
+                        .setMessage("Modificar esta acción también cambiará el número de animales del lote. ¿Deseas continuar?")
+                        .setPositiveButton("Sí", (dialog, which) -> {
+                            dbHelper.actualizarAccion(accionExistente.getId(), tipo, cantidad, fecha, observacion);
 
-            if (callback != null) callback.onAccionGuardada();
-            dismiss();
+                            // 🔁 Actualizar también el lote
+                            ContentValues values = new ContentValues();
+                            values.put("nDisponibles", cantidad);
+                            values.put("nIniciales", cantidad);
+
+                            dbHelper.getWritableDatabase().update(
+                                    "lotes",
+                                    values,
+                                    "cod_lote = ? AND cod_explotacion = ?",
+                                    new String[]{codLote, codExplotacion}
+                            );
+
+                            if (callback != null) callback.onAccionGuardada();
+                            dismiss();
+                        })
+                        .setNegativeButton("Cancelar", null)
+                        .show();
+            } else {
+                // Nuevo registro o edición normal
+                if (accionExistente == null) {
+                    dbHelper.insertarAccion(tipo, cantidad, fecha, codLote, codExplotacion, observacion);
+                } else {
+                    dbHelper.actualizarAccion(accionExistente.getId(), tipo, cantidad, fecha, observacion);
+                }
+
+                if (callback != null) callback.onAccionGuardada();
+                dismiss();
+            }
         });
+
 
 
         return view;

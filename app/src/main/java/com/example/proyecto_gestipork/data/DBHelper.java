@@ -152,8 +152,9 @@ public class DBHelper extends SQLiteOpenHelper {
             "nAnimales INTEGER, " +
             "fechaSalida TEXT, " +
             "cod_lote TEXT, " +
-            "cod_explotacion, TEXT" +
-            "tipoAlimentacion TEXT" +
+            "cod_explotacion TEXT," +
+            "tipoAlimentacion TEXT," +
+            "observacion TEXT" +
             ")";
 
 
@@ -328,6 +329,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
     public void insertarAccion(String tipo, int cantidad, String fecha, String codLote, String codExplotacion, String observacion) {
         SQLiteDatabase db = this.getWritableDatabase();
+
         ContentValues values = new ContentValues();
         values.put("tipoAccion", tipo);
         values.put("nAnimales", cantidad);
@@ -335,10 +337,24 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put("cod_lote", codLote);
         values.put("cod_explotacion", codExplotacion);
         values.put("observacion", observacion);
-        values.put("estado", 1); // o el valor por defecto que manejes
+        values.put("estado", 1);
+
         db.insert("acciones", null, values);
+
+        // ✅ NUEVO BLOQUE: actualizar lote si es DESTETE
+        if (tipo.equalsIgnoreCase("Destete")) {
+            ContentValues loteUpdate = new ContentValues();
+            loteUpdate.put("nDisponibles", cantidad);
+            loteUpdate.put("nIniciales", cantidad);
+
+            db.update("lotes", loteUpdate,
+                    "cod_lote = ? AND cod_explotacion = ?",
+                    new String[]{codLote, codExplotacion});
+        }
+
         db.close();
     }
+
 
 
     public void actualizarAccion(int id, String tipo, int cantidad, String fecha, String observacion) {
@@ -357,6 +373,44 @@ public class DBHelper extends SQLiteOpenHelper {
         int filas = db.delete("acciones", "id = ?", new String[]{String.valueOf(id)});
         db.close();
         return filas > 0;
+    }
+    public void insertarSalida(String tipoSalida, String tipoAlimentacion, int nAnimales,
+                               String fechaSalida, String codLote, String codExplotacion, String observacion) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        values.put("tipoSalida", tipoSalida);
+        values.put("tipoAlimentacion", tipoAlimentacion);
+        values.put("nAnimales", nAnimales);
+        values.put("fechaSalida", fechaSalida);
+        values.put("cod_lote", codLote);
+        values.put("cod_explotacion", codExplotacion);
+        values.put("observacion", observacion);
+
+        db.insert("salidas", null, values);
+        db.close();
+    }
+
+    public void actualizarSalida(int id, String tipoSalida, String tipoAlimentacion, int nAnimales,
+                                 String fechaSalida, String observacion) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        values.put("tipoSalida", tipoSalida);
+        values.put("tipoAlimentacion", tipoAlimentacion);
+        values.put("nAnimales", nAnimales);
+        values.put("fechaSalida", fechaSalida);
+        values.put("observacion", observacion);
+
+        db.update("salidas", values, "id = ?", new String[]{String.valueOf(id)});
+        db.close();
+    }
+    public Cursor obtenerSalidas(String codLote, String codExplotacion) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT * FROM salidas WHERE cod_lote = ? AND cod_explotacion = ?",
+                new String[]{codLote, codExplotacion});
     }
 
 

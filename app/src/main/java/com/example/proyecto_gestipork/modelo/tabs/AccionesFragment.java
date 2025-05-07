@@ -1,4 +1,5 @@
 package com.example.proyecto_gestipork.modelo.tabs;
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -87,17 +88,41 @@ public class AccionesFragment extends Fragment {
 
             @Override
             public void onEliminarAccion(Accion accion) {
+                // Verificamos si es tipo "Destete"
+                boolean esDestete = accion.getTipo().equalsIgnoreCase("Destete");
+
+                String mensaje = esDestete
+                        ? "Eliminar esta acción de destete también eliminará los animales registrados en el lote. ¿Deseas continuar?"
+                        : "¿Estás seguro de que quieres eliminar esta acción?";
+
                 new AlertDialog.Builder(getContext())
                         .setTitle("Eliminar acción")
-                        .setMessage("¿Estás seguro de que quieres eliminar esta acción?")
+                        .setMessage(mensaje)
                         .setPositiveButton("Eliminar", (dialog, which) -> {
                             DBHelper dbHelper = new DBHelper(getContext());
+
+                            // Si es destete, reinicia los campos del lote
+                            if (esDestete) {
+                                ContentValues values = new ContentValues();
+                                values.put("nDisponibles", 0);
+                                values.put("nIniciales", 0);
+
+                                dbHelper.getWritableDatabase().update(
+                                        "lotes",
+                                        values,
+                                        "cod_lote = ? AND cod_explotacion = ?",
+                                        new String[]{codLote, codExplotacion}
+                                );
+                            }
+
+                            // Eliminar la acción de la tabla acciones
                             boolean eliminado = dbHelper.eliminarAccion(accion.getId());
                             if (eliminado) cargarAcciones();
                         })
                         .setNegativeButton("Cancelar", null)
                         .show();
             }
+
 
         });
 
