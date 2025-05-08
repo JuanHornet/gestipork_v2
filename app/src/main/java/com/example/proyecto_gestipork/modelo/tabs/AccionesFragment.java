@@ -1,5 +1,7 @@
 package com.example.proyecto_gestipork.modelo.tabs;
+import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -81,9 +83,18 @@ public class AccionesFragment extends Fragment {
                         codLote,
                         codExplotacion,
                         accion,
-                        AccionesFragment.this::cargarAcciones
+                        () -> {
+                            cargarAcciones();
+                            if (accion.getTipo().equals("Destete")) {
+                                // Notificar a la activity
+                                Intent resultIntent = new Intent();
+                                resultIntent.putExtra("accion_destete_actualizada", true);
+                                getActivity().setResult(Activity.RESULT_OK, resultIntent);
+                            }
+                        }
                 );
                 dialog.show(getChildFragmentManager(), "EditarAccion");
+
             }
 
             @Override

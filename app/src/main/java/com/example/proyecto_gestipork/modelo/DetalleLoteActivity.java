@@ -1,6 +1,7 @@
 package com.example.proyecto_gestipork.modelo;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -48,6 +49,71 @@ public class DetalleLoteActivity extends BaseActivity {
 
         codLote = getIntent().getStringExtra("cod_lote");
         codExplotacion = getIntent().getStringExtra("cod_explotacion");
+
+        TextView textAnimales = findViewById(R.id.text_n_animales);
+        DBHelper dbHelper = new DBHelper(this);
+        Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
+                "SELECT nDisponibles FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?",
+                new String[]{codLote, codExplotacion}
+        );
+
+        if (cursor.moveToFirst()) {
+            int disponibles = cursor.getInt(0);
+            textAnimales.setText(disponibles + " disponibles");
+        }
+        cursor.close();
+        TextView textCodLote = findViewById(R.id.text_cod_lote);
+        TextView textRazaEdad = findViewById(R.id.text_raza_edad);
+
+        Cursor loteCursor = dbHelper.getReadableDatabase().rawQuery(
+                "SELECT cod_lote, raza FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?",
+                new String[]{codLote, codExplotacion}
+        );
+
+        if (loteCursor.moveToFirst()) {
+            String cod = loteCursor.getString(0);
+            String raza = loteCursor.getString(1);
+            textCodLote.setText(cod);
+
+            Cursor parideraCursor = dbHelper.getReadableDatabase().rawQuery(
+                    "SELECT fechaFinParidera FROM parideras WHERE cod_lote = ? AND cod_explotacion = ?",
+                    new String[]{codLote, codExplotacion}
+            );
+
+            if (parideraCursor.moveToFirst()) {
+                String fechaFin = parideraCursor.getString(0);
+                if (fechaFin != null && !fechaFin.isEmpty()) {
+                    try {
+                        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd-MM-yyyy", java.util.Locale.getDefault());
+                        java.util.Date fecha = sdf.parse(fechaFin);
+
+                        java.util.Calendar hoy = java.util.Calendar.getInstance();
+                        java.util.Calendar fin = java.util.Calendar.getInstance();
+                        fin.setTime(fecha);
+
+                        int edadMeses;
+                        if (hoy.get(java.util.Calendar.YEAR) == fin.get(java.util.Calendar.YEAR) &&
+                                hoy.get(java.util.Calendar.MONTH) == fin.get(java.util.Calendar.MONTH)) {
+                            edadMeses = 0;
+                        } else {
+                            edadMeses = (hoy.get(java.util.Calendar.YEAR) - fin.get(java.util.Calendar.YEAR)) * 12 +
+                                    (hoy.get(java.util.Calendar.MONTH) - fin.get(java.util.Calendar.MONTH));
+                        }
+
+
+                        textRazaEdad.setText(raza + " · Edad: " + edadMeses + " meses");
+
+                    } catch (Exception e) {
+                        textRazaEdad.setText(raza + " · Edad: desc.");
+                    }
+                } else {
+                    textRazaEdad.setText(raza + " · Edad: desc.");
+                }
+            }
+            parideraCursor.close();
+        }
+        loteCursor.close();
+
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setLabelVisibilityMode(NavigationBarView.LABEL_VISIBILITY_LABELED);
@@ -99,8 +165,9 @@ public class DetalleLoteActivity extends BaseActivity {
             Intent i = new Intent(this, ParideraActivity.class);
             i.putExtra("cod_lote", codLote);
             i.putExtra("cod_explotacion", codExplotacion);
-            startActivity(i);
+            startActivityForResult(i, 1001); // ✅ para que se detecte si vuelve con cambios
             return true;
+
         } else if (id == R.id.menu_ver_itaca) {
             Intent i = new Intent(this, ItacaActivity.class);
             i.putExtra("cod_lote", codLote);
@@ -110,7 +177,6 @@ public class DetalleLoteActivity extends BaseActivity {
         } else {
             return super.onOptionsItemSelected(item);
         }
-
     }
 
     private void mostrarDialogoEliminarLote() {
@@ -134,5 +200,81 @@ public class DetalleLoteActivity extends BaseActivity {
                 .setNegativeButton("Cancelar", null)
                 .show();
     }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1001 && resultCode == RESULT_OK) {
+            if (data != null) {
+                if (data.getBooleanExtra("paridera_actualizada", false)) {
+                    actualizarEdadEnCardView();
+                }
+                if (data.getBooleanExtra("accion_destete_actualizada", false)) {
+                    actualizarAnimalesDisponibles();  // 👈 nuevo método
+                }
+            }
+        }
+    }
+
+    private void actualizarEdadEnCardView() {
+        TextView textRazaEdad = findViewById(R.id.text_raza_edad);
+
+        DBHelper dbHelper = new DBHelper(this);
+        Cursor loteCursor = dbHelper.getReadableDatabase().rawQuery(
+                "SELECT raza FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?",
+                new String[]{codLote, codExplotacion}
+        );
+
+        if (loteCursor.moveToFirst()) {
+            String raza = loteCursor.getString(0);
+
+            Cursor parideraCursor = dbHelper.getReadableDatabase().rawQuery(
+                    "SELECT fechaFinParidera FROM parideras WHERE cod_lote = ? AND cod_explotacion = ?",
+                    new String[]{codLote, codExplotacion}
+            );
+
+            if (parideraCursor.moveToFirst()) {
+                String fechaFin = parideraCursor.getString(0);
+                if (fechaFin != null && !fechaFin.isEmpty()) {
+                    try {
+                        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd-MM-yyyy", java.util.Locale.getDefault());
+                        java.util.Date fecha = sdf.parse(fechaFin);
+
+                        java.util.Calendar hoy = java.util.Calendar.getInstance();
+                        java.util.Calendar fin = java.util.Calendar.getInstance();
+                        fin.setTime(fecha);
+
+                        int edadMeses = (hoy.get(java.util.Calendar.YEAR) - fin.get(java.util.Calendar.YEAR)) * 12 +
+                                (hoy.get(java.util.Calendar.MONTH) - fin.get(java.util.Calendar.MONTH));
+
+                        textRazaEdad.setText(raza + " · Edad: " + edadMeses + " meses");
+                    } catch (Exception e) {
+                        textRazaEdad.setText(raza + " · Edad: desc.");
+                    }
+                } else {
+                    textRazaEdad.setText(raza + " · Edad: desc.");
+                }
+            }
+
+            parideraCursor.close();
+        }
+
+        loteCursor.close();
+    }
+    private void actualizarAnimalesDisponibles() {
+        TextView textAnimales = findViewById(R.id.text_n_animales);
+        DBHelper dbHelper = new DBHelper(this);
+        Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
+                "SELECT nDisponibles FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?",
+                new String[]{codLote, codExplotacion}
+        );
+
+        if (cursor.moveToFirst()) {
+            int disponibles = cursor.getInt(0);
+            textAnimales.setText(disponibles + " disponibles");
+        }
+        cursor.close();
+    }
+
 
 }

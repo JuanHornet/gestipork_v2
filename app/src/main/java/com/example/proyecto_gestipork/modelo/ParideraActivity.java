@@ -1,6 +1,7 @@
 package com.example.proyecto_gestipork.modelo;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -151,6 +152,10 @@ public class ParideraActivity extends AppCompatActivity {
 
         db.close();
         Toast.makeText(this, "Paridera actualizada", Toast.LENGTH_SHORT).show();
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("paridera_actualizada", true);
+        setResult(RESULT_OK, resultIntent);
+
     }
 
     private void mostrarDatePicker(EditText target) {
