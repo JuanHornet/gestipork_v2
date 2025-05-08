@@ -370,10 +370,33 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public boolean eliminarAccion(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
+
+        // Buscar tipoAccion, cod_lote y cod_explotacion antes de eliminar
+        Cursor c = db.rawQuery("SELECT tipoAccion, cod_lote, cod_explotacion FROM acciones WHERE id = ?",
+                new String[]{String.valueOf(id)});
+
+        if (c.moveToFirst()) {
+            String tipo = c.getString(0);
+            String codLote = c.getString(1);
+            String codExplotacion = c.getString(2);
+
+            // Si es Destete, poner a cero los animales
+            if (tipo.equalsIgnoreCase("Destete")) {
+                ContentValues values = new ContentValues();
+                values.put("nDisponibles", 0);
+                values.put("nIniciales", 0);
+                db.update("lotes", values, "cod_lote = ? AND cod_explotacion = ?", new String[]{codLote, codExplotacion});
+            }
+        }
+        c.close();
+
+        // Ahora sí elimina la acción
         int filas = db.delete("acciones", "id = ?", new String[]{String.valueOf(id)});
         db.close();
+
         return filas > 0;
     }
+
     public void insertarSalida(String tipoSalida, String tipoAlimentacion, int nAnimales,
                                String fechaSalida, String codLote, String codExplotacion, String observacion) {
 
@@ -413,6 +436,49 @@ public class DBHelper extends SQLiteOpenHelper {
                 new String[]{codLote, codExplotacion});
     }
 
+    // Obtener número de animales disponibles en el lote
+    public int obtenerAnimalesDisponibles(String codLote, String codExplotacion) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT nDisponibles FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?", new String[]{codLote, codExplotacion});
+        int cantidad = 0;
+        if (cursor.moveToFirst()) {
+            cantidad = cursor.getInt(0);
+        }
+        cursor.close();
+        return cantidad;
+    }
+
+    // Obtener animales actuales en un tipo de alimentación
+    public int obtenerAnimalesAlimentacion(String codLote, String codExplotacion, String tipoAlimentacion) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT nAnimales FROM alimentacion WHERE cod_lote = ? AND cod_explotacion = ? AND tipoAlimentacion = ?", new String[]{codLote, codExplotacion, tipoAlimentacion});
+        int cantidad = 0;
+        if (cursor.moveToFirst()) {
+            cantidad = cursor.getInt(0);
+        }
+        cursor.close();
+        return cantidad;
+    }
+
+    // Restar animales de un tipo de alimentación
+    public void restarAnimalesAlimentacion(String codLote, String codExplotacion, String tipoAlimentacion, int cantidad) {
+        int actuales = obtenerAnimalesAlimentacion(codLote, codExplotacion, tipoAlimentacion);
+        int nuevos = Math.max(0, actuales - cantidad);
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("nAnimales", nuevos);
+        db.update("alimentacion", values, "cod_lote = ? AND cod_explotacion = ? AND tipoAlimentacion = ?", new String[]{codLote, codExplotacion, tipoAlimentacion});
+    }
+
+    // Sumar animales a un tipo de alimentación
+    public void sumarAnimalesAlimentacion(String codLote, String codExplotacion, String tipoAlimentacion, int cantidad) {
+        int actuales = obtenerAnimalesAlimentacion(codLote, codExplotacion, tipoAlimentacion);
+        int nuevos = actuales + cantidad;
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("nAnimales", nuevos);
+        db.update("alimentacion", values, "cod_lote = ? AND cod_explotacion = ? AND tipoAlimentacion = ?", new String[]{codLote, codExplotacion, tipoAlimentacion});
+    }
 
     // ---------------------------------------------------------------------------------------------
     // Más tablas en el futuro...

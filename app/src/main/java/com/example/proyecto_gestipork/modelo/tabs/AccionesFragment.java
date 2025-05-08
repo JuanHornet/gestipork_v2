@@ -1,7 +1,6 @@
 package com.example.proyecto_gestipork.modelo.tabs;
-import android.app.Activity;
+
 import android.content.ContentValues;
-import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -15,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.proyecto_gestipork.R;
 import com.example.proyecto_gestipork.data.DBHelper;
+import com.example.proyecto_gestipork.modelo.DetalleLoteActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -47,10 +47,33 @@ public class AccionesFragment extends Fragment {
         fabAdd = vista.findViewById(R.id.fab_add_accion);
         fabAdd.setOnClickListener(v -> {
             AccionDialogFragment dialog = new AccionDialogFragment(
-                    codLote, codExplotacion, null, this::cargarAcciones
+                    codLote,
+                    codExplotacion,
+                    null,
+                    () -> {
+                        cargarAcciones(); // Recarga la lista
+
+                        // Verifica si fue destete (opcional, si solo quieres hacerlo en ese caso)
+                        DBHelper dbHelper = new DBHelper(getContext());
+                        Cursor c = dbHelper.getReadableDatabase().rawQuery(
+                                "SELECT tipoAccion FROM acciones WHERE cod_lote = ? AND cod_explotacion = ? ORDER BY id DESC LIMIT 1",
+                                new String[]{codLote, codExplotacion}
+                        );
+
+                        if (c.moveToFirst()) {
+                            String tipo = c.getString(0);
+                            if (tipo.equalsIgnoreCase("Destete")) {
+                                if (getActivity() instanceof DetalleLoteActivity) {
+                                    ((DetalleLoteActivity) getActivity()).actualizarAnimalesDisponibles();
+                                }
+                            }
+                        }
+                        c.close();
+                    }
             );
             dialog.show(getChildFragmentManager(), "NuevaAccion");
         });
+
 
         cargarAcciones();
 
@@ -85,25 +108,26 @@ public class AccionesFragment extends Fragment {
                         accion,
                         () -> {
                             cargarAcciones();
+
                             if (accion.getTipo().equals("Destete")) {
-                                // Notificar a la activity
-                                Intent resultIntent = new Intent();
-                                resultIntent.putExtra("accion_destete_actualizada", true);
-                                getActivity().setResult(Activity.RESULT_OK, resultIntent);
+                                // Forzar recarga en la Activity directamente
+                                if (getActivity() instanceof DetalleLoteActivity) {
+                                    ((DetalleLoteActivity) getActivity()).actualizarAnimalesDisponibles();
+                                }
                             }
                         }
                 );
                 dialog.show(getChildFragmentManager(), "EditarAccion");
-
             }
+
 
             @Override
             public void onEliminarAccion(Accion accion) {
-                // Verificamos si es tipo "Destete"
                 boolean esDestete = accion.getTipo().equalsIgnoreCase("Destete");
 
                 String mensaje = esDestete
-                        ? "Eliminar esta acción de destete también eliminará los animales registrados en el lote. ¿Deseas continuar?"
+                        ? "Eliminar esta acción de destete también pondrá a cero el número de animales en el lote. ¿Deseas continuar?"
+
                         : "¿Estás seguro de que quieres eliminar esta acción?";
 
                 new AlertDialog.Builder(getContext())
@@ -112,12 +136,10 @@ public class AccionesFragment extends Fragment {
                         .setPositiveButton("Eliminar", (dialog, which) -> {
                             DBHelper dbHelper = new DBHelper(getContext());
 
-                            // Si es destete, reinicia los campos del lote
                             if (esDestete) {
                                 ContentValues values = new ContentValues();
                                 values.put("nDisponibles", 0);
                                 values.put("nIniciales", 0);
-
                                 dbHelper.getWritableDatabase().update(
                                         "lotes",
                                         values,
@@ -126,9 +148,15 @@ public class AccionesFragment extends Fragment {
                                 );
                             }
 
-                            // Eliminar la acción de la tabla acciones
                             boolean eliminado = dbHelper.eliminarAccion(accion.getId());
-                            if (eliminado) cargarAcciones();
+                            if (eliminado) {
+                                cargarAcciones();
+
+                                // 👇 ACTUALIZAR LA VISTA SUPERIOR DEL LOTE
+                                if (getActivity() instanceof DetalleLoteActivity) {
+                                    ((DetalleLoteActivity) getActivity()).actualizarAnimalesDisponibles();
+                                }
+                            }
                         })
                         .setNegativeButton("Cancelar", null)
                         .show();

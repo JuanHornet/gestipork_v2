@@ -261,20 +261,25 @@ public class DetalleLoteActivity extends BaseActivity {
 
         loteCursor.close();
     }
-    private void actualizarAnimalesDisponibles() {
-        TextView textAnimales = findViewById(R.id.text_n_animales);
-        DBHelper dbHelper = new DBHelper(this);
-        Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
-                "SELECT nDisponibles FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?",
-                new String[]{codLote, codExplotacion}
-        );
+    public void actualizarAnimalesDisponibles() {
+        runOnUiThread(() -> {
+            TextView textAnimales = findViewById(R.id.text_n_animales);
+            DBHelper dbHelper = new DBHelper(this);
 
-        if (cursor.moveToFirst()) {
-            int disponibles = cursor.getInt(0);
-            textAnimales.setText(disponibles + " disponibles");
-        }
-        cursor.close();
+            Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
+                    "SELECT nDisponibles FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?",
+                    new String[]{codLote, codExplotacion}
+            );
+
+            if (cursor.moveToFirst()) {
+                int disponibles = cursor.getInt(0);
+                textAnimales.setText(disponibles + " disponibles");
+            }
+
+            cursor.close();
+        });
     }
+
 
 
 }
