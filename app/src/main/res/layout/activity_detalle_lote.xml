@@ -61,7 +61,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="LOTE 1/25"
-                            android:textSize="36sp"
+                            android:textSize="28sp"
                             android:textStyle="bold"
                             android:textColor="@color/black"
                             android:layout_marginBottom="2dp" />
@@ -71,7 +71,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="289 animales"
-                            android:textSize="26sp"
+                            android:textSize="24sp"
                             android:textColor="@color/principal" />
                     </LinearLayout>
                 </LinearLayout>
@@ -82,7 +82,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Ibérico 100% · Edad: 8 meses"
-                    android:textSize="24sp"
+                    android:textSize="18sp"
                     android:textColor="@color/black"
                     android:layout_marginTop="12dp" />
             </LinearLayout>
@@ -102,17 +102,6 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- Título -->
-                <TextView
-                    android:id="@+id/text_titulo_alimentacion"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Alimentación"
-                    android:textStyle="bold"
-                    android:textSize="24sp"
-                    android:textColor="@color/black"
-                    android:layout_marginBottom="12dp" />
-
                 <!-- Fila de cantidades -->
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -121,6 +110,7 @@
                     android:layout_marginBottom="4dp">
 
                     <TextView
+                        android:id="@+id/text_bellota"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -132,6 +122,7 @@
                         android:maxLines="1" />
 
                     <TextView
+                        android:id="@+id/text_cebo_campo"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -143,6 +134,7 @@
                         android:maxLines="1" />
 
                     <TextView
+                        android:id="@+id/text_cebo"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -152,6 +144,7 @@
                         android:textColor="@color/black"
                         android:gravity="center"
                         android:maxLines="1" />
+
                 </LinearLayout>
 
                 <!-- Fila de etiquetas -->

@@ -130,7 +130,8 @@ public class DBHelper extends SQLiteOpenHelper {
             "nAnimales INTEGER, " +
             "fechaInicioAlimentacion TEXT, " +
             "cod_lote TEXT, " +
-            "cod_explotacion TEXT" +
+            "cod_explotacion TEXT," +
+            "UNIQUE(cod_lote, cod_explotacion, tipoAlimentacion)" +
             ")";
 
     // TABLA ACCIONES
@@ -341,8 +342,9 @@ public class DBHelper extends SQLiteOpenHelper {
 
         db.insert("acciones", null, values);
 
-        // ✅ NUEVO BLOQUE: actualizar lote si es DESTETE
+        // ✅ NUEVO BLOQUE: actualizar lote y alimentacion si es DESTETE
         if (tipo.equalsIgnoreCase("Destete")) {
+            // 1. Actualizar lote
             ContentValues loteUpdate = new ContentValues();
             loteUpdate.put("nDisponibles", cantidad);
             loteUpdate.put("nIniciales", cantidad);
@@ -350,12 +352,25 @@ public class DBHelper extends SQLiteOpenHelper {
             db.update("lotes", loteUpdate,
                     "cod_lote = ? AND cod_explotacion = ?",
                     new String[]{codLote, codExplotacion});
+
+            // 2. Insertar registros de alimentación
+            String[] tipos = {"Bellota", "Cebo Campo", "Cebo"};
+            for (String tipoAlim : tipos) {
+                int nAnimales = tipoAlim.equals("Cebo") ? cantidad : 0;
+
+                values = new ContentValues();
+                values.put("tipoAlimentacion", tipoAlim);
+                values.put("cod_lote", codLote);
+                values.put("cod_explotacion", codExplotacion);
+                values.put("nAnimales", nAnimales);
+                values.put("fechaInicioAlimentacion", fecha);
+
+                db.insertWithOnConflict("alimentacion", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+            }
+
         }
 
-        db.close();
     }
-
-
 
     public void actualizarAccion(int id, String tipo, int cantidad, String fecha, String observacion) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -478,6 +493,16 @@ public class DBHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put("nAnimales", nuevos);
         db.update("alimentacion", values, "cod_lote = ? AND cod_explotacion = ? AND tipoAlimentacion = ?", new String[]{codLote, codExplotacion, tipoAlimentacion});
+    }
+    public void sumarAnimalesAlimentacionConFecha(String codLote, String codExplotacion, String tipoAlimentacion, int cantidad, String fecha) {
+        int actuales = obtenerAnimalesAlimentacion(codLote, codExplotacion, tipoAlimentacion);
+        int nuevos = actuales + cantidad;
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("nAnimales", nuevos);
+        values.put("fechaInicioAlimentacion", fecha);
+        db.update("alimentacion", values, "cod_lote = ? AND cod_explotacion = ? AND tipoAlimentacion = ?",
+                new String[]{codLote, codExplotacion, tipoAlimentacion});
     }
 
     // ---------------------------------------------------------------------------------------------

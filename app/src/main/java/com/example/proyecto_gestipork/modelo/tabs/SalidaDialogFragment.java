@@ -1,20 +1,19 @@
 package com.example.proyecto_gestipork.modelo.tabs;
 
-
-
 import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
 import com.example.proyecto_gestipork.R;
@@ -27,119 +26,133 @@ import java.util.Locale;
 public class SalidaDialogFragment extends DialogFragment {
 
     private Spinner spinnerTipoSalida, spinnerTipoAlimentacion;
-    private EditText editFecha, editCantidad, editObservaciones;
-    private Button btnGuardar, btnCancelar;
-
-    private SalidasExplotacion salidaExistente;
+    private EditText editFechaSalida, editCantidad, editObservaciones;
     private String codLote, codExplotacion;
-    private OnSalidaGuardadaListener callback;
+    private Integer salidaId;
+    // null si es nueva
 
     public interface OnSalidaGuardadaListener {
         void onSalidaGuardada();
     }
 
-    public SalidaDialogFragment(String codLote, String codExplotacion, SalidasExplotacion salidaExistente, OnSalidaGuardadaListener callback) {
+    private OnSalidaGuardadaListener callback;
+
+    public SalidaDialogFragment(String codLote, String codExplotacion, Integer salidaId, OnSalidaGuardadaListener callback) {
         this.codLote = codLote;
         this.codExplotacion = codExplotacion;
-        this.salidaExistente = salidaExistente;
+        this.salidaId = salidaId;
         this.callback = callback;
     }
 
-    @Nullable
+    @NonNull
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.dialog_salida, container, false);
+    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+        View view = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_salida, null);
 
         spinnerTipoSalida = view.findViewById(R.id.spinner_tipo_salida);
         spinnerTipoAlimentacion = view.findViewById(R.id.spinner_tipo_alimentacion);
-        editFecha = view.findViewById(R.id.edit_fecha_salida);
+        editFechaSalida = view.findViewById(R.id.edit_fecha_salida);
         editCantidad = view.findViewById(R.id.edit_n_animales);
-        editObservaciones = view.findViewById(R.id.edit_observaciones);
-        btnGuardar = view.findViewById(R.id.btn_guardar_salida);
-        btnCancelar = view.findViewById(R.id.btn_cancelar_salida);
+        editObservaciones = view.findViewById(R.id.edit_observaciones_salida);
 
-        // Spinners
-        ArrayAdapter<String> salidaAdapter = new ArrayAdapter<>(requireContext(),
+        // Adaptadores de spinners
+        ArrayAdapter<String> adapterSalida = new ArrayAdapter<>(requireContext(),
                 android.R.layout.simple_spinner_item,
-                new String[]{"Selecciona motivo", "Sacrificio", "Fallecimiento", "Venta", "Otro"});
-        salidaAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerTipoSalida.setAdapter(salidaAdapter);
+                new String[]{"Venta", "Muerte", "Otro"});
+        adapterSalida.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerTipoSalida.setAdapter(adapterSalida);
 
-        ArrayAdapter<String> alimentacionAdapter = new ArrayAdapter<>(requireContext(),
+        ArrayAdapter<String> adapterAlimentacion = new ArrayAdapter<>(requireContext(),
                 android.R.layout.simple_spinner_item,
                 new String[]{"Bellota", "Cebo Campo", "Cebo"});
-        alimentacionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerTipoAlimentacion.setAdapter(alimentacionAdapter);
+        adapterAlimentacion.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerTipoAlimentacion.setAdapter(adapterAlimentacion);
 
-        // Si es edición
-        if (salidaExistente != null) {
-            editFecha.setText(formatearFecha(salidaExistente.getFechaSalida()));
-            editCantidad.setText(String.valueOf(salidaExistente.getnAnimales()));
-            editObservaciones.setText(salidaExistente.getObservacion());
+        editFechaSalida.setOnClickListener(v -> mostrarDatePicker());
 
-            int indexMotivo = salidaAdapter.getPosition(salidaExistente.getTipoSalida());
-            if (indexMotivo >= 0) spinnerTipoSalida.setSelection(indexMotivo);
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setTitle(salidaId == null ? "Nueva Salida" : "Editar Salida")
+                .setView(view)
+                .setPositiveButton("Guardar", null)
+                .setNegativeButton("Cancelar", (d, w) -> d.dismiss())
+                .create();
 
-            int indexAlim = alimentacionAdapter.getPosition(salidaExistente.getTipoAlimentacion());
-            if (indexAlim >= 0) spinnerTipoAlimentacion.setSelection(indexAlim);
-        }
+        dialog.setOnShowListener(d -> {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                String tipoSalida = spinnerTipoSalida.getSelectedItem().toString();
+                String tipoAlimentacion = spinnerTipoAlimentacion.getSelectedItem().toString();
+                String fecha = editFechaSalida.getText().toString().trim();
+                String cantidadStr = editCantidad.getText().toString().trim();
+                String observacion = editObservaciones.getText().toString().trim();
 
-        editFecha.setOnClickListener(v -> mostrarDatePicker());
+                if (fecha.isEmpty() || cantidadStr.isEmpty()) {
+                    Toast.makeText(getContext(), "Fecha y cantidad son obligatorios", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-        btnCancelar.setOnClickListener(v -> dismiss());
+                int cantidad = Integer.parseInt(cantidadStr);
+                DBHelper dbHelper = new DBHelper(getContext());
 
-        btnGuardar.setOnClickListener(v -> {
-            String motivo = spinnerTipoSalida.getSelectedItem().toString();
-            String alimentacion = spinnerTipoAlimentacion.getSelectedItem().toString();
-            String fecha = editFecha.getText().toString().trim();
-            String cantidadStr = editCantidad.getText().toString().trim();
-            String observaciones = editObservaciones.getText().toString().trim();
+                if (salidaId == null) {
+                    dbHelper.insertarSalida(tipoSalida, tipoAlimentacion, cantidad, fecha, codLote, codExplotacion, observacion);
+                } else {
+                    dbHelper.actualizarSalida(salidaId, tipoSalida, tipoAlimentacion, cantidad, fecha, observacion);
+                }
 
-            if (motivo.equals("Selecciona motivo") || fecha.isEmpty() || cantidadStr.isEmpty()) {
-                Toast.makeText(getContext(), "Completa todos los campos obligatorios", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            int cantidad = Integer.parseInt(cantidadStr);
-            DBHelper dbHelper = new DBHelper(getContext());
-
-            if (salidaExistente == null) {
-                dbHelper.insertarSalida(motivo, alimentacion, cantidad, fecha, codLote, codExplotacion, observaciones);
-            } else {
-                dbHelper.actualizarSalida(salidaExistente.getId(), motivo, alimentacion, cantidad, fecha, observaciones);
-            }
-
-            if (callback != null) callback.onSalidaGuardada();
-            dismiss();
+                if (callback != null) callback.onSalidaGuardada();
+                dialog.dismiss();
+            });
         });
+        if (salidaId != null) {
+            DBHelper dbHelper = new DBHelper(requireContext());
+            Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
+                    "SELECT * FROM salidas WHERE id = ?", new String[]{String.valueOf(salidaId)}
+            );
 
-        return view;
+            if (cursor.moveToFirst()) {
+                String tipo = cursor.getString(cursor.getColumnIndexOrThrow("tipoSalida"));
+                String alim = cursor.getString(cursor.getColumnIndexOrThrow("tipoAlimentacion"));
+                String fecha = cursor.getString(cursor.getColumnIndexOrThrow("fechaSalida"));
+                int cantidad = cursor.getInt(cursor.getColumnIndexOrThrow("nAnimales"));
+                String obs = cursor.getString(cursor.getColumnIndexOrThrow("observacion"));
+
+                // Asignar valores a los campos
+                ArrayAdapter<String> adapterTipo = (ArrayAdapter<String>) spinnerTipoSalida.getAdapter();
+                ArrayAdapter<String> adapterAlim = (ArrayAdapter<String>) spinnerTipoAlimentacion.getAdapter();
+
+                int indexTipo = adapterTipo.getPosition(tipo);
+                if (indexTipo >= 0) spinnerTipoSalida.setSelection(indexTipo);
+
+                int indexAlim = adapterAlim.getPosition(alim);
+                if (indexAlim >= 0) spinnerTipoAlimentacion.setSelection(indexAlim);
+
+                editFechaSalida.setText(fecha);
+                editCantidad.setText(String.valueOf(cantidad));
+                editObservaciones.setText(obs);
+            }
+
+            cursor.close();
+        }
+        return dialog;
+
+
     }
 
     private void mostrarDatePicker() {
-        Locale.setDefault(new Locale("es", "ES"));
-        Calendar calendar = Calendar.getInstance();
+        Locale spanish = new Locale("es", "ES");
+        Locale.setDefault(spanish);
 
+        Calendar calendar = Calendar.getInstance();
         DatePickerDialog picker = new DatePickerDialog(
                 requireContext(),
                 (view, year, month, day) -> {
-                    String fecha = String.format(Locale.getDefault(), "%02d-%02d-%04d", day, month + 1, year);
-                    editFecha.setText(fecha);
+                    String fecha = String.format("%02d-%02d-%04d", day, month + 1, year);
+                    editFechaSalida.setText(fecha);
                 },
                 calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH)
         );
         picker.show();
-    }
-
-    private String formatearFecha(java.util.Date date) {
-        if (date == null) return "";
-        Calendar c = Calendar.getInstance();
-        c.setTime(date);
-        return String.format(Locale.getDefault(), "%02d-%02d-%04d",
-                c.get(Calendar.DAY_OF_MONTH),
-                c.get(Calendar.MONTH) + 1,
-                c.get(Calendar.YEAR));
     }
 }

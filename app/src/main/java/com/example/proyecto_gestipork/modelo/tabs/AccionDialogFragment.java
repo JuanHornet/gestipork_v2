@@ -1,6 +1,7 @@
 package com.example.proyecto_gestipork.modelo.tabs;
 
 import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.os.Bundle;
@@ -47,106 +48,92 @@ public class AccionDialogFragment extends DialogFragment {
         this.callback = callback;
     }
 
-    @Nullable
+    @NonNull
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.dialog_accion, container, false);
+    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+        Context context = requireContext();
+        View view = LayoutInflater.from(context).inflate(R.layout.dialog_accion, null);
 
         spinnerTipo = view.findViewById(R.id.spinner_tipo_accion);
+        editFecha = view.findViewById(R.id.edit_fecha_accion);
+        editCantidad = view.findViewById(R.id.edit_cantidad);
+        editObservaciones = view.findViewById(R.id.edit_observaciones);
+
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                requireContext(),
+                context,
                 android.R.layout.simple_spinner_item,
-                new String[]{"Selecciona opción","Destete", "Circovirus", "Septicemia", "Mal Rojo", "Anillado", "Desparasitado", "Castración hembras", "Castración Machos"}
+                new String[]{"Selecciona opción", "Destete", "Circovirus", "Septicemia", "Mal Rojo", "Anillado", "Desparasitado", "Castración hembras", "Castración Machos"}
         );
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerTipo.setAdapter(adapter);
 
-        editFecha = view.findViewById(R.id.edit_fecha_accion);
-        editCantidad = view.findViewById(R.id.edit_cantidad);
-        editObservaciones = view.findViewById(R.id.edit_observaciones);
-        btnGuardar = view.findViewById(R.id.btn_guardar_accion);
-        btnCancelar = view.findViewById(R.id.btn_cancelar_accion);
-
-        // Si se edita una acción existente
         if (accionExistente != null) {
-            // Establecer la selección del spinner
             int index = adapter.getPosition(accionExistente.getTipo());
-            if (index >= 0) {
-                spinnerTipo.setSelection(index);
-            }
-
-            // Rellenar el resto de campos
+            if (index >= 0) spinnerTipo.setSelection(index);
             editFecha.setText(accionExistente.getFecha());
             editCantidad.setText(String.valueOf(accionExistente.getCantidad()));
             editObservaciones.setText(accionExistente.getObservaciones());
         }
 
-
         editFecha.setOnClickListener(v -> mostrarDatePicker());
 
-        btnCancelar.setOnClickListener(v -> dismiss());
+        AlertDialog dialog = new AlertDialog.Builder(context)
+                .setTitle(accionExistente == null ? "Nueva Acción" : "Editar Acción")
+                .setView(view)
+                .setPositiveButton("Guardar", null)
+                .setNegativeButton("Cancelar", (d, w) -> d.dismiss())
+                .create();
 
-        btnGuardar.setOnClickListener(v -> {
-            String tipo = spinnerTipo.getSelectedItem().toString();
-            String fecha = editFecha.getText().toString().trim();
-            String cantidadStr = editCantidad.getText().toString().trim();
-            String observacion = editObservaciones.getText().toString().trim();
+        dialog.setOnShowListener(d -> {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                String tipo = spinnerTipo.getSelectedItem().toString();
+                String fecha = editFecha.getText().toString().trim();
+                String cantidadStr = editCantidad.getText().toString().trim();
+                String observacion = editObservaciones.getText().toString().trim();
 
-            if (tipo.equals("Selecciona opción")) {
-                Toast.makeText(getContext(), "Selecciona un tipo de acción válido", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            if (fecha.isEmpty() || cantidadStr.isEmpty()) {
-                Toast.makeText(getContext(), "Todos los campos son obligatorios", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            int cantidad = Integer.parseInt(cantidadStr);
-            DBHelper dbHelper = new DBHelper(getContext());
-
-            // 👉 Si es edición y tipo es "Destete", mostrar advertencia
-            if (accionExistente != null && tipo.equalsIgnoreCase("Destete")) {
-                new AlertDialog.Builder(getContext())
-                        .setTitle("Modificar acción Destete")
-                        .setMessage("Modificar esta acción también cambiará el número de animales del lote. ¿Deseas continuar?")
-                        .setPositiveButton("Sí", (dialog, which) -> {
-                            dbHelper.actualizarAccion(accionExistente.getId(), tipo, cantidad, fecha, observacion);
-
-                            // 🔁 Actualizar también el lote
-                            ContentValues values = new ContentValues();
-                            values.put("nDisponibles", cantidad);
-                            values.put("nIniciales", cantidad);
-
-                            dbHelper.getWritableDatabase().update(
-                                    "lotes",
-                                    values,
-                                    "cod_lote = ? AND cod_explotacion = ?",
-                                    new String[]{codLote, codExplotacion}
-                            );
-
-                            if (callback != null) callback.onAccionGuardada();
-                            dismiss();
-                        })
-                        .setNegativeButton("Cancelar", null)
-                        .show();
-            } else {
-                // Nuevo registro o edición normal
-                if (accionExistente == null) {
-                    dbHelper.insertarAccion(tipo, cantidad, fecha, codLote, codExplotacion, observacion);
-                } else {
-                    dbHelper.actualizarAccion(accionExistente.getId(), tipo, cantidad, fecha, observacion);
+                if (tipo.equals("Selecciona opción")) {
+                    Toast.makeText(context, "Selecciona un tipo de acción válido", Toast.LENGTH_SHORT).show();
+                    return;
                 }
 
-                if (callback != null) callback.onAccionGuardada();
-                dismiss();
-            }
+                if (fecha.isEmpty() || cantidadStr.isEmpty()) {
+                    Toast.makeText(context, "Todos los campos son obligatorios", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                int cantidad = Integer.parseInt(cantidadStr);
+                DBHelper dbHelper = new DBHelper(context);
+
+                if (accionExistente != null && tipo.equalsIgnoreCase("Destete")) {
+                    new AlertDialog.Builder(context)
+                            .setTitle("Modificar acción Destete")
+                            .setMessage("Modificar esta acción también cambiará el número de animales del lote. ¿Deseas continuar?")
+                            .setPositiveButton("Sí", (confirmDialog, which) -> {
+                                dbHelper.actualizarAccion(accionExistente.getId(), tipo, cantidad, fecha, observacion);
+                                ContentValues values = new ContentValues();
+                                values.put("nDisponibles", cantidad);
+                                values.put("nIniciales", cantidad);
+                                dbHelper.getWritableDatabase().update("lotes", values, "cod_lote = ? AND cod_explotacion = ?", new String[]{codLote, codExplotacion});
+                                if (callback != null) callback.onAccionGuardada();
+                                dialog.dismiss();
+                            })
+                            .setNegativeButton("Cancelar", null)
+                            .show();
+                } else {
+                    if (accionExistente == null) {
+                        dbHelper.insertarAccion(tipo, cantidad, fecha, codLote, codExplotacion, observacion);
+                    } else {
+                        dbHelper.actualizarAccion(accionExistente.getId(), tipo, cantidad, fecha, observacion);
+                    }
+                    if (callback != null) callback.onAccionGuardada();
+                    dialog.dismiss();
+                }
+            });
         });
 
-
-
-        return view;
+        return dialog;
     }
+
 
     private void mostrarDatePicker() {
         // Asegurar que se usa idioma español

@@ -26,24 +26,15 @@
         android:hint="Cantidad a mover"
         android:layout_marginTop="16dp" />
 
-    <LinearLayout
+    <EditText
+        android:id="@+id/edit_fecha_mover"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="end"
-        android:layout_marginTop="24dp">
+        android:hint="Fecha de cambio (dd-MM-yyyy)"
+        android:focusable="false"
+        android:clickable="true"
+        android:layout_marginTop="16dp" />
 
-        <Button
-            android:id="@+id/btn_cancelar_mover"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Cancelar" />
 
-        <Button
-            android:id="@+id/btn_guardar_mover"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Guardar"
-            android:layout_marginStart="16dp" />
-    </LinearLayout>
+
 </LinearLayout>

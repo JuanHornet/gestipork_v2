@@ -97,7 +97,7 @@ public class SalidasFragment extends Fragment {
                 SalidaDialogFragment dialog = new SalidaDialogFragment(
                         codLote,
                         codExplotacion,
-                        salida,
+                        salida.getId(),
                         SalidasFragment.this::cargarSalidas
                 );
                 dialog.show(getChildFragmentManager(), "EditarSalida");

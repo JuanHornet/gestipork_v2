@@ -40,24 +40,5 @@
         android:inputType="textMultiLine"
         android:layout_marginBottom="16dp" />
 
-    <!-- Botones -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="end">
 
-        <Button
-            android:id="@+id/btn_cancelar_accion"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Cancelar" />
-
-        <Button
-            android:id="@+id/btn_guardar_accion"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Guardar"
-            android:layout_marginStart="16dp" />
-    </LinearLayout>
 </LinearLayout>

@@ -25,7 +25,7 @@ import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-public class DetalleLoteActivity extends BaseActivity {
+public class DetalleLoteActivity extends BaseActivity implements MoverAlimentacionDialogFragment.OnAlimentacionActualizadaListener{
 
     private String codLote;
     private String codExplotacion;
@@ -127,6 +127,16 @@ public class DetalleLoteActivity extends BaseActivity {
                 (tab, position) -> {
                     tab.setText(position == 0 ? "Acciones" : "Salidas");
                 }).attach();
+
+        TextView tvBellota = findViewById(R.id.text_bellota);
+        TextView tvCeboCampo = findViewById(R.id.text_cebo_campo);
+        TextView tvCebo = findViewById(R.id.text_cebo);
+
+        tvBellota.setOnClickListener(v -> abrirDialogoMover("Bellota"));
+        tvCeboCampo.setOnClickListener(v -> abrirDialogoMover("Cebo Campo"));
+        tvCebo.setOnClickListener(v -> abrirDialogoMover("Cebo"));
+        actualizarAlimentacionCardView();
+
 
     }
 
@@ -280,6 +290,34 @@ public class DetalleLoteActivity extends BaseActivity {
         });
     }
 
+    private void abrirDialogoMover(String tipoOrigen) {
+        DBHelper dbHelper = new DBHelper(this);
+        int disponibles = dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, tipoOrigen); // ✅ método correcto
 
+        MoverAlimentacionDialogFragment dialog = MoverAlimentacionDialogFragment
+                .newInstance(codLote, codExplotacion, tipoOrigen, disponibles);
+        dialog.show(getSupportFragmentManager(), "MoverAlimentacionDialog");
+    }
+
+    @Override
+    public void onAlimentacionActualizada() {
+        actualizarAlimentacionCardView();  // 👈 este es el método que te propuse antes
+    }
+
+    public void actualizarAlimentacionCardView() {
+        TextView tvBellota = findViewById(R.id.text_bellota);
+        TextView tvCeboCampo = findViewById(R.id.text_cebo_campo);
+        TextView tvCebo = findViewById(R.id.text_cebo);
+
+        DBHelper dbHelper = new DBHelper(this);
+
+        int bellota = dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, "Bellota");
+        int ceboCampo = dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, "Cebo Campo");
+        int cebo = dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, "Cebo");
+
+        tvBellota.setText(String.valueOf(bellota));
+        tvCeboCampo.setText(String.valueOf(ceboCampo));
+        tvCebo.setText(String.valueOf(cebo));
+    }
 
 }

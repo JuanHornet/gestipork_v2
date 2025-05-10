@@ -1,5 +1,6 @@
-package com.example.proyecto_gestipork.modelo.dialogs;
+package com.example.proyecto_gestipork.modelo;
 
+import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -18,6 +19,10 @@ import androidx.fragment.app.DialogFragment;
 
 import com.example.proyecto_gestipork.R;
 import com.example.proyecto_gestipork.data.DBHelper;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 public class MoverAlimentacionDialogFragment extends DialogFragment {
 
@@ -51,62 +56,79 @@ public class MoverAlimentacionDialogFragment extends DialogFragment {
         tipoOrigen = getArguments().getString("tipo_origen");
         disponibles = getArguments().getInt("disponibles");
 
-        Spinner spinnerDestino = view.findViewById(R.id.spinner_destino);
-        EditText editCantidad = view.findViewById(R.id.edit_cantidad);
+        Spinner spinnerDestino = view.findViewById(R.id.spinner_destino_alimentacion);
+        EditText editCantidad = view.findViewById(R.id.edit_cantidad_mover);
+        EditText editFecha = view.findViewById(R.id.edit_fecha_mover);  // ✅ aquí está bien colocado
 
-        // Configurar Spinner
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(context,
-                android.R.layout.simple_spinner_item, TIPOS_ALIMENTACION);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerDestino.setAdapter(adapter);
+        // Configurar DatePicker
+        editFecha.setOnClickListener(v -> {
+            Calendar calendar = Calendar.getInstance();
+            DatePickerDialog picker = new DatePickerDialog(requireContext(),
+                    (view1, year, month, dayOfMonth) -> {
+                        String fecha = String.format("%02d-%02d-%04d", dayOfMonth, month + 1, year);
+                        editFecha.setText(fecha);
+                    },
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH));
+            picker.show();
+        });
 
-        // Seleccionar valor distinto al origen
-        for (int i = 0; i < TIPOS_ALIMENTACION.length; i++) {
-            if (!TIPOS_ALIMENTACION[i].equals(tipoOrigen)) {
-                spinnerDestino.setSelection(i);
-                break;
+        // Filtrar tipos destino
+        List<String> opcionesDestino = new ArrayList<>();
+        for (String tipo : TIPOS_ALIMENTACION) {
+            if (!tipo.equals(tipoOrigen)) {
+                opcionesDestino.add(tipo);
             }
         }
 
-        return new AlertDialog.Builder(context)
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(context,
+                android.R.layout.simple_spinner_item, opcionesDestino);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerDestino.setAdapter(adapter);
+
+        AlertDialog dialog = new AlertDialog.Builder(context)
                 .setTitle("Mover animales")
                 .setView(view)
-                .setPositiveButton("Mover", (dialog, which) -> {
-                    String destino = spinnerDestino.getSelectedItem().toString();
-                    String cantidadStr = editCantidad.getText().toString().trim();
-
-                    if (cantidadStr.isEmpty()) {
-                        Toast.makeText(context, "Introduce una cantidad válida", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    int cantidad = Integer.parseInt(cantidadStr);
-                    if (cantidad <= 0 || cantidad > disponibles) {
-                        Toast.makeText(context, "Cantidad inválida. Máx: " + disponibles, Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    DBHelper dbHelper = new DBHelper(context);
-                    SQLiteDatabase db = dbHelper.getWritableDatabase();
-
-                    // Restar en origen
-                    db.execSQL("UPDATE alimentacion SET nAnimales = nAnimales - ? WHERE cod_lote = ? AND cod_explotacion = ? AND tipoAlimentacion = ?",
-                            new Object[]{cantidad, codLote, codExplotacion, tipoOrigen});
-
-                    // Sumar en destino
-                    db.execSQL("UPDATE alimentacion SET nAnimales = nAnimales + ? WHERE cod_lote = ? AND cod_explotacion = ? AND tipoAlimentacion = ?",
-                            new Object[]{cantidad, codLote, codExplotacion, destino});
-
-                    db.close();
-                    Toast.makeText(context, "Movimiento realizado", Toast.LENGTH_SHORT).show();
-
-                    if (getParentFragment() instanceof OnAlimentacionActualizadaListener) {
-                        ((OnAlimentacionActualizadaListener) getParentFragment()).onAlimentacionActualizada();
-                    }
-                })
+                .setPositiveButton("Mover", null)
                 .setNegativeButton("Cancelar", null)
                 .create();
+
+        dialog.setOnShowListener(d -> {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                String destino = spinnerDestino.getSelectedItem().toString();
+                String cantidadStr = editCantidad.getText().toString().trim();
+                String fechaCambio = editFecha.getText().toString().trim(); // recoger fecha
+
+                if (cantidadStr.isEmpty() || fechaCambio.isEmpty()) {
+                    Toast.makeText(context, "Completa todos los campos", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                int cantidad = Integer.parseInt(cantidadStr);
+                if (cantidad <= 0 || cantidad > disponibles) {
+                    Toast.makeText(context, "Cantidad inválida. Máx: " + disponibles, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                DBHelper dbHelper = new DBHelper(context);
+                dbHelper.restarAnimalesAlimentacion(codLote, codExplotacion, tipoOrigen, cantidad);
+                dbHelper.sumarAnimalesAlimentacionConFecha(codLote, codExplotacion, destino, cantidad, fechaCambio);
+
+                Toast.makeText(context, "Movimiento realizado", Toast.LENGTH_SHORT).show();
+
+                if (getActivity() instanceof OnAlimentacionActualizadaListener) {
+                    ((OnAlimentacionActualizadaListener) getActivity()).onAlimentacionActualizada();
+                }
+
+                dialog.dismiss();
+            });
+
+        });
+
+        return dialog;
     }
+
 
     public interface OnAlimentacionActualizadaListener {
         void onAlimentacionActualizada();
