@@ -36,6 +36,7 @@
         <activity android:name=".modelo.CubricionActivity" android:exported="true"/>
         <activity android:name=".modelo.ParideraActivity" android:exported="true"/>
         <activity android:name=".modelo.ItacaActivity" android:exported="true"/>
+        <activity android:name=".modelo.ContarActivity" android:exported="true"/>
     </application>
 
 </manifest>

@@ -1,34 +1,23 @@
 package com.example.proyecto_gestipork.modelo;
 
-import android.content.ContentValues;
-import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.proyecto_gestipork.base.BaseActivity;
-import com.example.proyecto_gestipork.modelo.LoteAdapter;
-import com.example.proyecto_gestipork.data.DBHelper;
-import com.example.proyecto_gestipork.modelo.Lotes;
-import com.google.android.material.appbar.MaterialToolbar;
-
 import com.example.proyecto_gestipork.R;
+import com.example.proyecto_gestipork.base.BaseActivity;
+import com.example.proyecto_gestipork.data.DBHelper;
+import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,12 +30,10 @@ public class LotesActivity extends BaseActivity {
     private DBHelper dbHelper;
 
     private TextView txtVacio;
-
-
     private String codExplotacionSeleccionada;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lotes);
 
@@ -55,48 +42,77 @@ public class LotesActivity extends BaseActivity {
 
         if (codExplotacionSeleccionada == null || codExplotacionSeleccionada.isEmpty()) {
             Toast.makeText(this, "No se recibió cod_explotacion", Toast.LENGTH_SHORT).show();
-            finish(); // evita crash
+            finish();
             return;
         }
 
-
-        // Configurar toolbar
+        // Toolbar
         MaterialToolbar toolbar = findViewById(R.id.toolbar_estandar);
         setSupportActionBar(toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        // Inicializar RecyclerView
+        // BottomNavigationView
+        BottomNavigationView bottomNav = findViewById(R.id.bottom_nav_lotes);
+        bottomNav.setOnNavigationItemSelectedListener(navListener);
+
+        // RecyclerView
         recyclerView = findViewById(R.id.recycler_lotes);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        // Inicializar lista y BD
-        listaLotes = new ArrayList<>();
-        dbHelper = new DBHelper(this);
-
-
         txtVacio = findViewById(R.id.txt_vacio);
+
+        dbHelper = new DBHelper(this);
+        listaLotes = new ArrayList<>();
         cargarLotes();
 
         adapter = new LoteAdapter(this, listaLotes);
         recyclerView.setAdapter(adapter);
+    }
 
+    private final BottomNavigationView.OnNavigationItemSelectedListener navListener = item -> {
+        int id = item.getItemId();
 
+        if (id == R.id.nav_contar) {
+            // Mostrar ContarDialogDesdeLotesFragment
+            List<String> codigosLotes = obtenerLotesExplotacion();
+            if (codigosLotes.isEmpty()) {
+                Toast.makeText(this, "No hay lotes activos en esta explotación", Toast.LENGTH_SHORT).show();
+            } else {
+                ContarDialogDesdeLotesFragment dialog = ContarDialogDesdeLotesFragment
+                        .newInstanceSeleccionarLote(codExplotacionSeleccionada, codigosLotes);
+                dialog.show(getSupportFragmentManager(), "ContarDialogLotes");
+            }
+            return true;
+        }
 
+        // Otros botones aún no implementados (nav_pesar, nav_baja, nav_notas)
+        return false;
+    };
+
+    private List<String> obtenerLotesExplotacion() {
+        List<String> lotes = new ArrayList<>();
+        Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
+                "SELECT cod_lote FROM lotes WHERE estado = 1 AND cod_explotacion = ?",
+                new String[]{codExplotacionSeleccionada}
+        );
+        if (cursor.moveToFirst()) {
+            do {
+                lotes.add(cursor.getString(0));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return lotes;
     }
 
     private void cargarLotes() {
-        listaLotes.clear(); // Limpia por si ya había datos
+        listaLotes.clear();
 
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-
-        String consulta = "SELECT l.id, l.cod_explotacion, l.nDisponibles, l.nIniciales, " +
-                "l.cod_lote, l.cod_paridera, l.cod_cubricion, l.cod_itaca, l.raza, l.estado, " +
-                "i.color " +
-                "FROM lotes l " +
-                "LEFT JOIN itaca i ON l.cod_itaca = i.cod_itaca " +
-                "WHERE l.estado = 1 AND l.cod_explotacion = ?";
-
-        Cursor cursor = db.rawQuery(consulta, new String[]{codExplotacionSeleccionada});
+        Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
+                "SELECT l.id, l.cod_explotacion, l.nDisponibles, l.nIniciales, l.cod_lote, l.cod_paridera, " +
+                        "l.cod_cubricion, l.cod_itaca, l.raza, l.estado, i.color " +
+                        "FROM lotes l LEFT JOIN itaca i ON l.cod_itaca = i.cod_itaca " +
+                        "WHERE l.estado = 1 AND l.cod_explotacion = ?",
+                new String[]{codExplotacionSeleccionada}
+        );
 
         if (cursor.moveToFirst()) {
             do {
@@ -111,16 +127,12 @@ public class LotesActivity extends BaseActivity {
                 lote.setCod_itaca(cursor.getString(7));
                 lote.setRaza(cursor.getString(8));
                 lote.setEstado(cursor.getInt(9) == 1);
-                lote.setColor(cursor.getString(10)); // viene de tabla itaca
-
-                listaLotes.add(0, lote);// el nuevo lote aparece el primero
+                lote.setColor(cursor.getString(10));
+                listaLotes.add(0, lote);
             } while (cursor.moveToNext());
         }
-
         cursor.close();
-        db.close();
 
-        // Mostrar u ocultar mensaje vacío
         if (listaLotes.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
             txtVacio.setVisibility(View.VISIBLE);
@@ -137,118 +149,19 @@ public class LotesActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_add_lote) {
-            mostrarDialogoNuevoLote();
+            // ✅ LLAMADA AL NUEVO FRAGMENT
+            NuevoLoteDialogFragment dialog = NuevoLoteDialogFragment.newInstance(codExplotacionSeleccionada);
+            dialog.show(getSupportFragmentManager(), "NuevoLoteDialog");
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    private void mostrarDialogoNuevoLote() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Nuevo Lote");
-
-        // Layout personalizado con dos EditText
-        LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(50, 40, 50, 10);
-
-        final EditText inputCodLote = new EditText(this);
-        inputCodLote.setHint("Código del lote");
-        layout.addView(inputCodLote);
-
-        // Spinner para raza
-        final Spinner spinnerRaza = new Spinner(this);
-        String[] opcionesRaza = {"Selecciona raza", "Ibérico 100%", "Cruzado 50%"};
-        ArrayAdapter<String> adapterRaza = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, opcionesRaza);
-        spinnerRaza.setAdapter(adapterRaza);
-        layout.addView(spinnerRaza);
-
-        builder.setView(layout);
-
-        builder.setPositiveButton("Guardar", (dialog, which) -> {
-            String codLote = inputCodLote.getText().toString().trim();
-            String razaSeleccionada = spinnerRaza.getSelectedItem().toString();
-
-            if (codLote.isEmpty()) {
-                Toast.makeText(this, "El código del lote es obligatorio", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            if (razaSeleccionada.equals("Selecciona raza")) {
-                Toast.makeText(this, "Debes seleccionar una raza válida", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            insertarNuevoLote(codLote, razaSeleccionada);
-        });
-
-        builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
-
-        builder.create().show();
+    // 👇 Este método lo usa NuevoLoteDialogFragment para refrescar
+    public void recargarLotes() {
+        cargarLotes();
+        adapter.notifyDataSetChanged();
     }
-
-    private void insertarNuevoLote(String codLote, String raza) {
-        if (codExplotacionSeleccionada == null || codExplotacionSeleccionada.isEmpty()) {
-            Toast.makeText(this, "Error: explotación no seleccionada", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        SQLiteDatabase db = dbHelper.getWritableDatabase(); // ✔️ Solo una vez
-
-        // Verificar si ya existe el lote
-        Cursor cursor = db.rawQuery(
-                "SELECT id FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?",
-                new String[]{codLote, codExplotacionSeleccionada}
-        );
-
-        if (cursor.moveToFirst()) {
-            cursor.close();
-            db.close(); // ✔️ cerrar aquí si salimos
-            Toast.makeText(this, "Este lote ya existe en esta explotación", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        cursor.close();
-
-        // Insertar en LOTES
-        ContentValues values = new ContentValues();
-        values.put("cod_lote", codLote);
-        values.put("raza", raza);
-        values.put("cod_explotacion", codExplotacionSeleccionada);
-        values.put("estado", 1);
-        values.put("color", "#F7F1F9");
-        values.put("nDisponibles", 0);
-        values.put("nIniciales", 0);
-        values.put("cod_paridera", "");
-        values.put("cod_cubricion", "");
-        values.put("cod_itaca", "");
-
-        long resultado = db.insert("lotes", null, values);
-
-        if (resultado != -1) {
-            dbHelper.insertarRegistrosRelacionadosLote(this, db, codLote, codExplotacionSeleccionada, raza);
-            Toast.makeText(this, "Lote guardado", Toast.LENGTH_SHORT).show();
-            cargarLotes();
-            adapter.notifyDataSetChanged();
-        } else {
-            Toast.makeText(this, "Error al guardar lote", Toast.LENGTH_SHORT).show();
-        }
-
-        db.close(); //  cerrar al final
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == 1001 && resultCode == RESULT_OK) {
-            cargarLotes(); // actualiza la lista
-            adapter.notifyDataSetChanged();
-        }
-    }
-
-
-
 }

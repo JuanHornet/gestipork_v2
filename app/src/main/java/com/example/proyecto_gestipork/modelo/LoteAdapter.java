@@ -81,4 +81,9 @@ public class LoteAdapter extends RecyclerView.Adapter<LoteAdapter.LoteViewHolder
             viewColor = itemView.findViewById(R.id.view_color);
         }
     }
+
+    public interface OnLoteClickListener {
+        void onContarClick(Lotes lote);
+    }
+
 }

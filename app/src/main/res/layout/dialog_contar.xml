@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- Spinner solo se usará en ContarDialogDesdeLotesFragment -->
+    <Spinner
+        android:id="@+id/spinnerLote"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone" /> <!-- 👈 IMPORTANTE: por defecto oculto -->
+
+    <EditText
+        android:id="@+id/editNumeroAnimales"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:hint="Número de animales"
+        android:layout_marginBottom="16dp" />
+
+    <EditText
+        android:id="@+id/editObservaciones"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textMultiLine"
+        android:hint="Observaciones (opcional)"
+        android:minLines="3"
+        android:gravity="top|start"
+        android:background="@drawable/rounded_button"
+        android:padding="12dp" />
+
+</LinearLayout>

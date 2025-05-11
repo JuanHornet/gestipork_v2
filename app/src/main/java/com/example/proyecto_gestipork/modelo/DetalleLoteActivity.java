@@ -137,6 +137,17 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
         tvCebo.setOnClickListener(v -> abrirDialogoMover("Cebo"));
         actualizarAlimentacionCardView();
 
+        bottomNav.setOnItemSelectedListener(item -> {
+            if (item.getItemId() == R.id.nav_contar) {
+                Intent intent = new Intent(this, ContarActivity.class);
+                intent.putExtra("cod_explotacion", codExplotacion);
+                intent.putExtra("cod_lote", codLote);
+                startActivity(intent);
+                return true;
+            }
+            return false;
+        });
+
 
     }
 

@@ -7,9 +7,13 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.widget.Toast;
 
+import com.example.proyecto_gestipork.modelo.Conteo;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DBHelper extends SQLiteOpenHelper {
 
@@ -32,6 +36,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_ACCIONES);
         db.execSQL(CREATE_TABLE_SALIDAS);
         db.execSQL(CREATE_TABLE_ALIMENTACION);
+        db.execSQL(CREATE_TABLE_CONTAR);
     }
 
     @Override
@@ -46,6 +51,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS salidas");
         db.execSQL("DROP TABLE IF EXISTS acciones");
         db.execSQL("DROP TABLE IF EXISTS alimentacion");
+        db.execSQL("DROP TABLE IF EXISTS contar");
 
         onCreate(db);
     }
@@ -157,6 +163,18 @@ public class DBHelper extends SQLiteOpenHelper {
             "tipoAlimentacion TEXT," +
             "observacion TEXT" +
             ")";
+
+    // TABLA CONTEOS
+
+    private static final String CREATE_TABLE_CONTAR = "CREATE TABLE contar (" +
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "cod_explotacion TEXT NOT NULL, " +
+            "cod_lote TEXT NOT NULL, " +
+            "nAnimales INTEGER NOT NULL, " +
+            "fecha TEXT NOT NULL, " + // guardaremos fecha como String (yyyy-MM-dd)
+            "observaciones TEXT" +
+            ")";
+
 
 
     public boolean registrarUsuario(String email, String password) {
@@ -504,6 +522,44 @@ public class DBHelper extends SQLiteOpenHelper {
         db.update("alimentacion", values, "cod_lote = ? AND cod_explotacion = ? AND tipoAlimentacion = ?",
                 new String[]{codLote, codExplotacion, tipoAlimentacion});
     }
+    public List<Conteo> obtenerConteosLista(String codExplotacion, String codLote) {
+        List<Conteo> lista = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT id, cod_explotacion, cod_lote, nAnimales, observaciones, fecha " +
+                        "FROM conteo WHERE cod_explotacion = ? AND cod_lote = ? ORDER BY id DESC",
+                new String[]{codExplotacion, codLote});
+
+        if (cursor.moveToFirst()) {
+            do {
+                Conteo conteo = new Conteo();
+                conteo.setId(cursor.getInt(0));
+                conteo.setCodExplotacion(cursor.getString(1));
+                conteo.setCodLote(cursor.getString(2));
+                conteo.setnAnimales(cursor.getInt(3));
+                conteo.setObservaciones(cursor.getString(4));
+                conteo.setFecha(cursor.getString(5));
+
+                lista.add(conteo);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+        return lista;
+    }
+
+    public void insertarConteo(String codExplotacion, String codLote, int nAnimales, String observaciones, String fecha) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("cod_explotacion", codExplotacion);
+        values.put("cod_lote", codLote);
+        values.put("nAnimales", nAnimales);
+        values.put("observaciones", observaciones);
+        values.put("fecha", fecha);
+        db.insert("contar", null, values);
+    }
+
 
     // ---------------------------------------------------------------------------------------------
     // Más tablas en el futuro...

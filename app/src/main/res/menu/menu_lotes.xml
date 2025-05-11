@@ -5,5 +5,7 @@
         android:id="@+id/action_add_lote"
         android:title="Añadir Lote"
         android:icon="@drawable/ic_add"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
+
+
 </menu>
