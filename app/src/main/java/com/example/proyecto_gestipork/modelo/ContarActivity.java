@@ -1,9 +1,14 @@
 package com.example.proyecto_gestipork.modelo;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
+import android.util.Log;
+
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -33,6 +38,8 @@ public class ContarActivity extends BaseActivity {
 
         codExplotacion = getIntent().getStringExtra("cod_explotacion");
         codLote = getIntent().getStringExtra("cod_lote");
+// 👇 AÑADE ESTA LÍNEA para depuración
+        Log.d("ContarActivity", "cod_explotacion: " + codExplotacion + ", cod_lote: " + codLote);
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar_estandar);
         configurarToolbar(toolbar, "Conteos", R.menu.menu_contar, true);
@@ -54,17 +61,30 @@ public class ContarActivity extends BaseActivity {
 
     private void actualizarResumen() {
         int total = listaConteos.size();
-        int saldo = 0;
-        for (Conteo conteo : listaConteos) {
-            saldo += conteo.getnAnimales();
+        int nDisponibles = 0;
+
+        // Consultar nDisponibles desde tabla lotes
+        DBHelper dbHelper = new DBHelper(this);
+        Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
+                "SELECT nDisponibles FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?",
+                new String[]{codLote, codExplotacion}
+        );
+
+        if (cursor.moveToFirst()) {
+            nDisponibles = cursor.getInt(0);
         }
+        cursor.close();
 
-        findViewById(R.id.txtTotalConteos).setVisibility(total > 0 ? RecyclerView.VISIBLE : RecyclerView.GONE);
-        findViewById(R.id.txtSaldoActual).setVisibility(total > 0 ? RecyclerView.VISIBLE : RecyclerView.GONE);
+        // Mostrar u ocultar los TextView según si hay registros
+        findViewById(R.id.txtTotalConteos).setVisibility(total > 0 ? View.VISIBLE : View.GONE);
+        findViewById(R.id.txtSaldoActual).setVisibility(total > 0 ? View.VISIBLE : View.GONE);
 
+        // Asignar textos
         ((TextView) findViewById(R.id.txtTotalConteos)).setText("Total registros: " + total);
-        ((TextView) findViewById(R.id.txtSaldoActual)).setText("Saldo actual: " + saldo);
+        ((TextView) findViewById(R.id.txtSaldoActual)).setText("Saldo actual: " + nDisponibles);
     }
+
+
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -83,4 +103,10 @@ public class ContarActivity extends BaseActivity {
         adapter.notifyDataSetChanged();
         actualizarResumen();
     }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_contar, menu);
+        return true;
+    }
+
 }

@@ -3,43 +3,60 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
-    android:layout_marginHorizontal="12dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="4dp">
+    android:layout_margin="8dp"
+    android:elevation="4dp"
+    android:foreground="?android:attr/selectableItemBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="12dp">
 
-        <TextView
-            android:id="@+id/textAnimalesConteo"
-            android:layout_width="wrap_content"
+        <!-- Parte superior: número animales + papelera -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Animales: 0"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@color/black" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
+            <TextView
+                android:id="@+id/txtNumero"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="15 animales"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@color/black" />
+
+            <ImageView
+                android:id="@+id/imgDelete"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_delete"
+                android:contentDescription="Eliminar"
+                app:tint="@color/rojo" />
+        </LinearLayout>
+
+        <!-- Observaciones -->
         <TextView
-            android:id="@+id/textObservacionesConteo"
-            android:layout_width="wrap_content"
+            android:id="@+id/txtObservaciones"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
             android:text="Observaciones"
-            android:textSize="14sp"
-            android:textColor="#555555" />
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:layout_marginTop="8dp" />
 
+        <!-- Fecha -->
         <TextView
-            android:id="@+id/textFechaConteo"
-            android:layout_width="wrap_content"
+            android:id="@+id/txtFecha"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="Fecha"
-            android:textSize="13sp"
-            android:textColor="#888888" />
-
+            android:text="Fecha: 12-05-2025"
+            android:textSize="14sp"
+            android:textColor="#666666"
+            android:layout_marginTop="4dp" />
     </LinearLayout>
 </androidx.cardview.widget.CardView>

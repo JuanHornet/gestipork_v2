@@ -37,6 +37,8 @@
         <activity android:name=".modelo.ParideraActivity" android:exported="true"/>
         <activity android:name=".modelo.ItacaActivity" android:exported="true"/>
         <activity android:name=".modelo.ContarActivity" android:exported="true"/>
+        <activity android:name=".modelo.PesarActivity" android:exported="true"/>
+        <activity android:name=".modelo.NotasActivity" android:exported="true"/>
     </application>
 
 </manifest>

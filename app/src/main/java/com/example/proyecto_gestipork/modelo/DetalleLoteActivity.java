@@ -5,13 +5,9 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -20,60 +16,101 @@ import com.example.proyecto_gestipork.base.BaseActivity;
 import com.example.proyecto_gestipork.data.DBHelper;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.bottomnavigation.LabelVisibilityMode;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-public class DetalleLoteActivity extends BaseActivity implements MoverAlimentacionDialogFragment.OnAlimentacionActualizadaListener{
+public class DetalleLoteActivity extends BaseActivity implements MoverAlimentacionDialogFragment.OnAlimentacionActualizadaListener {
 
     private String codLote;
     private String codExplotacion;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detalle_lote);
 
+        codLote = getIntent().getStringExtra("cod_lote");
+        codExplotacion = getIntent().getStringExtra("cod_explotacion");
+
+        // Toolbar
         MaterialToolbar toolbar = findViewById(R.id.toolbar_estandar);
         setSupportActionBar(toolbar);
         toolbar.setOverflowIcon(ContextCompat.getDrawable(this, R.drawable.ic_more_vert));
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
-
-        // Mostrar flecha hacia atrás
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle("Detalle del Lote");
         }
 
-        codLote = getIntent().getStringExtra("cod_lote");
-        codExplotacion = getIntent().getStringExtra("cod_explotacion");
+        // Alimentación
+        actualizarAnimalesDisponibles();
+        actualizarDatosLote();
 
-        TextView textAnimales = findViewById(R.id.text_n_animales);
-        DBHelper dbHelper = new DBHelper(this);
-        Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
-                "SELECT nDisponibles FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?",
-                new String[]{codLote, codExplotacion}
-        );
+        // ViewPager + Tabs
+        ViewPager2 viewPager = findViewById(R.id.view_pager);
+        TabLayout tabLayout = findViewById(R.id.tab_layout);
+        viewPager.setAdapter(new DetalleLotePagerAdapter(this, codLote, codExplotacion));
+        new TabLayoutMediator(tabLayout, viewPager,
+                (tab, position) -> tab.setText(position == 0 ? "Acciones" : "Salidas")
+        ).attach();
 
-        if (cursor.moveToFirst()) {
-            int disponibles = cursor.getInt(0);
-            textAnimales.setText(disponibles + " disponibles");
+        // CardView alimentación
+        findViewById(R.id.text_bellota).setOnClickListener(v -> abrirDialogoMover("Bellota"));
+        findViewById(R.id.text_cebo_campo).setOnClickListener(v -> abrirDialogoMover("Cebo Campo"));
+        findViewById(R.id.text_cebo).setOnClickListener(v -> abrirDialogoMover("Cebo"));
+        actualizarAlimentacionCardView();
+
+        // Bottom Navigation
+        BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
+        bottomNav.setOnItemSelectedListener(navListener);
+    }
+
+    private final NavigationBarView.OnItemSelectedListener navListener = item -> {
+        int itemId = item.getItemId();
+
+        if (itemId == R.id.nav_contar) {
+            Intent intent = new Intent(DetalleLoteActivity.this, ContarActivity.class);
+            intent.putExtra("cod_explotacion", codExplotacion);
+            intent.putExtra("cod_lote", codLote);
+            startActivity(intent);
+            return true;
+        } else if (itemId == R.id.nav_baja) {
+            BajaDialogFragment dialog = BajaDialogFragment.newInstance(codLote, codExplotacion);
+            dialog.show(getSupportFragmentManager(), "BajaDialogFragment");
+            return true;
+        } else if (itemId == R.id.nav_notas) {
+            Intent intent = new Intent(DetalleLoteActivity.this, NotasActivity.class);
+            intent.putExtra("cod_explotacion", codExplotacion);
+            intent.putExtra("cod_lote", codLote);
+            startActivity(intent);
+            return true;
+        } else if (itemId == R.id.nav_pesar) {
+            Intent intent = new Intent(DetalleLoteActivity.this, PesarActivity.class);
+            intent.putExtra("cod_explotacion", codExplotacion);
+            intent.putExtra("cod_lote", codLote);
+            startActivity(intent);
+            return true;
+        } else {
+            return false;
         }
-        cursor.close();
+    };
+
+
+
+    private void actualizarDatosLote() {
         TextView textCodLote = findViewById(R.id.text_cod_lote);
         TextView textRazaEdad = findViewById(R.id.text_raza_edad);
 
+        DBHelper dbHelper = new DBHelper(this);
         Cursor loteCursor = dbHelper.getReadableDatabase().rawQuery(
                 "SELECT cod_lote, raza FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?",
                 new String[]{codLote, codExplotacion}
         );
 
         if (loteCursor.moveToFirst()) {
-            String cod = loteCursor.getString(0);
             String raza = loteCursor.getString(1);
-            textCodLote.setText(cod);
+            textCodLote.setText(loteCursor.getString(0));
 
             Cursor parideraCursor = dbHelper.getReadableDatabase().rawQuery(
                     "SELECT fechaFinParidera FROM parideras WHERE cod_lote = ? AND cod_explotacion = ?",
@@ -82,73 +119,30 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
 
             if (parideraCursor.moveToFirst()) {
                 String fechaFin = parideraCursor.getString(0);
-                if (fechaFin != null && !fechaFin.isEmpty()) {
-                    try {
-                        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd-MM-yyyy", java.util.Locale.getDefault());
-                        java.util.Date fecha = sdf.parse(fechaFin);
-
-                        java.util.Calendar hoy = java.util.Calendar.getInstance();
-                        java.util.Calendar fin = java.util.Calendar.getInstance();
-                        fin.setTime(fecha);
-
-                        int edadMeses;
-                        if (hoy.get(java.util.Calendar.YEAR) == fin.get(java.util.Calendar.YEAR) &&
-                                hoy.get(java.util.Calendar.MONTH) == fin.get(java.util.Calendar.MONTH)) {
-                            edadMeses = 0;
-                        } else {
-                            edadMeses = (hoy.get(java.util.Calendar.YEAR) - fin.get(java.util.Calendar.YEAR)) * 12 +
-                                    (hoy.get(java.util.Calendar.MONTH) - fin.get(java.util.Calendar.MONTH));
-                        }
-
-
-                        textRazaEdad.setText(raza + " · Edad: " + edadMeses + " meses");
-
-                    } catch (Exception e) {
-                        textRazaEdad.setText(raza + " · Edad: desc.");
-                    }
-                } else {
-                    textRazaEdad.setText(raza + " · Edad: desc.");
-                }
+                textRazaEdad.setText(raza + " · Edad: " + calcularEdadEnMeses(fechaFin) + " meses");
+            } else {
+                textRazaEdad.setText(raza + " · Edad: desc.");
             }
+
             parideraCursor.close();
         }
+
         loteCursor.close();
+    }
 
-
-        BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
-        bottomNav.setLabelVisibilityMode(NavigationBarView.LABEL_VISIBILITY_LABELED);
-
-        ViewPager2 viewPager = findViewById(R.id.view_pager);
-        TabLayout tabLayout = findViewById(R.id.tab_layout);
-
-        viewPager.setAdapter(new DetalleLotePagerAdapter(this, codLote, codExplotacion));
-
-        new TabLayoutMediator(tabLayout, viewPager,
-                (tab, position) -> {
-                    tab.setText(position == 0 ? "Acciones" : "Salidas");
-                }).attach();
-
-        TextView tvBellota = findViewById(R.id.text_bellota);
-        TextView tvCeboCampo = findViewById(R.id.text_cebo_campo);
-        TextView tvCebo = findViewById(R.id.text_cebo);
-
-        tvBellota.setOnClickListener(v -> abrirDialogoMover("Bellota"));
-        tvCeboCampo.setOnClickListener(v -> abrirDialogoMover("Cebo Campo"));
-        tvCebo.setOnClickListener(v -> abrirDialogoMover("Cebo"));
-        actualizarAlimentacionCardView();
-
-        bottomNav.setOnItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.nav_contar) {
-                Intent intent = new Intent(this, ContarActivity.class);
-                intent.putExtra("cod_explotacion", codExplotacion);
-                intent.putExtra("cod_lote", codLote);
-                startActivity(intent);
-                return true;
-            }
-            return false;
-        });
-
-
+    private int calcularEdadEnMeses(String fechaFin) {
+        if (fechaFin == null || fechaFin.isEmpty()) return -1;
+        try {
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd-MM-yyyy", java.util.Locale.getDefault());
+            java.util.Date fecha = sdf.parse(fechaFin);
+            java.util.Calendar hoy = java.util.Calendar.getInstance();
+            java.util.Calendar fin = java.util.Calendar.getInstance();
+            fin.setTime(fecha);
+            return (hoy.get(java.util.Calendar.YEAR) - fin.get(java.util.Calendar.YEAR)) * 12 +
+                    (hoy.get(java.util.Calendar.MONTH) - fin.get(java.util.Calendar.MONTH));
+        } catch (Exception e) {
+            return -1;
+        }
     }
 
     @Override
@@ -157,178 +151,84 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
         return true;
     }
 
-
-    // Acciones del menú
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
-        // Flecha de retroceso
         if (id == android.R.id.home) {
             finish();
             return true;
-        }
-
-        // Opciones del menú
-        if (id == R.id.menu_editar_lote) {
+        } else if (id == R.id.menu_editar_lote) {
             Toast.makeText(this, "Editar Lote", Toast.LENGTH_SHORT).show();
             return true;
         } else if (id == R.id.menu_eliminar_lote) {
             mostrarDialogoEliminarLote();
             return true;
         } else if (id == R.id.menu_ver_cubricion) {
-            Intent i = new Intent(this, CubricionActivity.class);
-            i.putExtra("cod_lote", codLote);
-            i.putExtra("cod_explotacion", codExplotacion);
-            startActivity(i);
+            startActivity(new Intent(this, CubricionActivity.class)
+                    .putExtra("cod_lote", codLote)
+                    .putExtra("cod_explotacion", codExplotacion));
             return true;
         } else if (id == R.id.menu_ver_paridera) {
-            Intent i = new Intent(this, ParideraActivity.class);
-            i.putExtra("cod_lote", codLote);
-            i.putExtra("cod_explotacion", codExplotacion);
-            startActivityForResult(i, 1001); // ✅ para que se detecte si vuelve con cambios
+            startActivityForResult(new Intent(this, ParideraActivity.class)
+                    .putExtra("cod_lote", codLote)
+                    .putExtra("cod_explotacion", codExplotacion), 1001);
             return true;
-
         } else if (id == R.id.menu_ver_itaca) {
-            Intent i = new Intent(this, ItacaActivity.class);
-            i.putExtra("cod_lote", codLote);
-            i.putExtra("cod_explotacion", codExplotacion);
-            startActivity(i);
+            startActivity(new Intent(this, ItacaActivity.class)
+                    .putExtra("cod_lote", codLote)
+                    .putExtra("cod_explotacion", codExplotacion));
             return true;
-        } else {
-            return super.onOptionsItemSelected(item);
         }
+        return super.onOptionsItemSelected(item);
     }
 
     private void mostrarDialogoEliminarLote() {
-        new AlertDialog.Builder(this)
+        new androidx.appcompat.app.AlertDialog.Builder(this)
                 .setTitle("Eliminar Lote")
                 .setMessage("¿Seguro que deseas eliminar este lote y todos sus registros relacionados?")
                 .setPositiveButton("Eliminar", (dialog, which) -> {
                     DBHelper dbHelper = new DBHelper(this);
-                    boolean eliminado = dbHelper.eliminarLoteConRelaciones(codLote, codExplotacion);
-
-                    if (eliminado) {
+                    if (dbHelper.eliminarLoteConRelaciones(codLote, codExplotacion)) {
                         Toast.makeText(this, "Lote eliminado", Toast.LENGTH_SHORT).show();
-                        Intent resultIntent = new Intent();
-                        setResult(RESULT_OK, resultIntent);
-                        finish(); // volver a LotesActivity
-
-                        } else {
+                        setResult(RESULT_OK);
+                        finish();
+                    } else {
                         Toast.makeText(this, "Error al eliminar el lote", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();
     }
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == 1001 && resultCode == RESULT_OK) {
-            if (data != null) {
-                if (data.getBooleanExtra("paridera_actualizada", false)) {
-                    actualizarEdadEnCardView();
-                }
-                if (data.getBooleanExtra("accion_destete_actualizada", false)) {
-                    actualizarAnimalesDisponibles();  // 👈 nuevo método
-                }
-            }
-        }
-    }
-
-    private void actualizarEdadEnCardView() {
-        TextView textRazaEdad = findViewById(R.id.text_raza_edad);
-
-        DBHelper dbHelper = new DBHelper(this);
-        Cursor loteCursor = dbHelper.getReadableDatabase().rawQuery(
-                "SELECT raza FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?",
-                new String[]{codLote, codExplotacion}
-        );
-
-        if (loteCursor.moveToFirst()) {
-            String raza = loteCursor.getString(0);
-
-            Cursor parideraCursor = dbHelper.getReadableDatabase().rawQuery(
-                    "SELECT fechaFinParidera FROM parideras WHERE cod_lote = ? AND cod_explotacion = ?",
-                    new String[]{codLote, codExplotacion}
-            );
-
-            if (parideraCursor.moveToFirst()) {
-                String fechaFin = parideraCursor.getString(0);
-                if (fechaFin != null && !fechaFin.isEmpty()) {
-                    try {
-                        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd-MM-yyyy", java.util.Locale.getDefault());
-                        java.util.Date fecha = sdf.parse(fechaFin);
-
-                        java.util.Calendar hoy = java.util.Calendar.getInstance();
-                        java.util.Calendar fin = java.util.Calendar.getInstance();
-                        fin.setTime(fecha);
-
-                        int edadMeses = (hoy.get(java.util.Calendar.YEAR) - fin.get(java.util.Calendar.YEAR)) * 12 +
-                                (hoy.get(java.util.Calendar.MONTH) - fin.get(java.util.Calendar.MONTH));
-
-                        textRazaEdad.setText(raza + " · Edad: " + edadMeses + " meses");
-                    } catch (Exception e) {
-                        textRazaEdad.setText(raza + " · Edad: desc.");
-                    }
-                } else {
-                    textRazaEdad.setText(raza + " · Edad: desc.");
-                }
-            }
-
-            parideraCursor.close();
-        }
-
-        loteCursor.close();
-    }
     public void actualizarAnimalesDisponibles() {
         runOnUiThread(() -> {
             TextView textAnimales = findViewById(R.id.text_n_animales);
             DBHelper dbHelper = new DBHelper(this);
-
             Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
                     "SELECT nDisponibles FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?",
                     new String[]{codLote, codExplotacion}
             );
-
-            if (cursor.moveToFirst()) {
-                int disponibles = cursor.getInt(0);
-                textAnimales.setText(disponibles + " disponibles");
-            }
-
+            if (cursor.moveToFirst()) textAnimales.setText(cursor.getInt(0) + " disponibles");
             cursor.close();
         });
     }
 
     private void abrirDialogoMover(String tipoOrigen) {
         DBHelper dbHelper = new DBHelper(this);
-        int disponibles = dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, tipoOrigen); // ✅ método correcto
-
-        MoverAlimentacionDialogFragment dialog = MoverAlimentacionDialogFragment
-                .newInstance(codLote, codExplotacion, tipoOrigen, disponibles);
-        dialog.show(getSupportFragmentManager(), "MoverAlimentacionDialog");
+        int disponibles = dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, tipoOrigen);
+        MoverAlimentacionDialogFragment.newInstance(codLote, codExplotacion, tipoOrigen, disponibles)
+                .show(getSupportFragmentManager(), "MoverAlimentacionDialog");
     }
 
     @Override
     public void onAlimentacionActualizada() {
-        actualizarAlimentacionCardView();  // 👈 este es el método que te propuse antes
+        actualizarAlimentacionCardView();
     }
 
     public void actualizarAlimentacionCardView() {
-        TextView tvBellota = findViewById(R.id.text_bellota);
-        TextView tvCeboCampo = findViewById(R.id.text_cebo_campo);
-        TextView tvCebo = findViewById(R.id.text_cebo);
-
         DBHelper dbHelper = new DBHelper(this);
-
-        int bellota = dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, "Bellota");
-        int ceboCampo = dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, "Cebo Campo");
-        int cebo = dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, "Cebo");
-
-        tvBellota.setText(String.valueOf(bellota));
-        tvCeboCampo.setText(String.valueOf(ceboCampo));
-        tvCebo.setText(String.valueOf(cebo));
+        ((TextView) findViewById(R.id.text_bellota)).setText(String.valueOf(dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, "Bellota")));
+        ((TextView) findViewById(R.id.text_cebo_campo)).setText(String.valueOf(dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, "Cebo Campo")));
+        ((TextView) findViewById(R.id.text_cebo)).setText(String.valueOf(dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, "Cebo")));
     }
-
 }

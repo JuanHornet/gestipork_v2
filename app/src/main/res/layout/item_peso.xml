@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_margin="8dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:elevation="4dp"
+    android:radius="12dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/text_fecha"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:text="Fecha" />
+
+        <TextView
+            android:id="@+id/text_total_animales"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Animales pesados: 0" />
+
+        <TextView
+            android:id="@+id/text_media_pesos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Media: 0 kg" />
+
+        <TextView
+            android:id="@+id/text_tramos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="-13@: 0 | 13-14@: 0 | 14-15@: 0 | +15@: 0" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

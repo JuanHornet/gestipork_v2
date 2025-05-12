@@ -1,5 +1,6 @@
 package com.example.proyecto_gestipork.modelo;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,6 +19,7 @@ import com.example.proyecto_gestipork.base.BaseActivity;
 import com.example.proyecto_gestipork.data.DBHelper;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +33,8 @@ public class LotesActivity extends BaseActivity {
 
     private TextView txtVacio;
     private String codExplotacionSeleccionada;
+    private String codLoteSeleccionado = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,27 +70,74 @@ public class LotesActivity extends BaseActivity {
 
         adapter = new LoteAdapter(this, listaLotes);
         recyclerView.setAdapter(adapter);
+        adapter.setOnLoteClickListener(lote -> codLoteSeleccionado = lote.getCod_lote());
+
     }
 
     private final BottomNavigationView.OnNavigationItemSelectedListener navListener = item -> {
         int id = item.getItemId();
 
+        View parentLayout = findViewById(android.R.id.content); // ✅ necesario para Snackbar
+
         if (id == R.id.nav_contar) {
-            // Mostrar ContarDialogDesdeLotesFragment
-            List<String> codigosLotes = obtenerLotesExplotacion();
-            if (codigosLotes.isEmpty()) {
-                Toast.makeText(this, "No hay lotes activos en esta explotación", Toast.LENGTH_SHORT).show();
+            if (codExplotacionSeleccionada != null && codLoteSeleccionado != null) {
+                Intent intent = new Intent(this, ContarActivity.class);
+                intent.putExtra("cod_explotacion", codExplotacionSeleccionada);
+                intent.putExtra("cod_lote", codLoteSeleccionado);
+                startActivity(intent);
             } else {
-                ContarDialogDesdeLotesFragment dialog = ContarDialogDesdeLotesFragment
-                        .newInstanceSeleccionarLote(codExplotacionSeleccionada, codigosLotes);
-                dialog.show(getSupportFragmentManager(), "ContarDialogLotes");
+                Snackbar.make(parentLayout,
+                        "Debes seleccionar primero un lote (mantén pulsado sobre uno)",
+                        Snackbar.LENGTH_LONG).show();
             }
             return true;
         }
 
-        // Otros botones aún no implementados (nav_pesar, nav_baja, nav_notas)
+        if (id == R.id.nav_pesar) {
+            if (codExplotacionSeleccionada != null && codLoteSeleccionado != null) {
+                Intent intent = new Intent(this, PesarActivity.class);
+                intent.putExtra("cod_explotacion", codExplotacionSeleccionada);
+                intent.putExtra("cod_lote", codLoteSeleccionado);
+                startActivity(intent);
+            } else {
+                Snackbar.make(parentLayout,
+                        "Debes seleccionar primero un lote (mantén pulsado sobre uno)",
+                        Snackbar.LENGTH_LONG).show();
+            }
+            return true;
+        }
+
+        if (id == R.id.nav_baja) {
+            if (codExplotacionSeleccionada != null && codLoteSeleccionado != null) {
+                BajaDialogFragment dialog = BajaDialogFragment.newInstance(codLoteSeleccionado, codExplotacionSeleccionada);
+                dialog.show(getSupportFragmentManager(), "BajaDialogFragment");
+            } else {
+                Snackbar.make(parentLayout,
+                        "Debes seleccionar primero un lote (mantén pulsado sobre uno)",
+                        Snackbar.LENGTH_LONG).show();
+            }
+            return true;
+        }
+
+        if (id == R.id.nav_notas) {
+            if (codExplotacionSeleccionada != null && codLoteSeleccionado != null) {
+                Intent intent = new Intent(this, NotasActivity.class);
+                intent.putExtra("cod_explotacion", codExplotacionSeleccionada);
+                intent.putExtra("cod_lote", codLoteSeleccionado);
+                startActivity(intent);
+            } else {
+                Snackbar.make(findViewById(android.R.id.content),
+                        "Debes seleccionar primero un lote (mantén pulsado sobre uno)",
+                        Snackbar.LENGTH_LONG).show();
+            }
+            return true;
+        }
+
+
         return false;
     };
+
+
 
     private List<String> obtenerLotesExplotacion() {
         List<String> lotes = new ArrayList<>();

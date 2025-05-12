@@ -1,63 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <!-- Toolbar -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar_estandar"
+    <!-- Toolbar superior común -->
+    <include
+        layout="@layout/toolbar_estandar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:titleTextColor="@android:color/white"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+        android:layout_height="wrap_content" />
 
-    <!-- Card resumen -->
-    <androidx.cardview.widget.CardView
+    <!-- Contenido principal -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:elevation="4dp"
-        app:cardCornerRadius="8dp">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:padding="16dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <!-- Resumen -->
+        <TextView
+            android:id="@+id/txtTotalConteos"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:text="Total registros: 0"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            android:paddingBottom="4dp" />
 
-            <TextView
-                android:id="@+id/txtTotalConteos"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Total registros: 0"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"/>
+        <TextView
+            android:id="@+id/txtSaldoActual"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Saldo actual: 0"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            android:paddingBottom="8dp" />
 
-            <TextView
-                android:id="@+id/txtSaldoActual"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Saldo actual: 0"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginTop="8dp"
-                android:textColor="@color/black"/>
-
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
-
-    <!-- Lista conteos -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewConteos"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="4dp"
-        android:clipToPadding="false"/>
-
-</LinearLayout>
+        <!-- RecyclerView -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewConteos"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false" />
+    </LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -97,7 +97,7 @@ public class ContarDialogDesdeLotesFragment extends DialogFragment {
                     values.put("observaciones", observaciones);
                     values.put("fecha", obtenerFechaActual());
 
-                    long resultado = db.insert("conteo", null, values);
+                    long resultado = db.insert("contar", null, values);
                     db.close();
 
                     if (resultado != -1) {

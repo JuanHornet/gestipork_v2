@@ -37,6 +37,8 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_SALIDAS);
         db.execSQL(CREATE_TABLE_ALIMENTACION);
         db.execSQL(CREATE_TABLE_CONTAR);
+        db.execSQL(CREATE_TABLE_PESAR);
+        db.execSQL(CREATE_TABLE_NOTAS);
     }
 
     @Override
@@ -52,6 +54,8 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS acciones");
         db.execSQL("DROP TABLE IF EXISTS alimentacion");
         db.execSQL("DROP TABLE IF EXISTS contar");
+        db.execSQL("DROP TABLE IF EXISTS pesar");
+        db.execSQL("DROP TABLE IF EXISTS notas");
 
         onCreate(db);
     }
@@ -175,6 +179,21 @@ public class DBHelper extends SQLiteOpenHelper {
             "observaciones TEXT" +
             ")";
 
+    // TABLA PESAR
+    private static final String CREATE_TABLE_PESAR = "CREATE TABLE pesar (" +
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "cod_explotacion TEXT NOT NULL, " +
+            "cod_lote TEXT NOT NULL, " +
+            "peso INTEGER NOT NULL, " +
+            "fecha TEXT NOT NULL)";
+
+    //TABLA NOTAS
+    private static final String CREATE_TABLE_NOTAS = "CREATE TABLE notas (" +
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "cod_lote TEXT NOT NULL, " +
+            "cod_explotacion TEXT NOT NULL, " +
+            "fecha TEXT NOT NULL, " +
+            "observacion TEXT NOT NULL)";
 
 
     public boolean registrarUsuario(String email, String password) {
@@ -445,8 +464,25 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put("observacion", observacion);
 
         db.insert("salidas", null, values);
+
+        // 🚨 Si es una baja ("Muerte"), restar en lotes y alimentacion
+        if (tipoSalida.equalsIgnoreCase("Muerte")) {
+            int disponibles = obtenerAnimalesDisponiblesLote(codLote, codExplotacion);
+            int nuevosDisponibles = Math.max(0, disponibles - nAnimales);
+
+            ContentValues loteUpdate = new ContentValues();
+            loteUpdate.put("nDisponibles", nuevosDisponibles);
+            db.update("lotes", loteUpdate,
+                    "cod_lote = ? AND cod_explotacion = ?",
+                    new String[]{codLote, codExplotacion});
+
+            // Restar en alimentación
+            restarAnimalesAlimentacion(codLote, codExplotacion, tipoAlimentacion, nAnimales);
+        }
+
         db.close();
     }
+
 
     public void actualizarSalida(int id, String tipoSalida, String tipoAlimentacion, int nAnimales,
                                  String fechaSalida, String observacion) {
@@ -527,7 +563,7 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
 
         Cursor cursor = db.rawQuery("SELECT id, cod_explotacion, cod_lote, nAnimales, observaciones, fecha " +
-                        "FROM conteo WHERE cod_explotacion = ? AND cod_lote = ? ORDER BY id DESC",
+                        "FROM contar WHERE cod_explotacion = ? AND cod_lote = ? ORDER BY id DESC",
                 new String[]{codExplotacion, codLote});
 
         if (cursor.moveToFirst()) {
@@ -558,6 +594,53 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put("observaciones", observaciones);
         values.put("fecha", fecha);
         db.insert("contar", null, values);
+    }
+
+    public int obtenerAnimalesDisponiblesLote(String codLote, String codExplotacion) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT nDisponibles FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?", new String[]{codLote, codExplotacion});
+        int disponibles = 0;
+        if (cursor.moveToFirst()) {
+            disponibles = cursor.getInt(0);
+        }
+        cursor.close();
+        return disponibles;
+    }
+    public void insertarPeso(String codExplotacion, String codLote, int peso, String fecha) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("cod_explotacion", codExplotacion);
+        values.put("cod_lote", codLote);
+        values.put("peso", peso);
+        values.put("fecha", fecha);
+        db.insert("pesar", null, values);
+    }
+    public Cursor obtenerPesosPorLote(String codExplotacion, String codLote) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT DISTINCT fecha FROM pesar WHERE cod_explotacion = ? AND cod_lote = ? ORDER BY fecha DESC",
+                new String[]{codExplotacion, codLote});
+    }
+    public Cursor obtenerPesosDeFecha(String codExplotacion, String codLote, String fecha) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT peso FROM pesar WHERE cod_explotacion = ? AND cod_lote = ? AND fecha = ?",
+                new String[]{codExplotacion, codLote, fecha});
+    }
+    // Insertar nueva nota
+    public void insertarNota(String codLote, String codExplotacion, String fecha, String observacion) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("cod_lote", codLote);
+        values.put("cod_explotacion", codExplotacion);
+        values.put("fecha", fecha);
+        values.put("observacion", observacion);
+        db.insert("notas", null, values);
+    }
+
+    // Obtener notas de un lote
+    public Cursor obtenerNotas(String codExplotacion, String codLote) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT * FROM notas WHERE cod_explotacion = ? AND cod_lote = ? ORDER BY id DESC",
+                new String[]{codExplotacion, codLote});
     }
 
 
