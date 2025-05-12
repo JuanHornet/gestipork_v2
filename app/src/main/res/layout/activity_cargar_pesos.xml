@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Toolbar estandar -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar_estandar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#6750A4"
+        app:titleTextColor="@android:color/white"
+        app:popupTheme="@style/PopupMenuOverlayWhiteIcon"
+        app:navigationIcon="@drawable/ic_arrow_back" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:padding="8dp">
+
+        <!-- Spinner Lote -->
+        <Spinner
+            android:id="@+id/spinnerLotes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp" />
+
+        <!-- CardView Resumen -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:elevation="4dp"
+            android:layout_marginBottom="8dp">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/txtAnimalesPesados"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Animales pesados: 0"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txtMediaKg"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Media kg: 0"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/txtMediaArrobas"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Media arrobas: 0"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/txtSegmentacion"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Segmentación: "
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Input Peso + Botón Guardar -->
+        <LinearLayout
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp">
+
+            <EditText
+                android:id="@+id/edtPeso"
+                android:layout_width="0dp"
+                android:layout_height="80dp"
+                android:layout_weight="1"
+                android:hint="Introduce peso"
+                android:inputType="number"
+                android:textSize="28sp"
+                android:gravity="center" />
+
+            <ImageButton
+                android:id="@+id/btnGuardarPeso"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_save"
+                android:contentDescription="Guardar Peso"
+                android:padding="8dp" />
+        </LinearLayout>
+
+        <!-- Lista Pesos -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerPesos"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:padding="4dp" />
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

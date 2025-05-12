@@ -39,6 +39,7 @@
         <activity android:name=".modelo.ContarActivity" android:exported="true"/>
         <activity android:name=".modelo.PesarActivity" android:exported="true"/>
         <activity android:name=".modelo.NotasActivity" android:exported="true"/>
+        <activity android:name=".modelo.CargarPesosActivity" android:exported="true"/>
     </application>
 
 </manifest>

@@ -11,7 +11,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.card.MaterialCardView;
+
 
 import com.example.proyecto_gestipork.R;
 
@@ -58,10 +62,12 @@ public class LoteAdapter extends RecyclerView.Adapter<LoteAdapter.LoteViewHolder
         }
 
         // ✅ Resaltar si es seleccionado
-        if (selectedPosition == adapterPosition) {
-            holder.itemView.setBackgroundResource(R.drawable.selected_card_border);  // crea este drawable
+        MaterialCardView cardView = (MaterialCardView) holder.itemView;
+        if (selectedPosition == position) {
+            cardView.setStrokeColor(ContextCompat.getColor(context, R.color.principal));  // borde visible
+            cardView.setStrokeWidth(5);   // grosor del borde
         } else {
-            holder.itemView.setBackgroundResource(0); // sin fondo especial
+            cardView.setStrokeWidth(0);   // sin borde
         }
 
         // ✅ Click normal → solo abre Detalle

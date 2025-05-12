@@ -7,6 +7,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/menu_ver_historial_pesajes"
+        android:title="Historial de Pesajes"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/menu_ver_cubricion"
         android:title="Ver Cubrición"
         app:showAsAction="never" />

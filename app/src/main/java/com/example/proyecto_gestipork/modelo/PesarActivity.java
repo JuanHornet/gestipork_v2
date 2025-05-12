@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.proyecto_gestipork.R;
 import com.example.proyecto_gestipork.data.DBHelper;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -42,6 +43,14 @@ public class PesarActivity extends AppCompatActivity {
             PesarDialogFragment dialog = PesarDialogFragment.newInstance(codExplotacion, codLote);
             dialog.show(getSupportFragmentManager(), "PesarDialog");
         });
+        MaterialToolbar toolbar = findViewById(R.id.toolbar_pesar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("Histórico de Pesos");
+        }
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
+
     }
 
     private List<String> obtenerFechasPesajes() {

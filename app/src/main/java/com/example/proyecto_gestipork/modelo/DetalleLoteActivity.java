@@ -86,7 +86,7 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
             startActivity(intent);
             return true;
         } else if (itemId == R.id.nav_pesar) {
-            Intent intent = new Intent(DetalleLoteActivity.this, PesarActivity.class);
+            Intent intent = new Intent(DetalleLoteActivity.this, com.example.proyecto_gestipork.modelo.CargarPesosActivity.class);
             intent.putExtra("cod_explotacion", codExplotacion);
             intent.putExtra("cod_lote", codLote);
             startActivity(intent);
@@ -159,6 +159,12 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
             return true;
         } else if (id == R.id.menu_editar_lote) {
             Toast.makeText(this, "Editar Lote", Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (id == R.id.menu_ver_historial_pesajes) {
+            // 👉 Esto abrirá tu pantalla de Historial (PesarActivity)
+            startActivity(new Intent(this, PesarActivity.class)
+                    .putExtra("cod_lote", codLote)
+                    .putExtra("cod_explotacion", codExplotacion));
             return true;
         } else if (id == R.id.menu_eliminar_lote) {
             mostrarDialogoEliminarLote();

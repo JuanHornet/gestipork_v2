@@ -95,7 +95,7 @@ public class LotesActivity extends BaseActivity {
 
         if (id == R.id.nav_pesar) {
             if (codExplotacionSeleccionada != null && codLoteSeleccionado != null) {
-                Intent intent = new Intent(this, PesarActivity.class);
+                Intent intent = new Intent(this, com.example.proyecto_gestipork.modelo.CargarPesosActivity.class);
                 intent.putExtra("cod_explotacion", codExplotacionSeleccionada);
                 intent.putExtra("cod_lote", codLoteSeleccionado);
                 startActivity(intent);
@@ -106,6 +106,7 @@ public class LotesActivity extends BaseActivity {
             }
             return true;
         }
+
 
         if (id == R.id.nav_baja) {
             if (codExplotacionSeleccionada != null && codLoteSeleccionado != null) {

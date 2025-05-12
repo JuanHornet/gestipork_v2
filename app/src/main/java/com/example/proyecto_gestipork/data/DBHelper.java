@@ -642,6 +642,35 @@ public class DBHelper extends SQLiteOpenHelper {
         return db.rawQuery("SELECT * FROM notas WHERE cod_explotacion = ? AND cod_lote = ? ORDER BY id DESC",
                 new String[]{codExplotacion, codLote});
     }
+    // Obtener todos los pesos de un lote (sin importar fecha)
+    public Cursor obtenerPesosLote(String codExplotacion, String codLote) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT id, peso FROM pesar WHERE cod_explotacion = ? AND cod_lote = ? ORDER BY id ASC",
+                new String[]{codExplotacion, codLote});
+    }
+
+    // Eliminar un peso concreto por ID
+    public void eliminarPesoPorId(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete("pesar", "id = ?", new String[]{String.valueOf(id)});
+    }
+    // Devuelve todos los lotes activos de una explotación (para poblar Spinner)
+    public List<String> obtenerLotesActivos(String codExplotacion) {
+        List<String> lotes = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(
+                "SELECT cod_lote FROM lotes WHERE estado = 1 AND cod_explotacion = ? ORDER BY cod_lote ASC",
+                new String[]{codExplotacion}
+        );
+
+        if (cursor.moveToFirst()) {
+            do {
+                lotes.add(cursor.getString(0));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return lotes;
+    }
 
 
     // ---------------------------------------------------------------------------------------------
