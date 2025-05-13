@@ -33,7 +33,6 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
         codLote = getIntent().getStringExtra("cod_lote");
         codExplotacion = getIntent().getStringExtra("cod_explotacion");
 
-        // Toolbar
         MaterialToolbar toolbar = findViewById(R.id.toolbar_estandar);
         setSupportActionBar(toolbar);
         toolbar.setOverflowIcon(ContextCompat.getDrawable(this, R.drawable.ic_more_vert));
@@ -43,11 +42,9 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
             getSupportActionBar().setTitle("Detalle del Lote");
         }
 
-        // Alimentación
         actualizarAnimalesDisponibles();
         actualizarDatosLote();
 
-        // ViewPager + Tabs
         ViewPager2 viewPager = findViewById(R.id.view_pager);
         TabLayout tabLayout = findViewById(R.id.tab_layout);
         viewPager.setAdapter(new DetalleLotePagerAdapter(this, codLote, codExplotacion));
@@ -55,13 +52,11 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
                 (tab, position) -> tab.setText(position == 0 ? "Acciones" : "Salidas")
         ).attach();
 
-        // CardView alimentación
         findViewById(R.id.text_bellota).setOnClickListener(v -> abrirDialogoMover("Bellota"));
         findViewById(R.id.text_cebo_campo).setOnClickListener(v -> abrirDialogoMover("Cebo Campo"));
         findViewById(R.id.text_cebo).setOnClickListener(v -> abrirDialogoMover("Cebo"));
         actualizarAlimentacionCardView();
 
-        // Bottom Navigation
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setOnItemSelectedListener(navListener);
     }
@@ -70,33 +65,27 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
         int itemId = item.getItemId();
 
         if (itemId == R.id.nav_contar) {
-            Intent intent = new Intent(DetalleLoteActivity.this, ContarActivity.class);
-            intent.putExtra("cod_explotacion", codExplotacion);
-            intent.putExtra("cod_lote", codLote);
-            startActivity(intent);
+            startActivity(new Intent(this, ContarActivity.class)
+                    .putExtra("cod_explotacion", codExplotacion)
+                    .putExtra("cod_lote", codLote));
             return true;
         } else if (itemId == R.id.nav_baja) {
             BajaDialogFragment dialog = BajaDialogFragment.newInstance(codLote, codExplotacion);
             dialog.show(getSupportFragmentManager(), "BajaDialogFragment");
             return true;
         } else if (itemId == R.id.nav_notas) {
-            Intent intent = new Intent(DetalleLoteActivity.this, NotasActivity.class);
-            intent.putExtra("cod_explotacion", codExplotacion);
-            intent.putExtra("cod_lote", codLote);
-            startActivity(intent);
+            startActivity(new Intent(this, NotasActivity.class)
+                    .putExtra("cod_explotacion", codExplotacion)
+                    .putExtra("cod_lote", codLote));
             return true;
         } else if (itemId == R.id.nav_pesar) {
-            Intent intent = new Intent(DetalleLoteActivity.this, com.example.proyecto_gestipork.modelo.CargarPesosActivity.class);
-            intent.putExtra("cod_explotacion", codExplotacion);
-            intent.putExtra("cod_lote", codLote);
-            startActivity(intent);
+            startActivity(new Intent(this, CargarPesosActivity.class)
+                    .putExtra("cod_explotacion", codExplotacion)
+                    .putExtra("cod_lote", codLote));
             return true;
-        } else {
-            return false;
         }
+        return false;
     };
-
-
 
     private void actualizarDatosLote() {
         TextView textCodLote = findViewById(R.id.text_cod_lote);
@@ -119,19 +108,19 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
 
             if (parideraCursor.moveToFirst()) {
                 String fechaFin = parideraCursor.getString(0);
-                textRazaEdad.setText(raza + " · Edad: " + calcularEdadEnMeses(fechaFin) + " meses");
+                int edad = calcularEdadEnMeses(fechaFin);
+                if (edad <= 0) textRazaEdad.setText(raza + " · Edad: desc.");
+                else textRazaEdad.setText(raza + " · Edad: " + edad + " meses");
             } else {
                 textRazaEdad.setText(raza + " · Edad: desc.");
             }
-
             parideraCursor.close();
         }
-
         loteCursor.close();
     }
 
     private int calcularEdadEnMeses(String fechaFin) {
-        if (fechaFin == null || fechaFin.isEmpty()) return -1;
+        if (fechaFin == null || fechaFin.isEmpty()) return 0;
         try {
             java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd-MM-yyyy", java.util.Locale.getDefault());
             java.util.Date fecha = sdf.parse(fechaFin);
@@ -141,7 +130,7 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
             return (hoy.get(java.util.Calendar.YEAR) - fin.get(java.util.Calendar.YEAR)) * 12 +
                     (hoy.get(java.util.Calendar.MONTH) - fin.get(java.util.Calendar.MONTH));
         } catch (Exception e) {
-            return -1;
+            return 0;
         }
     }
 
@@ -161,7 +150,6 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
             Toast.makeText(this, "Editar Lote", Toast.LENGTH_SHORT).show();
             return true;
         } else if (id == R.id.menu_ver_historial_pesajes) {
-            // 👉 Esto abrirá tu pantalla de Historial (PesarActivity)
             startActivity(new Intent(this, PesarActivity.class)
                     .putExtra("cod_lote", codLote)
                     .putExtra("cod_explotacion", codExplotacion));
@@ -186,6 +174,14 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1001 && resultCode == RESULT_OK) {
+            actualizarDatosLote();
+        }
     }
 
     private void mostrarDialogoEliminarLote() {
@@ -214,7 +210,8 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
                     "SELECT nDisponibles FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?",
                     new String[]{codLote, codExplotacion}
             );
-            if (cursor.moveToFirst()) textAnimales.setText(cursor.getInt(0) + " disponibles");
+            if (cursor.moveToFirst())
+                textAnimales.setText(cursor.getInt(0) + " disponibles");
             cursor.close();
         });
     }

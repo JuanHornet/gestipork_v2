@@ -144,6 +144,13 @@ public class ParideraActivity extends AppCompatActivity {
         String inicio = editFechaInicio.getText().toString().trim();
         String fin = editFechaFin.getText().toString().trim();
 
+        // Seguridad para campos vacíos
+        if (vivos.isEmpty()) vivos = "0";
+        if (paridas.isEmpty()) paridas = "0";
+        if (vacias.isEmpty()) vacias = "0";
+        if (inicio.isEmpty()) inicio = null;
+        if (fin.isEmpty()) fin = null;
+
         DBHelper dbHelper = new DBHelper(this);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
@@ -155,8 +162,8 @@ public class ParideraActivity extends AppCompatActivity {
         Intent resultIntent = new Intent();
         resultIntent.putExtra("paridera_actualizada", true);
         setResult(RESULT_OK, resultIntent);
-
     }
+
 
     private void mostrarDatePicker(EditText target) {
         Locale locale = new Locale("es", "ES");

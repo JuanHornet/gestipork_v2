@@ -17,6 +17,19 @@
         app:titleTextColor="@android:color/white"
         app:popupTheme="@style/ThemeOverlay.Material3.Light" />
 
+    <!-- TextView de aviso -->
+    <TextView
+        android:id="@+id/texto_vacio_notas"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Pulsa + para registrar una nota"
+        android:textSize="18sp"
+        android:gravity="center"
+        android:layout_marginTop="32dp"
+        android:visibility="gone"
+        android:textColor="@android:color/darker_gray"
+        android:padding="16dp" />
+
     <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_notas"

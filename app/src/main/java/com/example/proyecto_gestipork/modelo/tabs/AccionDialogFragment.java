@@ -22,6 +22,7 @@ import androidx.fragment.app.DialogFragment;
 
 import com.example.proyecto_gestipork.R;
 import com.example.proyecto_gestipork.data.DBHelper;
+import com.example.proyecto_gestipork.modelo.DetalleLoteActivity;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -122,11 +123,18 @@ public class AccionDialogFragment extends DialogFragment {
                 } else {
                     if (accionExistente == null) {
                         dbHelper.insertarAccion(tipo, cantidad, fecha, codLote, codExplotacion, observacion);
+
+                        if (tipo.equalsIgnoreCase("Destete") && getActivity() instanceof DetalleLoteActivity) {
+                            ((DetalleLoteActivity) getActivity()).actualizarAnimalesDisponibles();
+                            ((DetalleLoteActivity) getActivity()).actualizarAlimentacionCardView();
+                        }
                     } else {
                         dbHelper.actualizarAccion(accionExistente.getId(), tipo, cantidad, fecha, observacion);
                     }
+
                     if (callback != null) callback.onAccionGuardada();
                     dialog.dismiss();
+
                 }
             });
         });

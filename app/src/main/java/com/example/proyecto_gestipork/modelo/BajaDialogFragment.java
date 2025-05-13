@@ -2,8 +2,6 @@ package com.example.proyecto_gestipork.modelo;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
-import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -77,12 +75,29 @@ public class BajaDialogFragment extends DialogFragment {
                     }
 
                     int cantidad = Integer.parseInt(cantidadStr);
-
                     DBHelper dbHelper = new DBHelper(getContext());
+
+                    // ✅ Validar animales disponibles
+                    int disponibles = dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, tipoAlimentacion);
+                    if (cantidad > disponibles) {
+                        Toast.makeText(getContext(),
+                                "No hay suficientes animales en " + tipoAlimentacion + ". Disponibles: " + disponibles,
+                                Toast.LENGTH_LONG).show();
+                        return; // 🚨 Salir sin registrar la baja
+                    }
+
+                    // ✅ Registrar la baja
                     dbHelper.insertarSalida("Muerte", tipoAlimentacion, cantidad,
                             fecha, codLote, codExplotacion, observaciones);
 
                     Toast.makeText(getContext(), "Baja registrada correctamente", Toast.LENGTH_SHORT).show();
+
+                    // ✅ Actualizar vistas en DetalleLoteActivity si está activo
+                    if (getActivity() instanceof DetalleLoteActivity) {
+                        ((DetalleLoteActivity) getActivity()).actualizarAnimalesDisponibles();
+                        ((DetalleLoteActivity) getActivity()).actualizarAlimentacionCardView();
+                    }
+
                 })
                 .setNegativeButton("Cancelar", null);
 
@@ -101,4 +116,3 @@ public class BajaDialogFragment extends DialogFragment {
                 calendar.get(Calendar.DAY_OF_MONTH)).show();
     }
 }
-

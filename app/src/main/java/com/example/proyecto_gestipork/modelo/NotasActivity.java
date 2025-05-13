@@ -4,6 +4,8 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -12,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.proyecto_gestipork.R;
 import com.example.proyecto_gestipork.data.DBHelper;
 import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,7 @@ public class NotasActivity extends AppCompatActivity {
     private NotasAdapter adapter;
     private DBHelper dbHelper;
     private List<Nota> listaNotas;
+    private TextView textoVacioNotas;  // ✅ Nuevo
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,19 +48,21 @@ public class NotasActivity extends AppCompatActivity {
         RecyclerView recyclerView = findViewById(R.id.recycler_notas);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        textoVacioNotas = findViewById(R.id.texto_vacio_notas); // ✅ Referencia al texto vacío
+
         listaNotas = cargarNotas();
         adapter = new NotasAdapter(listaNotas);
         recyclerView.setAdapter(adapter);
+
+        comprobarNotasVacias();  // ✅ Comprobar al inicio
     }
 
-    // Añade este override
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_notas, menu);
         return true;
     }
 
-    // Y este para detectar click en "+"
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
@@ -70,14 +74,13 @@ public class NotasActivity extends AppCompatActivity {
                 listaNotas.clear();
                 listaNotas.addAll(cargarNotas());
                 adapter.notifyDataSetChanged();
+                comprobarNotasVacias(); // ✅ Comprobar tras añadir
             });
             dialog.show(getSupportFragmentManager(), "NotasDialog");
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
-
-
 
     private List<Nota> cargarNotas() {
         List<Nota> notas = new ArrayList<>();
@@ -96,5 +99,14 @@ public class NotasActivity extends AppCompatActivity {
         }
         cursor.close();
         return notas;
+    }
+
+    // ✅ NUEVO MÉTODO
+    public void comprobarNotasVacias() {
+        if (listaNotas.isEmpty()) {
+            textoVacioNotas.setVisibility(View.VISIBLE);
+        } else {
+            textoVacioNotas.setVisibility(View.GONE);
+        }
     }
 }
