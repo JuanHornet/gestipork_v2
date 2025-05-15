@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_margin="8dp"
+    android:id="@+id/card_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    android:elevation="8dp"
     app:cardCornerRadius="12dp"
-    app:cardElevation="4dp">
-
+    app:cardElevation="8dp"
+    app:strokeColor="@color/black"
+    app:strokeWidth="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp"
         android:orientation="horizontal"
+        android:padding="12dp"
         android:gravity="center_vertical">
 
-        <!-- Círculo de color -->
         <View
             android:id="@+id/view_color"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginEnd="16dp"
             android:background="@drawable/circle_background" />
 
-        <!-- Columna central -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -35,47 +35,38 @@
                 android:id="@+id/txt_cod_lote"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Lote A1"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:text="LOTE"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/black" />
 
             <TextView
                 android:id="@+id/txt_cod_itaca"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ITACA1234" />
-
-            <TextView
-                android:id="@+id/txt_fecha_ultimo_parto"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="2024-03-10" />
-        </LinearLayout>
-
-        <!-- Columna derecha -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="end">
-
-            <TextView
-                android:id="@+id/txt_n_disponibles"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="24"
-                android:textColor="#6750A4"
-                android:textStyle="bold"
-                android:textSize="40sp"
-                android:paddingEnd="20dp"/>
+                android:text="Itaca"
+                android:textSize="14sp"
+                android:textColor="@color/black"
+                android:layout_marginTop="4dp" />
 
             <TextView
                 android:id="@+id/txt_raza"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Duroc" />
+                android:text="Raza"
+                android:textSize="14sp"
+                android:textColor="@color/black"
+                android:layout_marginTop="4dp" />
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/txt_n_disponibles"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textSize="40sp"
+            android:textStyle="bold"
+            android:textColor="@color/principal" />
     </LinearLayout>
+
 </com.google.android.material.card.MaterialCardView>
-
-

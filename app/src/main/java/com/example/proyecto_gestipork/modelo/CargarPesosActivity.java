@@ -1,5 +1,6 @@
 package com.example.proyecto_gestipork.modelo;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,6 +24,7 @@ import com.google.android.material.appbar.MaterialToolbar;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -61,7 +64,6 @@ public class CargarPesosActivity extends AppCompatActivity {
         txtAnimalesPesados = findViewById(R.id.txtAnimalesPesados);
         txtMediaKg = findViewById(R.id.txtMediaKg);
         txtMediaArrobas = findViewById(R.id.txtMediaArrobas);
-        txtSegmentacion = findViewById(R.id.txtSegmentacion);
         edtPeso = findViewById(R.id.edtPeso);
         btnGuardarPeso = findViewById(R.id.btnGuardarPeso);
         recyclerPesos = findViewById(R.id.recyclerPesos);
@@ -74,12 +76,16 @@ public class CargarPesosActivity extends AppCompatActivity {
         codExplotacion = intent.getStringExtra("cod_explotacion");
         String loteSeleccionado = intent.getStringExtra("cod_lote");
 
-        // ✅ Cargar lotes al spinner
+        // ✅ Cargar lotes al spinner con tamaño personalizado
         List<String> lotesActivos = dbHelper.obtenerLotesActivos(codExplotacion);
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
-                this, android.R.layout.simple_spinner_item, lotesActivos);
+                this,
+                R.layout.spinner_item_grande,
+                lotesActivos
+        );
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerLotes.setAdapter(spinnerAdapter);
+
 
         // ✅ Seleccionar lote actual o primero
         if (loteSeleccionado != null && lotesActivos.contains(loteSeleccionado)) {
@@ -123,11 +129,15 @@ public class CargarPesosActivity extends AppCompatActivity {
                 try {
                     int peso = Integer.parseInt(pesoStr);
                     if (peso <= 0) throw new NumberFormatException();
-                    String fechaHoy = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-                    dbHelper.insertarPeso(codExplotacion, codLote, peso, fechaHoy);
+
+                    // ✅ NUEVO: obtener la fecha seleccionada
+                    TextView textFechaSeleccionada = findViewById(R.id.textFechaSeleccionada);
+                    String fechaSeleccionada = textFechaSeleccionada.getText().toString();
+
+                    dbHelper.insertarPeso(codExplotacion, codLote, peso, fechaSeleccionada);
                     listaPesos.add(0, new PesoItem(obtenerUltimoIdPeso(), peso));
                     adapter.notifyItemInserted(0);
-                    recyclerPesos.scrollToPosition(0);  // Opcional: hace scroll automático al primer item
+                    recyclerPesos.scrollToPosition(0);
                     edtPeso.setText("");
                     recalcularResumen();
                 } catch (NumberFormatException e) {
@@ -137,20 +147,76 @@ public class CargarPesosActivity extends AppCompatActivity {
                 Toast.makeText(this, "Introduce un peso", Toast.LENGTH_SHORT).show();
             }
         });
+
+
+        TextView textFechaSeleccionada = findViewById(R.id.textFechaSeleccionada);
+
+        // ✅ Si viene fecha desde el intent,le da prioridad; si no, fecha actual
+        String fechaRecibida = getIntent().getStringExtra("fecha");
+        if (fechaRecibida != null && !fechaRecibida.isEmpty()) {
+            textFechaSeleccionada.setText(fechaRecibida);
+        } else {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+            Calendar calendario = Calendar.getInstance();
+            textFechaSeleccionada.setText(sdf.format(calendario.getTime()));
+        }
+
+        // ✅ Abrir DatePicker al pulsar sobre el TextView
+        textFechaSeleccionada.setOnClickListener(v -> {
+            Calendar calendario = Calendar.getInstance();
+
+            int anio = calendario.get(Calendar.YEAR);
+            int mes = calendario.get(Calendar.MONTH);
+            int dia = calendario.get(Calendar.DAY_OF_MONTH);
+
+            DatePickerDialog datePicker = new DatePickerDialog(
+                    CargarPesosActivity.this,
+                    (view, year, monthOfYear, dayOfMonth) -> {
+                        // Cuando selecciona fecha, actualizar el TextView
+                        String fechaSeleccionada = String.format(Locale.getDefault(), "%02d-%02d-%04d", dayOfMonth, monthOfYear + 1, year);
+                        textFechaSeleccionada.setText(fechaSeleccionada);
+
+                        cargarPesosBD();
+                    },
+                    anio, mes, dia
+            );
+            datePicker.show();
+        });
+
+        //colores para la segmentacion
+        TextView txt13 = findViewById(R.id.txtSegmentacion13);
+        TextView txt14 = findViewById(R.id.txtSegmentacion14);
+        TextView txt15 = findViewById(R.id.txtSegmentacion15);
+        TextView txt16 = findViewById(R.id.txtSegmentacion16);
+
+        txt13.setTextColor(ContextCompat.getColor(this, R.color.rojo));
+        txt14.setTextColor(ContextCompat.getColor(this, R.color.naranja));
+        txt15.setTextColor(ContextCompat.getColor(this, R.color.verde));
+        txt16.setTextColor(ContextCompat.getColor(this, R.color.azul));
+
+
     }
 
     private void cargarPesosBD() {
         listaPesos.clear();
-        Cursor cursor = dbHelper.obtenerPesosLote(codExplotacion, codLote);
+
+        // ✅ Leer la fecha seleccionada
+        TextView textFechaSeleccionada = findViewById(R.id.textFechaSeleccionada);
+        String fechaSeleccionada = textFechaSeleccionada.getText().toString();
+
+        // ✅ Leer pesos filtrando por explotación, lote y fecha
+        Cursor cursor = dbHelper.obtenerPesosPorLoteYFecha(codExplotacion, codLote, fechaSeleccionada);
         while (cursor.moveToNext()) {
             int id = cursor.getInt(0);
             int peso = cursor.getInt(1);
             listaPesos.add(new PesoItem(id, peso));
         }
         cursor.close();
+
         if (adapter != null) adapter.notifyDataSetChanged();
         recalcularResumen();
     }
+
 
     private int obtenerUltimoIdPeso() {
         Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
@@ -175,10 +241,22 @@ public class CargarPesosActivity extends AppCompatActivity {
             else if (peso >= 174) mas15++;
         }
 
-        txtAnimalesPesados.setText("Animales pesados: " + total);
+        // código para actualizar los 4 TextView de segmentación
+        TextView txt13 = findViewById(R.id.txtSegmentacion13);
+        TextView txt14 = findViewById(R.id.txtSegmentacion14);
+        TextView txt15 = findViewById(R.id.txtSegmentacion15);
+        TextView txt16 = findViewById(R.id.txtSegmentacion16);
+
+        txtAnimalesPesados.setText("Animales: " + total);
         txtMediaKg.setText("Media kg: " + (total > 0 ? (suma / total) : 0));
-        txtMediaArrobas.setText("Media arrobas: " + (total > 0 ? String.format(Locale.getDefault(), "%.2f", (suma / (double) total) / 11.5) : "0"));
-        txtSegmentacion.setText("-13@: " + menos13 + ", 13-14@: " + de13a14 + ", 14-15@: " + de14a15 + ", +15@: " + mas15);
+        txtMediaArrobas.setText("Media @: " + (total > 0 ? String.format(Locale.getDefault(), "%.2f", (suma / (double) total) / 11.5) : "0"));
+
+        // Se actualizan los 4 valores individualmente
+        txt13.setText("-13@: " + menos13);
+        txt14.setText("13-14@: " + de13a14);
+        txt15.setText("14-15@: " + de14a15);
+        txt16.setText("+15@: " + mas15);
+
     }
 
 }

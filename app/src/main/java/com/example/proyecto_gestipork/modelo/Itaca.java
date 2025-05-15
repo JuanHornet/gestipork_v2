@@ -5,7 +5,7 @@ import java.util.Date;
 public class Itaca {
 
     private int id;
-    private String cod_itaca;
+    private String cod_itaca,DCER;
     private int nAnimales, nMadres, nPadres;
     private Date fechaPNacimiento, fechaUNacimiento;
     private String raza;
@@ -15,19 +15,12 @@ public class Itaca {
 
     public Itaca() {}
 
-    public Itaca(int id, String cod_itaca, int nAnimales, int nMadres, int nPadres, Date fechaPNacimiento, Date fechaUNacimiento, String raza, String color, int crotalesSolicitados, String cod_lote, String cod_explotacion) {
-        this.id = id;
-        this.cod_itaca = cod_itaca;
-        this.nAnimales = nAnimales;
-        this.nMadres = nMadres;
-        this.nPadres = nPadres;
-        this.fechaPNacimiento = fechaPNacimiento;
-        this.fechaUNacimiento = fechaUNacimiento;
-        this.raza = raza;
-        this.color = color;
-        this.crotalesSolicitados = crotalesSolicitados;
-        this.cod_lote = cod_lote;
-        this.cod_explotacion = cod_explotacion;
+    public String getDCER() {
+        return DCER;
+    }
+
+    public void setDCER(String DCER) {
+        this.DCER = DCER;
     }
 
     public int getId() {

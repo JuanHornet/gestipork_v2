@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.proyecto_gestipork.R;
 import com.example.proyecto_gestipork.data.DBHelper;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -24,13 +25,13 @@ import java.util.Locale;
 
 public class ItacaActivity extends AppCompatActivity {
 
-    private EditText editNAnimales, editNMadres, editNPadres, editFechaPrimero, editFechaUltimo, editRaza, editColor, editCrotales;
+    private EditText editNAnimales, editNMadres, editNPadres, editFechaPrimero, editFechaUltimo, editCrotales, editDCER;;
     private Button btnEditar, btnGuardar, btnCancelar;
     private LinearLayout layoutBotones;
     private AutoCompleteTextView spinnerRaza, spinnerColor;
 
     private String codLote, codExplotacion;
-    private String inicialAnimales, inicialMadres, inicialPadres, inicialPrimero, inicialUltimo, inicialRaza, inicialColor, inicialCrotales;
+    private String inicialAnimales, inicialMadres, inicialPadres, inicialPrimero, inicialUltimo, inicialRaza, inicialColor, inicialCrotales, inicialDCER;;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,11 +49,11 @@ public class ItacaActivity extends AppCompatActivity {
         spinnerRaza = findViewById(R.id.spinner_raza);
         spinnerColor = findViewById(R.id.spinner_color);
         editCrotales = findViewById(R.id.edit_crotales);
+        editDCER = findViewById(R.id.edit_dcer);
 
         btnEditar = findViewById(R.id.btn_editar);
         btnGuardar = findViewById(R.id.btn_guardar_itaca);
         btnCancelar = findViewById(R.id.btn_cancelar);
-
         layoutBotones = findViewById(R.id.layout_botones_edicion);
 
         // Opciones para raza
@@ -61,19 +62,17 @@ public class ItacaActivity extends AppCompatActivity {
         spinnerRaza.setAdapter(adapterRaza);
 
         // Opciones para color
-        String[] opcionesColor = {"azul", "naranja", "rojo", "verde", "rosa"};
+        String[] opcionesColor = {"Seleccione color de crotal", "azul", "naranja", "rojo", "verde", "rosa"};
         ArrayAdapter<String> adapterColor = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, opcionesColor);
         spinnerColor.setAdapter(adapterColor);
 
-        // ✅ Mostrar desplegable al hacer clic
+        // Mostrar desplegable al hacer clic
         spinnerRaza.setOnClickListener(v -> spinnerRaza.showDropDown());
         spinnerColor.setOnClickListener(v -> spinnerColor.showDropDown());
         spinnerRaza.setInputType(0);
         spinnerRaza.setKeyListener(null);
-
         spinnerColor.setInputType(0);
         spinnerColor.setKeyListener(null);
-
 
         cargarDatos();
         bloquearCampos();
@@ -93,10 +92,7 @@ public class ItacaActivity extends AppCompatActivity {
             bloquearCampos();
         });
 
-        btnGuardar.setOnClickListener(v -> {
-            guardarCambios();
-            finish(); // Vuelve atrás
-        });
+        btnGuardar.setOnClickListener(v -> guardarCambios());
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar_estandar);
         setSupportActionBar(toolbar);
@@ -113,9 +109,10 @@ public class ItacaActivity extends AppCompatActivity {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
         Cursor cursor = db.rawQuery(
-                "SELECT nAnimales, nMadres, nPadres, fechaPNacimiento, fechaUltNacimiento, raza, color, crotalesSolicitados FROM itaca WHERE cod_lote = ? AND cod_explotacion = ?",
+                "SELECT nAnimales, nMadres, nPadres, fechaPNacimiento, fechaUltNacimiento, raza, color, crotalesSolicitados, DCER FROM itaca WHERE cod_lote = ? AND cod_explotacion = ?",
                 new String[]{codLote, codExplotacion}
         );
+
 
         if (cursor.moveToFirst()) {
             inicialAnimales = String.valueOf(cursor.getInt(0));
@@ -124,9 +121,14 @@ public class ItacaActivity extends AppCompatActivity {
             inicialPrimero = cursor.getString(3);
             inicialUltimo = cursor.getString(4);
             inicialRaza = cursor.getString(5);
-            inicialColor = cursor.getString(6);
+            String colorBD = cursor.getString(6);
+            inicialColor = (colorBD == null || colorBD.trim().isEmpty() || colorBD.equals("#CCCCCC"))
+                    ? "Seleccione color de crotal"
+                    : colorBD;
             inicialCrotales = String.valueOf(cursor.getInt(7));
+            inicialDCER = cursor.getString(8);
 
+            editDCER.setText(inicialDCER);
             editNAnimales.setText(inicialAnimales);
             editNMadres.setText(inicialMadres);
             editNPadres.setText(inicialPadres);
@@ -150,7 +152,7 @@ public class ItacaActivity extends AppCompatActivity {
         spinnerRaza.setEnabled(false);
         spinnerColor.setEnabled(false);
         editCrotales.setEnabled(false);
-
+        editDCER.setEnabled(false);
         btnEditar.setVisibility(View.VISIBLE);
         layoutBotones.setVisibility(View.GONE);
     }
@@ -164,7 +166,7 @@ public class ItacaActivity extends AppCompatActivity {
         spinnerRaza.setEnabled(true);
         spinnerColor.setEnabled(true);
         editCrotales.setEnabled(true);
-
+        editDCER.setEnabled(true);
         btnEditar.setVisibility(View.GONE);
         layoutBotones.setVisibility(View.VISIBLE);
     }
@@ -178,6 +180,7 @@ public class ItacaActivity extends AppCompatActivity {
         spinnerRaza.setText(inicialRaza, false);
         spinnerColor.setText(inicialColor, false);
         editCrotales.setText(inicialCrotales);
+        editDCER.setText(inicialDCER);
     }
 
     private void guardarCambios() {
@@ -189,17 +192,32 @@ public class ItacaActivity extends AppCompatActivity {
         String raza = spinnerRaza.getText().toString().trim();
         String color = spinnerColor.getText().toString().trim();
         String crotales = editCrotales.getText().toString().trim();
+        String dcer = editDCER.getText().toString().trim();
+
+        if (color.equals("Seleccione color de crotal")) {
+            Snackbar.make(btnGuardar,
+                    "Debes seleccionar un color de crotal válido",
+                    Snackbar.LENGTH_LONG).show();
+            return;
+        }
 
         DBHelper dbHelper = new DBHelper(this);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         db.execSQL(
-                "UPDATE itaca SET nAnimales = ?, nMadres = ?, nPadres = ?, fechaPNacimiento = ?, fechaUltNacimiento = ?, raza = ?, color = ?, crotalesSolicitados = ? WHERE cod_lote = ? AND cod_explotacion = ?",
-                new Object[]{animales, madres, padres, primero, ultimo, raza, color, crotales, codLote, codExplotacion}
+                "UPDATE itaca SET nAnimales = ?, nMadres = ?, nPadres = ?, fechaPNacimiento = ?, fechaUltNacimiento = ?, raza = ?, color = ?, crotalesSolicitados = ?, DCER = ? WHERE cod_lote = ? AND cod_explotacion = ?",
+                new Object[]{animales, madres, padres, primero, ultimo, raza, color, crotales, dcer, codLote, codExplotacion}
         );
+
+        db.execSQL("UPDATE lotes SET color = ? WHERE cod_lote = ? AND cod_explotacion = ?",
+                new Object[]{color, codLote, codExplotacion});
+
 
         db.close();
         Toast.makeText(this, "Datos de Itaca actualizados", Toast.LENGTH_SHORT).show();
+        setResult(RESULT_OK);//actualiza el color del crotal
+
+        finish();
     }
 
     private void mostrarDatePicker(EditText target) {
@@ -213,10 +231,8 @@ public class ItacaActivity extends AppCompatActivity {
                 (view, year, month, dayOfMonth) -> {
                     Calendar fechaSeleccionada = Calendar.getInstance();
                     fechaSeleccionada.set(year, month, dayOfMonth);
-
                     SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", locale);
-                    String fechaFormateada = sdf.format(fechaSeleccionada.getTime());
-                    target.setText(fechaFormateada);
+                    target.setText(sdf.format(fechaSeleccionada.getTime()));
                 },
                 calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH),

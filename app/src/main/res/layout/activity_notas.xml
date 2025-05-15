@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Toolbar -->
+    <!-- Toolbar superior común -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar_notas"
         android:layout_width="match_parent"
@@ -17,24 +16,39 @@
         app:titleTextColor="@android:color/white"
         app:popupTheme="@style/ThemeOverlay.Material3.Light" />
 
-    <!-- TextView de aviso -->
-    <TextView
-        android:id="@+id/texto_vacio_notas"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Pulsa + para registrar una nota"
-        android:textSize="18sp"
-        android:gravity="center"
-        android:layout_marginTop="32dp"
-        android:visibility="gone"
-        android:textColor="@android:color/darker_gray"
-        android:padding="16dp" />
-
-    <!-- RecyclerView -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_notas"
+    <!-- Contenido principal -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="8dp" />
+        android:orientation="vertical"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:padding="16dp">
 
-</LinearLayout>
+        <!-- Contenedor para superponer RecyclerView y mensaje vacío -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <!-- RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_notas"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="8dp" />
+
+            <!-- Mensaje vacío centrado -->
+            <TextView
+                android:id="@+id/texto_vacio_notas"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Pulsa + para registrar una nota"
+                android:textSize="18sp"
+                android:textColor="@android:color/darker_gray"
+                android:gravity="center"
+                android:visibility="gone"
+                android:padding="16dp" />
+        </FrameLayout>
+
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

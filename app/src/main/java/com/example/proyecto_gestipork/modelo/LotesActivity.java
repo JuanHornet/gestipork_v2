@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -51,8 +52,11 @@ public class LotesActivity extends BaseActivity {
         }
 
         // Toolbar
+
+        String nombreExplotacion = getIntent().getStringExtra("nombre_explotacion");
         MaterialToolbar toolbar = findViewById(R.id.toolbar_estandar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("Lotes · " + nombreExplotacion);
         toolbar.setNavigationOnClickListener(v -> finish());
 
         // BottomNavigationView
@@ -62,7 +66,7 @@ public class LotesActivity extends BaseActivity {
         // RecyclerView
         recyclerView = findViewById(R.id.recycler_lotes);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        txtVacio = findViewById(R.id.txt_vacio);
+        txtVacio = findViewById(R.id.txtVacio);
 
         dbHelper = new DBHelper(this);
         listaLotes = new ArrayList<>();
@@ -71,6 +75,9 @@ public class LotesActivity extends BaseActivity {
         adapter = new LoteAdapter(this, listaLotes);
         recyclerView.setAdapter(adapter);
         adapter.setOnLoteClickListener(lote -> codLoteSeleccionado = lote.getCod_lote());
+
+
+
 
     }
 
@@ -159,12 +166,13 @@ public class LotesActivity extends BaseActivity {
         listaLotes.clear();
 
         Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
-                "SELECT l.id, l.cod_explotacion, l.nDisponibles, l.nIniciales, l.cod_lote, l.cod_paridera, " +
-                        "l.cod_cubricion, l.cod_itaca, l.raza, l.estado, i.color " +
-                        "FROM lotes l LEFT JOIN itaca i ON l.cod_itaca = i.cod_itaca " +
-                        "WHERE l.estado = 1 AND l.cod_explotacion = ?",
+                "SELECT id, cod_explotacion, nDisponibles, nIniciales, cod_lote, cod_paridera, " +
+                        "cod_cubricion, cod_itaca, raza, estado, color " +                     // ← lee lotes.color
+                        "FROM lotes " +                                                        // ← sin JOIN
+                        "WHERE estado = 1 AND cod_explotacion = ?",
                 new String[]{codExplotacionSeleccionada}
         );
+
 
         if (cursor.moveToFirst()) {
             do {
@@ -216,4 +224,21 @@ public class LotesActivity extends BaseActivity {
         cargarLotes();
         adapter.notifyDataSetChanged();
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        recargarLotes();    // 👈 fuerza a recargar siempre al volver
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1001) {
+            cargarLotes();
+            adapter.notifyDataSetChanged();
+        }
+    }
+
+
+
 }

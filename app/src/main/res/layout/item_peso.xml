@@ -12,33 +12,93 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <!-- ✅ Nueva línea: Fecha -->
         <TextView
             android:id="@+id/text_fecha"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="15-05-2025"
+            android:textSize="22sp"
             android:textStyle="bold"
-            android:textSize="18sp"
-            android:text="Fecha" />
+            android:gravity="center"
+            android:paddingBottom="12dp"
+            android:textColor="@android:color/black" />
 
-        <TextView
-            android:id="@+id/text_total_animales"
-            android:layout_width="wrap_content"
+        <!-- ✅ Reutilizamos el bloque de resumen -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Animales pesados: 0" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-        <TextView
-            android:id="@+id/text_media_pesos"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Media: 0 kg" />
+            <!-- Columna izquierda -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/text_tramos"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="-13@: 0 | 13-14@: 0 | 14-15@: 0 | +15@: 0" />
+                <TextView
+                    android:id="@+id/text_total_animales"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Animales: 0"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
 
+                <TextView
+                    android:id="@+id/text_media_pesos"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Media kg: 0"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/text_media_arrobas"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Media @: 0"
+                    android:textSize="18sp" />
+            </LinearLayout>
+
+            <!-- Columna derecha -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="end|center_vertical"
+                android:paddingStart="16dp">
+
+                <TextView
+                    android:id="@+id/text_segmentacion13"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="-13@: 0"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/text_segmentacion14"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="13-14@: 0"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/text_segmentacion15"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="14-15@: 0"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/text_segmentacion16"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="+15@: 0"
+                    android:textSize="18sp" />
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

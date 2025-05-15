@@ -1,8 +1,9 @@
 package com.example.proyecto_gestipork.modelo;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
+import android.database.Cursor;
 import android.graphics.PorterDuff;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,13 +12,12 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
-import com.google.android.material.card.MaterialCardView;
-
 
 import com.example.proyecto_gestipork.R;
+import com.example.proyecto_gestipork.base.ColorUtils;
+import com.example.proyecto_gestipork.data.DBHelper;
+import com.google.android.material.card.MaterialCardView;
 
 import java.util.List;
 
@@ -26,7 +26,7 @@ public class LoteAdapter extends RecyclerView.Adapter<LoteAdapter.LoteViewHolder
     private List<Lotes> listaLotes;
     private Context context;
     private OnLoteClickListener listener;
-    private int selectedPosition = -1;   // ✅ NUEVO: posición seleccionada
+    private int selectedPosition = -1;
 
     public LoteAdapter(Context context, List<Lotes> listaLotes) {
         this.context = context;
@@ -45,32 +45,40 @@ public class LoteAdapter extends RecyclerView.Adapter<LoteAdapter.LoteViewHolder
     }
 
     @Override
-    public void onBindViewHolder(@NonNull LoteViewHolder holder, int position) {
-        final Lotes lote = listaLotes.get(position);          // ✅ lote final
-        final int adapterPosition = position;                // ✅ posición final
+    public void onBindViewHolder(@NonNull LoteViewHolder holder, @SuppressLint("RecyclerView") int position) {
+        final Lotes lote = listaLotes.get(position);
 
         holder.txtCodLote.setText(lote.getCod_lote());
-        holder.txtCodItaca.setText("AA123456 " + lote.getCod_itaca());
         holder.txtRaza.setText(lote.getRaza());
         holder.txtDisponibles.setText(String.valueOf(lote.getnDisponibles()));
 
-        try {
-            int color = Color.parseColor(lote.getColor());
-            holder.viewColor.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
-        } catch (Exception e) {
-            holder.viewColor.getBackground().setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN);
+        // 🎯 NUEVO: obtener DCER desde tabla itaca
+        DBHelper dbHelper = new DBHelper(context);
+        String dcer = "";
+        Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
+                "SELECT DCER FROM itaca WHERE cod_lote = ? AND cod_explotacion = ?",
+                new String[]{lote.getCod_lote(), lote.getCod_explotacion()}
+        );
+        if (cursor.moveToFirst()) {
+            dcer = cursor.getString(0);
         }
+        cursor.close();
 
-        // ✅ Resaltar si es seleccionado
-        MaterialCardView cardView = (MaterialCardView) holder.itemView;
+        holder.txtCodItaca.setText(dcer);   // ✅ Mostrar DCER directamente
+
+        // ✅ Usa ColorUtils para el círculo
+        int color = ColorUtils.mapColorNameToHex(context, lote.getColor());
+        holder.viewColor.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+
+        MaterialCardView cardView = holder.cardView;
         if (selectedPosition == position) {
-            cardView.setStrokeColor(ContextCompat.getColor(context, R.color.principal));  // borde visible
-            cardView.setStrokeWidth(5);   // grosor del borde
+            cardView.setStrokeColor(androidx.core.content.ContextCompat.getColor(context, R.color.verde));
+            cardView.setStrokeWidth(12);
         } else {
-            cardView.setStrokeWidth(0);   // sin borde
+            cardView.setStrokeColor(androidx.core.content.ContextCompat.getColor(context, R.color.gray));
+            cardView.setStrokeWidth(0);
         }
 
-        // ✅ Click normal → solo abre Detalle
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, DetalleLoteActivity.class);
             intent.putExtra("cod_lote", lote.getCod_lote());
@@ -78,23 +86,20 @@ public class LoteAdapter extends RecyclerView.Adapter<LoteAdapter.LoteViewHolder
             ((AppCompatActivity) context).startActivityForResult(intent, 1001);
         });
 
-        // ✅ Long click → selecciona para acciones (Contar, Pesar, Bajas)
         holder.itemView.setOnLongClickListener(v -> {
-            if (selectedPosition == adapterPosition) {
-                // ✅ Si ya estaba seleccionado → des-seleccionar
+            if (selectedPosition == position) {
                 selectedPosition = -1;
             } else {
-                // ✅ Nuevo lote seleccionado
-                selectedPosition = adapterPosition;
+                selectedPosition = position;
                 if (listener != null) {
                     listener.onContarClick(lote);
                 }
             }
-            notifyDataSetChanged();  // refresca para marcar/desmarcar
+            notifyDataSetChanged();
             return true;
         });
-
     }
+
 
     @Override
     public int getItemCount() {
@@ -104,6 +109,7 @@ public class LoteAdapter extends RecyclerView.Adapter<LoteAdapter.LoteViewHolder
     static class LoteViewHolder extends RecyclerView.ViewHolder {
         TextView txtCodLote, txtCodItaca, txtRaza, txtDisponibles;
         View viewColor;
+        MaterialCardView cardView;
 
         public LoteViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -112,10 +118,11 @@ public class LoteAdapter extends RecyclerView.Adapter<LoteAdapter.LoteViewHolder
             txtRaza = itemView.findViewById(R.id.txt_raza);
             txtDisponibles = itemView.findViewById(R.id.txt_n_disponibles);
             viewColor = itemView.findViewById(R.id.view_color);
+            cardView = itemView.findViewById(R.id.card_view);
+
         }
     }
 
-    // ✅ Interfaz para devolver lote seleccionado
     public interface OnLoteClickListener {
         void onContarClick(Lotes lote);
     }

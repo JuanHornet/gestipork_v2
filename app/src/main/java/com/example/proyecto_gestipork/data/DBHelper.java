@@ -95,6 +95,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String CREATE_TABLE_ITACA = "CREATE TABLE itaca (" +
             "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
             "cod_itaca TEXT UNIQUE NOT NULL, " +
+            "DCER TEXT, " +
             "nAnimales INTEGER, " +
             "nMadres INTEGER, " +
             "nPadres INTEGER, " +
@@ -329,6 +330,7 @@ public class DBHelper extends SQLiteOpenHelper {
         String codItaca = "I" + codLote + codExplotacion;
         ContentValues itaca = new ContentValues();
         itaca.put("cod_itaca", codItaca);
+        itaca.put("DCER", "");
         itaca.put("cod_lote", codLote);
         itaca.put("cod_explotacion", codExplotacion);
         itaca.put("raza", raza);
@@ -337,7 +339,7 @@ public class DBHelper extends SQLiteOpenHelper {
         itaca.put("nPadres", 0);
         itaca.put("fechaPNacimiento", "");
         itaca.put("fechaUltNacimiento", "");
-        itaca.put("color", "#CCCCCC");
+        itaca.put("color", "Seleccione color de crotal");    // 👈 CAMBIO CLAVE
         itaca.put("crotalesSolicitados", 0);
 
         long resultadoItaca = db.insert("itaca", null, itaca);
@@ -345,6 +347,7 @@ public class DBHelper extends SQLiteOpenHelper {
             Toast.makeText(context, "Lote guardado, pero error en itaca", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     public boolean eliminarLoteConRelaciones(String codLote, String codExplotacion) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -465,40 +468,69 @@ public class DBHelper extends SQLiteOpenHelper {
 
         db.insert("salidas", null, values);
 
-        // 🚨 Si es una baja ("Muerte"), restar en lotes y alimentacion
-        if (tipoSalida.equalsIgnoreCase("Muerte")) {
-            int disponibles = obtenerAnimalesDisponiblesLote(codLote, codExplotacion);
-            int nuevosDisponibles = Math.max(0, disponibles - nAnimales);
+        // ✅ Siempre restar animales al lote y alimentación
+        int disponibles = obtenerAnimalesDisponiblesLote(codLote, codExplotacion);
+        int nuevosDisponibles = Math.max(0, disponibles - nAnimales);
 
-            ContentValues loteUpdate = new ContentValues();
-            loteUpdate.put("nDisponibles", nuevosDisponibles);
-            db.update("lotes", loteUpdate,
-                    "cod_lote = ? AND cod_explotacion = ?",
-                    new String[]{codLote, codExplotacion});
+        ContentValues loteUpdate = new ContentValues();
+        loteUpdate.put("nDisponibles", nuevosDisponibles);
+        db.update("lotes", loteUpdate,
+                "cod_lote = ? AND cod_explotacion = ?",
+                new String[]{codLote, codExplotacion});
 
-            // Restar en alimentación
-            restarAnimalesAlimentacion(codLote, codExplotacion, tipoAlimentacion, nAnimales);
-        }
+        // ✅ Restar animales en alimentación (en ese tipo específico)
+        restarAnimalesAlimentacion(codLote, codExplotacion, tipoAlimentacion, nAnimales);
 
         db.close();
     }
+
 
 
     public void actualizarSalida(int id, String tipoSalida, String tipoAlimentacion, int nAnimales,
                                  String fechaSalida, String observacion) {
 
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
 
-        values.put("tipoSalida", tipoSalida);
-        values.put("tipoAlimentacion", tipoAlimentacion);
-        values.put("nAnimales", nAnimales);
-        values.put("fechaSalida", fechaSalida);
-        values.put("observacion", observacion);
+        // ✅ 1️⃣ Recuperar la salida anterior para saber qué cantidad había
+        Cursor cursor = db.rawQuery("SELECT nAnimales, cod_lote, cod_explotacion, tipoAlimentacion FROM salidas WHERE id = ?",
+                new String[]{String.valueOf(id)});
 
-        db.update("salidas", values, "id = ?", new String[]{String.valueOf(id)});
+        if (cursor.moveToFirst()) {
+            int cantidadAnterior = cursor.getInt(cursor.getColumnIndexOrThrow("nAnimales"));
+            String codLote = cursor.getString(cursor.getColumnIndexOrThrow("cod_lote"));
+            String codExplotacion = cursor.getString(cursor.getColumnIndexOrThrow("cod_explotacion"));
+            String alimentacionAnterior = cursor.getString(cursor.getColumnIndexOrThrow("tipoAlimentacion"));
+
+            // ✅ 2️⃣ Revertir la salida anterior (sumar de nuevo los animales que se quitaron)
+            sumarAnimalesAlimentacion(codLote, codExplotacion, alimentacionAnterior, cantidadAnterior);
+            int disponiblesActuales = obtenerAnimalesDisponiblesLote(codLote, codExplotacion);
+            ContentValues loteUpdate = new ContentValues();
+            loteUpdate.put("nDisponibles", disponiblesActuales + cantidadAnterior);
+            db.update("lotes", loteUpdate, "cod_lote = ? AND cod_explotacion = ?",
+                    new String[]{codLote, codExplotacion});
+
+            // ✅ 3️⃣ Actualizar la salida con los nuevos datos
+            ContentValues values = new ContentValues();
+            values.put("tipoSalida", tipoSalida);
+            values.put("tipoAlimentacion", tipoAlimentacion);
+            values.put("nAnimales", nAnimales);
+            values.put("fechaSalida", fechaSalida);
+            values.put("observacion", observacion);
+            db.update("salidas", values, "id = ?", new String[]{String.valueOf(id)});
+
+            // ✅ 4️⃣ Aplicar nueva salida (restar animales de nuevo)
+            restarAnimalesAlimentacion(codLote, codExplotacion, tipoAlimentacion, nAnimales);
+            int disponiblesFinal = obtenerAnimalesDisponiblesLote(codLote, codExplotacion);
+            ContentValues loteUpdateFinal = new ContentValues();
+            loteUpdateFinal.put("nDisponibles", Math.max(0, disponiblesFinal - nAnimales));
+            db.update("lotes", loteUpdateFinal, "cod_lote = ? AND cod_explotacion = ?",
+                    new String[]{codLote, codExplotacion});
+        }
+
+        cursor.close();
         db.close();
     }
+
     public Cursor obtenerSalidas(String codLote, String codExplotacion) {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery("SELECT * FROM salidas WHERE cod_lote = ? AND cod_explotacion = ?",
@@ -615,7 +647,7 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put("fecha", fecha);
         db.insert("pesar", null, values);
     }
-    public Cursor obtenerPesosPorLote(String codExplotacion, String codLote) {
+    public Cursor obtenerFechasPesajes(String codExplotacion, String codLote) {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery("SELECT DISTINCT fecha FROM pesar WHERE cod_explotacion = ? AND cod_lote = ? ORDER BY fecha DESC",
                 new String[]{codExplotacion, codLote});
@@ -642,11 +674,12 @@ public class DBHelper extends SQLiteOpenHelper {
         return db.rawQuery("SELECT * FROM notas WHERE cod_explotacion = ? AND cod_lote = ? ORDER BY id DESC",
                 new String[]{codExplotacion, codLote});
     }
-    // Obtener todos los pesos de un lote (sin importar fecha)
-    public Cursor obtenerPesosLote(String codExplotacion, String codLote) {
+    public Cursor obtenerPesosPorLoteYFecha(String codExplotacion, String codLote, String fecha) {
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT id, peso FROM pesar WHERE cod_explotacion = ? AND cod_lote = ? ORDER BY id ASC",
-                new String[]{codExplotacion, codLote});
+        return db.rawQuery(
+                "SELECT id, peso FROM pesar WHERE cod_explotacion = ? AND cod_lote = ? AND fecha = ? ORDER BY id ASC",
+                new String[]{codExplotacion, codLote, fecha}
+        );
     }
 
     // Eliminar un peso concreto por ID
@@ -671,15 +704,6 @@ public class DBHelper extends SQLiteOpenHelper {
         cursor.close();
         return lotes;
     }
-
-
-    // ---------------------------------------------------------------------------------------------
-    // Más tablas en el futuro...
-    // ---------------------------------------------------------------------------------------------
-    // Aquí podrás añadir futuras secciones como:
-    // - TABLA LOTES
-    // - TABLA REPRODUCTORES
-    // - etc.
 
 
 }

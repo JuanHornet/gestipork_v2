@@ -1,9 +1,9 @@
 package com.example.proyecto_gestipork.modelo;
 
-
 import android.database.Cursor;
 import android.os.Bundle;
-import android.widget.Toast;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.proyecto_gestipork.R;
 import com.example.proyecto_gestipork.data.DBHelper;
 import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,34 +27,44 @@ public class PesarActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pesar);
 
+        // ✅ Recibir datos
         codExplotacion = getIntent().getStringExtra("cod_explotacion");
         codLote = getIntent().getStringExtra("cod_lote");
 
         dbHelper = new DBHelper(this);
 
-        RecyclerView recyclerView = findViewById(R.id.recycler_pesajes);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new PesarAdapter(this, codExplotacion, codLote, obtenerFechasPesajes());
-        recyclerView.setAdapter(adapter);
-
-        FloatingActionButton fab = findViewById(R.id.fab_add_peso);
-        fab.setOnClickListener(v -> {
-            PesarDialogFragment dialog = PesarDialogFragment.newInstance(codExplotacion, codLote);
-            dialog.show(getSupportFragmentManager(), "PesarDialog");
-        });
+        // ✅ Toolbar
         MaterialToolbar toolbar = findViewById(R.id.toolbar_pesar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Histórico de Pesos");
+            getSupportActionBar().setTitle("Histórico de Pesajes");
         }
-        toolbar.setNavigationOnClickListener(v -> onBackPressed());
+        toolbar.setNavigationOnClickListener(v -> finish());
 
+        // ✅ RecyclerView
+        RecyclerView recyclerView = findViewById(R.id.recycler_pesajes);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        // ✅ Obtener fechas de pesajes
+        List<String> fechas = obtenerFechasPesajes();
+
+        // ✅ Adaptador
+        adapter = new PesarAdapter(this, codExplotacion, codLote, fechas);
+        recyclerView.setAdapter(adapter);
+
+        TextView textEmpty = findViewById(R.id.textEmptyPesajes);
+
+        if (fechas.isEmpty()) {
+            textEmpty.setVisibility(View.VISIBLE);
+        } else {
+            textEmpty.setVisibility(View.GONE);
+        }
     }
 
     private List<String> obtenerFechasPesajes() {
         List<String> fechas = new ArrayList<>();
-        Cursor cursor = dbHelper.obtenerPesosPorLote(codExplotacion, codLote);
+        Cursor cursor = dbHelper.obtenerFechasPesajes(codExplotacion, codLote);
         if (cursor.moveToFirst()) {
             do {
                 fechas.add(cursor.getString(0));
@@ -63,5 +72,7 @@ public class PesarActivity extends AppCompatActivity {
         }
         cursor.close();
         return fechas;
+
+
     }
 }

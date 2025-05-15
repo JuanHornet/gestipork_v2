@@ -39,7 +39,6 @@ public class SalidasFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View vista = inflater.inflate(R.layout.fragment_salidas, container, false);
 
-        // Obtener datos de lote y explotación
         if (getArguments() != null) {
             codLote = getArguments().getString("cod_lote");
             codExplotacion = getArguments().getString("cod_explotacion");
@@ -112,7 +111,13 @@ public class SalidasFragment extends Fragment {
                             DBHelper dbHelper = new DBHelper(getContext());
                             SQLiteDatabase db = dbHelper.getWritableDatabase();
                             int filas = db.delete("salidas", "id = ?", new String[]{String.valueOf(salida.getId())});
-                            if (filas > 0) cargarSalidas();
+                            if (filas > 0) {
+                                cargarSalidas();
+                                // 👉 Notificar al Activity si implementa OnActualizarResumenListener
+                                if (getActivity() instanceof OnActualizarResumenListener) {
+                                    ((OnActualizarResumenListener) getActivity()).onActualizarResumenLote();
+                                }
+                            }
                         })
                         .setNegativeButton("Cancelar", null)
                         .show();

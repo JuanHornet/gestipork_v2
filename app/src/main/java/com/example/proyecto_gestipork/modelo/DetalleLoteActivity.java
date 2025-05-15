@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,6 +14,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.proyecto_gestipork.R;
 import com.example.proyecto_gestipork.base.BaseActivity;
+import com.example.proyecto_gestipork.base.ColorUtils;
 import com.example.proyecto_gestipork.data.DBHelper;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -117,6 +119,26 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
             parideraCursor.close();
         }
         loteCursor.close();
+
+        // ✅ PINTAR CÍRCULO
+        View circleView = findViewById(R.id.view_color_lote);
+        String colorStr = obtenerColorLoteDesdeDB(codLote, codExplotacion);
+        int color = ColorUtils.mapColorNameToHex(this, colorStr);
+        circleView.getBackground().setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN);
+    }
+
+    private String obtenerColorLoteDesdeDB(String codLote, String codExplotacion) {
+        DBHelper dbHelper = new DBHelper(this);
+        Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
+                "SELECT color FROM itaca WHERE cod_lote = ? AND cod_explotacion = ?",
+                new String[]{codLote, codExplotacion}
+        );
+        String color = null;
+        if (cursor.moveToFirst()) {
+            color = cursor.getString(0);
+        }
+        cursor.close();
+        return color;
     }
 
     private int calcularEdadEnMeses(String fechaFin) {
@@ -168,11 +190,12 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
                     .putExtra("cod_explotacion", codExplotacion), 1001);
             return true;
         } else if (id == R.id.menu_ver_itaca) {
-            startActivity(new Intent(this, ItacaActivity.class)
+            startActivityForResult(new Intent(this, ItacaActivity.class)
                     .putExtra("cod_lote", codLote)
-                    .putExtra("cod_explotacion", codExplotacion));
+                    .putExtra("cod_explotacion", codExplotacion), 1001);
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -234,4 +257,13 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
         ((TextView) findViewById(R.id.text_cebo_campo)).setText(String.valueOf(dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, "Cebo Campo")));
         ((TextView) findViewById(R.id.text_cebo)).setText(String.valueOf(dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, "Cebo")));
     }
+    // ✅ Método para que SalidaDialogFragment llame y actualice después de registrar una salida
+    public void refrescarResumenLote() {
+        actualizarAnimalesDisponibles();       // 👉 actualiza el número total
+        actualizarAlimentacionCardView();      // 👉 actualiza el CardView de alimentación
+    }
+    public interface OnActualizarResumenListener {
+        void onActualizarResumenLote();
+    }
+
 }

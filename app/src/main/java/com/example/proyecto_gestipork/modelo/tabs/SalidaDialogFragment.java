@@ -18,7 +18,6 @@ import androidx.fragment.app.DialogFragment;
 
 import com.example.proyecto_gestipork.R;
 import com.example.proyecto_gestipork.data.DBHelper;
-import com.example.proyecto_gestipork.modelo.SalidasExplotacion;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -29,7 +28,6 @@ public class SalidaDialogFragment extends DialogFragment {
     private EditText editFechaSalida, editCantidad, editObservaciones;
     private String codLote, codExplotacion;
     private Integer salidaId;
-    // null si es nueva
 
     public interface OnSalidaGuardadaListener {
         void onSalidaGuardada();
@@ -55,7 +53,6 @@ public class SalidaDialogFragment extends DialogFragment {
         editCantidad = view.findViewById(R.id.edit_n_animales);
         editObservaciones = view.findViewById(R.id.edit_observaciones_salida);
 
-        // Adaptadores de spinners
         ArrayAdapter<String> adapterSalida = new ArrayAdapter<>(requireContext(),
                 android.R.layout.simple_spinner_item,
                 new String[]{"Venta", "Muerte", "Otro"});
@@ -100,9 +97,16 @@ public class SalidaDialogFragment extends DialogFragment {
                 }
 
                 if (callback != null) callback.onSalidaGuardada();
+
+                // 👉 Notificar al Activity si implementa OnActualizarResumenListener
+                if (getActivity() instanceof com.example.proyecto_gestipork.modelo.DetalleLoteActivity) {
+                    ((com.example.proyecto_gestipork.modelo.DetalleLoteActivity) getActivity()).refrescarResumenLote();
+                }
+
                 dialog.dismiss();
             });
         });
+
         if (salidaId != null) {
             DBHelper dbHelper = new DBHelper(requireContext());
             Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
@@ -116,7 +120,6 @@ public class SalidaDialogFragment extends DialogFragment {
                 int cantidad = cursor.getInt(cursor.getColumnIndexOrThrow("nAnimales"));
                 String obs = cursor.getString(cursor.getColumnIndexOrThrow("observacion"));
 
-                // Asignar valores a los campos
                 ArrayAdapter<String> adapterTipo = (ArrayAdapter<String>) spinnerTipoSalida.getAdapter();
                 ArrayAdapter<String> adapterAlim = (ArrayAdapter<String>) spinnerTipoAlimentacion.getAdapter();
 
@@ -133,9 +136,8 @@ public class SalidaDialogFragment extends DialogFragment {
 
             cursor.close();
         }
+
         return dialog;
-
-
     }
 
     private void mostrarDatePicker() {

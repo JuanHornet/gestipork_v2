@@ -1,38 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Toolbar superior -->
+    <!-- Toolbar superior común -->
     <include
         layout="@layout/toolbar_estandar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <!-- Contenido principal: RecyclerView -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_lotes"
+    <!-- Contenido principal -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         android:layout_marginTop="?attr/actionBarSize"
-        android:layout_marginBottom="56dp"
-        android:padding="16dp"/>
+        android:padding="16dp">
 
+        <!-- Contenedor para superponer RecyclerView y mensaje vacío -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-    <!-- Texto de aviso si lista vacía -->
-    <TextView
-        android:id="@+id/txt_vacio"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="No hay lotes. Pulsa + para añadir uno."
-        android:textSize="16sp"
-        android:textColor="#888888"
-        android:gravity="center"
-        android:layout_gravity="center"
-        android:visibility="gone"
-        android:padding="24dp" />
+            <!-- RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_lotes"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="8dp" />
 
+            <!-- Mensaje vacío centrado -->
+            <TextView
+                android:id="@+id/txtVacio"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Pulsa + para añadir un lote"
+                android:textSize="18sp"
+                android:textColor="@android:color/darker_gray"
+                android:gravity="center"
+                android:visibility="gone"
+                android:padding="16dp" />
+        </FrameLayout>
+
+    </LinearLayout>
     <!-- Menú inferior -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_nav_lotes"
@@ -42,5 +54,5 @@
         app:menu="@menu/menu_lote_bottom"
         app:labelVisibilityMode="labeled" />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
 
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

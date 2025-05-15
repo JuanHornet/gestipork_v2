@@ -38,7 +38,7 @@ public class ContarActivity extends BaseActivity {
 
         codExplotacion = getIntent().getStringExtra("cod_explotacion");
         codLote = getIntent().getStringExtra("cod_lote");
-// 👇 AÑADE ESTA LÍNEA para depuración
+        // LÍNEA para depuración
         Log.d("ContarActivity", "cod_explotacion: " + codExplotacion + ", cod_lote: " + codLote);
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar_estandar);
@@ -64,7 +64,6 @@ public class ContarActivity extends BaseActivity {
         int nDisponibles = 0;
 
         // Consultar nDisponibles desde tabla lotes
-        DBHelper dbHelper = new DBHelper(this);
         Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
                 "SELECT nDisponibles FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?",
                 new String[]{codLote, codExplotacion}
@@ -75,14 +74,24 @@ public class ContarActivity extends BaseActivity {
         }
         cursor.close();
 
-        // Mostrar u ocultar los TextView según si hay registros
-        findViewById(R.id.txtTotalConteos).setVisibility(total > 0 ? View.VISIBLE : View.GONE);
-        findViewById(R.id.txtSaldoActual).setVisibility(total > 0 ? View.VISIBLE : View.GONE);
+        TextView txtTotalConteos = findViewById(R.id.txtTotalConteos);
+        TextView txtSaldoActual = findViewById(R.id.txtSaldoActual);
+        TextView txtVacio = findViewById(R.id.txtVacio);    // ✅ nuevo
 
-        // Asignar textos
-        ((TextView) findViewById(R.id.txtTotalConteos)).setText("Total registros: " + total);
-        ((TextView) findViewById(R.id.txtSaldoActual)).setText("Saldo actual: " + nDisponibles);
+        if (total > 0) {
+            txtTotalConteos.setVisibility(View.VISIBLE);
+            txtSaldoActual.setVisibility(View.VISIBLE);
+            txtVacio.setVisibility(View.GONE);              // ✅ ocultar mensaje vacío
+        } else {
+            txtTotalConteos.setVisibility(View.GONE);
+            txtSaldoActual.setVisibility(View.GONE);
+            txtVacio.setVisibility(View.VISIBLE);           // ✅ mostrar mensaje vacío
+        }
+
+        txtTotalConteos.setText("Total registros: " + total);
+        txtSaldoActual.setText("Saldo actual: " + nDisponibles);
     }
+
 
 
 

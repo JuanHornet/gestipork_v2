@@ -1,24 +1,27 @@
 package com.example.proyecto_gestipork.modelo;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.proyecto_gestipork.R;
 import com.example.proyecto_gestipork.data.DBHelper;
 
 import java.util.List;
+import java.util.Locale;
 
 public class PesarAdapter extends RecyclerView.Adapter<PesarAdapter.ViewHolder> {
 
     private Context context;
     private String codExplotacion, codLote;
-    private List<String> fechas;
+    private List<String> fechas;     // ✅ ahora las fechas son el dataset
 
     public PesarAdapter(Context context, String codExplotacion, String codLote, List<String> fechas) {
         this.context = context;
@@ -27,6 +30,7 @@ public class PesarAdapter extends RecyclerView.Adapter<PesarAdapter.ViewHolder> 
         this.fechas = fechas;
     }
 
+    @NonNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         return new ViewHolder(LayoutInflater.from(context).inflate(R.layout.item_peso, parent, false));
@@ -36,27 +40,42 @@ public class PesarAdapter extends RecyclerView.Adapter<PesarAdapter.ViewHolder> 
     public void onBindViewHolder(ViewHolder holder, int position) {
         String fecha = fechas.get(position);
         DBHelper db = new DBHelper(context);
-        Cursor cursor = db.obtenerPesosDeFecha(codExplotacion, codLote, fecha);
+
+        // ✅ Consultar pesos de esa fecha
+        Cursor cursor = db.obtenerPesosPorLoteYFecha(codExplotacion, codLote, fecha);
 
         int total = 0, suma = 0;
         int tramo_13 = 0, tramo_14 = 0, tramo_15 = 0, tramo_16 = 0;
 
         while (cursor.moveToNext()) {
-            int peso = cursor.getInt(0);
+            int peso = cursor.getInt(1);  // peso está en columna 1
             suma += peso;
             total++;
-            if (peso <= 149) tramo_13++;
-            else if (peso <= 161) tramo_14++;
-            else if (peso <= 172) tramo_15++;
-            else tramo_16++;
+            if (peso < 150) tramo_13++;
+            else if (peso >= 150 && peso <= 161) tramo_14++;
+            else if (peso >= 162 && peso <= 173) tramo_15++;
+            else if (peso >= 174) tramo_16++;
         }
         cursor.close();
 
+        // ✅ Mostrar datos
         holder.txtFecha.setText(fecha);
-        holder.txtTotal.setText("Animales pesados: " + total);
-        holder.txtMedia.setText("Media: " + (total > 0 ? (suma / total) : 0) + " kg");
-        holder.txtTramos.setText("-13@: " + tramo_13 + " | 13-14@: " + tramo_14 +
-                " | 14-15@: " + tramo_15 + " | +15@: " + tramo_16);
+        holder.txtTotal.setText("Animales: " + total);
+        holder.txtMediaKg.setText("Media kg: " + (total > 0 ? (suma / total) : 0));
+        holder.txtMediaArrobas.setText("Media @: " + (total > 0 ? String.format(Locale.getDefault(), "%.2f", (suma / (double) total) / 11.5) : "0"));
+        holder.txtTramo13.setText("-13@: " + tramo_13);
+        holder.txtTramo14.setText("13-14@: " + tramo_14);
+        holder.txtTramo15.setText("14-15@: " + tramo_15);
+        holder.txtTramo16.setText("+15@: " + tramo_16);
+
+        // ✅ Al pulsar → abrir CargarPesosActivity con esa fecha
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, CargarPesosActivity.class);
+            intent.putExtra("cod_explotacion", codExplotacion);
+            intent.putExtra("cod_lote", codLote);
+            intent.putExtra("fecha", fecha);               // ✅ PASAMOS FECHA
+            context.startActivity(intent);
+        });
     }
 
     @Override
@@ -65,14 +84,19 @@ public class PesarAdapter extends RecyclerView.Adapter<PesarAdapter.ViewHolder> 
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView txtFecha, txtTotal, txtMedia, txtTramos;
+        TextView txtFecha, txtTotal, txtMediaKg, txtMediaArrobas;
+        TextView txtTramo13, txtTramo14, txtTramo15, txtTramo16;
 
         ViewHolder(View itemView) {
             super(itemView);
             txtFecha = itemView.findViewById(R.id.text_fecha);
             txtTotal = itemView.findViewById(R.id.text_total_animales);
-            txtMedia = itemView.findViewById(R.id.text_media_pesos);
-            txtTramos = itemView.findViewById(R.id.text_tramos);
+            txtMediaKg = itemView.findViewById(R.id.text_media_pesos);
+            txtMediaArrobas = itemView.findViewById(R.id.text_media_arrobas);
+            txtTramo13 = itemView.findViewById(R.id.text_segmentacion13);
+            txtTramo14 = itemView.findViewById(R.id.text_segmentacion14);
+            txtTramo15 = itemView.findViewById(R.id.text_segmentacion15);
+            txtTramo16 = itemView.findViewById(R.id.text_segmentacion16);
         }
     }
 }

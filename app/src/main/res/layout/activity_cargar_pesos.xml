@@ -21,56 +21,128 @@
         android:layout_marginTop="?attr/actionBarSize"
         android:padding="8dp">
 
-        <!-- Spinner Lote -->
-        <Spinner
-            android:id="@+id/spinnerLotes"
+        <!-- Spinner + DatePicker -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <!-- Spinner de Lotes -->
+            <Spinner
+                android:id="@+id/spinnerLotes"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:background="@android:drawable/btn_dropdown"
+                android:padding="8dp"
+                android:textAlignment="center"
+                android:layout_marginEnd="8dp" />
+
+            <!-- Selector de Fecha -->
+            <TextView
+                android:id="@+id/textFechaSeleccionada"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:padding="12dp"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:background="@android:drawable/editbox_background"
+                android:text="dd-MM-yyyy" />
+        </LinearLayout>
+
+
 
         <!-- CardView Resumen -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:elevation="4dp"
-            android:layout_marginBottom="8dp">
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp">
 
             <LinearLayout
-                android:orientation="vertical"
-                android:padding="16dp"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:gravity="center_vertical">
 
-                <TextView
-                    android:id="@+id/txtAnimalesPesados"
-                    android:layout_width="wrap_content"
+                <!-- Columna izquierda: Resumen -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:text="Animales pesados: 0"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/txtMediaKg"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Media kg: 0"
-                    android:textSize="14sp" />
+                    <TextView
+                        android:id="@+id/txtAnimalesPesados"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Animales: 0"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/txtMediaArrobas"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Media arrobas: 0"
-                    android:textSize="14sp" />
+                    <TextView
+                        android:id="@+id/txtMediaKg"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Media kg: 0"
+                        android:textSize="24sp" />
 
-                <TextView
-                    android:id="@+id/txtSegmentacion"
-                    android:layout_width="wrap_content"
+                    <TextView
+                        android:id="@+id/txtMediaArrobas"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Media @: 0"
+                        android:textSize="24sp" />
+                </LinearLayout>
+
+                <!-- Columna derecha: Segmentación -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:text="Segmentación: "
-                    android:textSize="14sp" />
+                    android:orientation="vertical"
+                    android:gravity="end|center_vertical"
+                    android:paddingStart="16dp">
+
+                    <TextView
+                        android:id="@+id/txtSegmentacion13"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="-13@: 0"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/txtSegmentacion14"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="13-14@: 0"
+                        android:textSize="24sp" />
+
+                    <TextView
+                        android:id="@+id/txtSegmentacion15"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="14-15@: 0"
+                        android:textSize="24sp" />
+
+                    <TextView
+                        android:id="@+id/txtSegmentacion16"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="+15@: 0"
+                        android:textSize="24sp" />
+                </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
+
+
 
         <!-- Input Peso + Botón Guardar -->
         <LinearLayout
@@ -92,12 +164,13 @@
 
             <ImageButton
                 android:id="@+id/btnGuardarPeso"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@android:drawable/ic_menu_save"
+                android:src="@drawable/ic_save"
                 android:contentDescription="Guardar Peso"
-                android:padding="8dp" />
+                android:padding="12dp" />
+
         </LinearLayout>
 
         <!-- Lista Pesos -->
