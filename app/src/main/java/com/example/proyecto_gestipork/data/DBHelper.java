@@ -39,6 +39,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_CONTAR);
         db.execSQL(CREATE_TABLE_PESAR);
         db.execSQL(CREATE_TABLE_NOTAS);
+        db.execSQL(CREATE_TABLE_AFORO);
     }
 
     @Override
@@ -56,7 +57,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS contar");
         db.execSQL("DROP TABLE IF EXISTS pesar");
         db.execSQL("DROP TABLE IF EXISTS notas");
-
+        db.execSQL("DROP TABLE IF EXISTS aforo_explotacion");
         onCreate(db);
     }
 
@@ -195,6 +196,12 @@ public class DBHelper extends SQLiteOpenHelper {
             "cod_explotacion TEXT NOT NULL, " +
             "fecha TEXT NOT NULL, " +
             "observacion TEXT NOT NULL)";
+
+    //TABLA AFOROS
+    private static final String CREATE_TABLE_AFORO = "CREATE TABLE IF NOT EXISTS aforo_explotacion (" +
+            "cod_explotacion TEXT PRIMARY KEY, " +
+            "aforo_maximo INTEGER)";
+
 
 
     public boolean registrarUsuario(String email, String password) {
@@ -703,6 +710,40 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return lotes;
+    }
+    public void guardarAforo(String codExplotacion, int aforoMaximo) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("cod_explotacion", codExplotacion);
+        values.put("aforo_maximo", aforoMaximo);
+        db.insertWithOnConflict("aforo_explotacion", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+    }
+
+    public int obtenerAforo(String codExplotacion) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT aforo_maximo FROM aforo_explotacion WHERE cod_explotacion = ?",
+                new String[]{codExplotacion});
+
+        int aforo = 0;
+        if (cursor.moveToFirst()) {
+            aforo = cursor.getInt(0);
+        }
+        cursor.close();
+        return aforo;
+    }
+
+    public int obtenerAnimalesPorRaza(String codExplotacion, String raza) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(
+                "SELECT SUM(nDisponibles) FROM lotes WHERE cod_explotacion = ? AND raza = ? AND estado = 1",
+                new String[]{codExplotacion, raza}
+        );
+        int total = 0;
+        if (cursor.moveToFirst()) {
+            total = cursor.getInt(0);
+        }
+        cursor.close();
+        return total;
     }
 
 

@@ -32,6 +32,7 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
     private RecyclerView recyclerResumen;
     private DashboardAdapter adapter;
     private TextView txtVacio;
+    private String codExplotacionSeleccionada = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,8 +52,6 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
         txtVacio = findViewById(R.id.txtVacio);
 
         recyclerResumen.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new DashboardAdapter(this);
-        recyclerResumen.setAdapter(adapter);
 
         cargarExplotaciones();
     }
@@ -84,7 +83,53 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
         );
         adapterSpinner.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerExplotaciones.setAdapter(adapterSpinner);
+
+        if (hayExplotaciones) {
+            spinnerExplotaciones.setSelection(0);
+            cargarCodExplotacionYActualizarDashboard();
+        }
+
+        spinnerExplotaciones.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                cargarCodExplotacionYActualizarDashboard();
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {
+            }
+        });
     }
+
+    private void cargarCodExplotacionYActualizarDashboard() {
+        // Evita error si aún no hay ítem seleccionado
+        if (spinnerExplotaciones == null || spinnerExplotaciones.getSelectedItem() == null) {
+            return;
+        }
+
+        String nombreSeleccionado = spinnerExplotaciones.getSelectedItem().toString();
+
+        SharedPreferences prefs = getSharedPreferences("loginPrefs", MODE_PRIVATE);
+        String email = prefs.getString("userEmail", "");
+        DBHelper dbHelper = new DBHelper(this);
+        int idUsuario = dbHelper.obtenerIdUsuarioDesdeEmail(email);
+
+        Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
+                "SELECT cod_explotacion FROM explotaciones WHERE nombre = ? AND iduser = ?",
+                new String[]{nombreSeleccionado, String.valueOf(idUsuario)}
+        );
+
+        if (cursor.moveToFirst()) {
+            codExplotacionSeleccionada = cursor.getString(0);
+            cursor.close();
+            adapter = new DashboardAdapter(this, codExplotacionSeleccionada);
+            recyclerResumen.setAdapter(adapter);
+        } else {
+            cursor.close();
+            Toast.makeText(this, "Error al obtener código de explotación", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -147,43 +192,28 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
         dialog.show(getSupportFragmentManager(), "EliminarExplotacionDialog");
     }
 
-    // ✅ Llamado por NuevoExplotacionDialogFragment
     @Override
     public void onExplotacionCreada() {
         cargarExplotaciones();
     }
 
-    // ✅ Método utilizado por DashboardAdapter
     public void irALotes() {
-        int posicion = spinnerExplotaciones.getSelectedItemPosition();
-        if (posicion == -1) {
+        if (codExplotacionSeleccionada == null || codExplotacionSeleccionada.isEmpty()) {
             Toast.makeText(this, "Selecciona una explotación", Toast.LENGTH_SHORT).show();
             return;
         }
 
         String nombreSeleccionado = spinnerExplotaciones.getSelectedItem().toString();
-        SharedPreferences prefs = getSharedPreferences("loginPrefs", MODE_PRIVATE);
-        String email = prefs.getString("userEmail", "");
-        DBHelper dbHelper = new DBHelper(this);
-        int idUsuario = dbHelper.obtenerIdUsuarioDesdeEmail(email);
 
-        Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
-                "SELECT cod_explotacion FROM explotaciones WHERE nombre = ? AND iduser = ?",
-                new String[]{nombreSeleccionado, String.valueOf(idUsuario)}
-        );
-
-        if (cursor.moveToFirst()) {
-            String cod = cursor.getString(0);
-            cursor.close();
-
-            Intent intent = new Intent(this, LotesActivity.class);
-            intent.putExtra("cod_explotacion", cod);
-            intent.putExtra("nombre_explotacion", nombreSeleccionado);  // ✅ añadido
-            startActivity(intent);
-        } else {
-            cursor.close();
-            Toast.makeText(this, "Error al obtener la explotación", Toast.LENGTH_SHORT).show();
-        }
+        Intent intent = new Intent(this, LotesActivity.class);
+        intent.putExtra("cod_explotacion", codExplotacionSeleccionada);
+        intent.putExtra("nombre_explotacion", nombreSeleccionado);
+        startActivity(intent);
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        cargarCodExplotacionYActualizarDashboard();
     }
 
 }
