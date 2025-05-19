@@ -39,7 +39,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         // Icono overflow blanco (tres puntos)
         toolbar.setOverflowIcon(ContextCompat.getDrawable(this, R.drawable.ic_more_vert));
 
-        // Menú si lo hay
+
         if (menuResId != 0) {
             toolbar.getMenu().clear();
             MenuInflater inflater = getMenuInflater();

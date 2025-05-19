@@ -77,22 +77,22 @@ public class BajaDialogFragment extends DialogFragment {
                     int cantidad = Integer.parseInt(cantidadStr);
                     DBHelper dbHelper = new DBHelper(getContext());
 
-                    // ✅ Validar animales disponibles
+                    // Validar animales disponibles
                     int disponibles = dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, tipoAlimentacion);
                     if (cantidad > disponibles) {
                         Toast.makeText(getContext(),
                                 "No hay suficientes animales en " + tipoAlimentacion + ". Disponibles: " + disponibles,
                                 Toast.LENGTH_LONG).show();
-                        return; // 🚨 Salir sin registrar la baja
+                        return; // Salir sin registrar la baja
                     }
 
-                    // ✅ Registrar la baja
+                    // Registrar la baja
                     dbHelper.insertarSalida("Muerte", tipoAlimentacion, cantidad,
                             fecha, codLote, codExplotacion, observaciones);
 
                     Toast.makeText(getContext(), "Baja registrada correctamente", Toast.LENGTH_SHORT).show();
 
-                    // ✅ Actualizar vistas en DetalleLoteActivity si está activo
+                    // Actualizar vistas en DetalleLoteActivity si está activo
                     if (getActivity() instanceof DetalleLoteActivity) {
                         ((DetalleLoteActivity) getActivity()).actualizarAnimalesDisponibles();
                         ((DetalleLoteActivity) getActivity()).actualizarAlimentacionCardView();

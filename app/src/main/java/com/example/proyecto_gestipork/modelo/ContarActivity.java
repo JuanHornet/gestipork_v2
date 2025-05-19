@@ -76,16 +76,16 @@ public class ContarActivity extends BaseActivity {
 
         TextView txtTotalConteos = findViewById(R.id.txtTotalConteos);
         TextView txtSaldoActual = findViewById(R.id.txtSaldoActual);
-        TextView txtVacio = findViewById(R.id.txtVacio);    // ✅ nuevo
+        TextView txtVacio = findViewById(R.id.txtVacio);
 
         if (total > 0) {
             txtTotalConteos.setVisibility(View.VISIBLE);
             txtSaldoActual.setVisibility(View.VISIBLE);
-            txtVacio.setVisibility(View.GONE);              // ✅ ocultar mensaje vacío
+            txtVacio.setVisibility(View.GONE);              //  ocultar mensaje vacío
         } else {
             txtTotalConteos.setVisibility(View.GONE);
             txtSaldoActual.setVisibility(View.GONE);
-            txtVacio.setVisibility(View.VISIBLE);           // ✅ mostrar mensaje vacío
+            txtVacio.setVisibility(View.VISIBLE);           // mostrar mensaje vacío
         }
 
         txtTotalConteos.setText("Total registros: " + total);

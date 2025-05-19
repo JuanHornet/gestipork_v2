@@ -257,10 +257,10 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
         ((TextView) findViewById(R.id.text_cebo_campo)).setText(String.valueOf(dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, "Cebo Campo")));
         ((TextView) findViewById(R.id.text_cebo)).setText(String.valueOf(dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, "Cebo")));
     }
-    // ✅ Método para que SalidaDialogFragment llame y actualice después de registrar una salida
+    // Método para que SalidaDialogFragment llame y actualice después de registrar una salida
     public void refrescarResumenLote() {
-        actualizarAnimalesDisponibles();       // 👉 actualiza el número total
-        actualizarAlimentacionCardView();      // 👉 actualiza el CardView de alimentación
+        actualizarAnimalesDisponibles();       // actualiza el número total
+        actualizarAlimentacionCardView();      // actualiza el CardView de alimentación
     }
     public interface OnActualizarResumenListener {
         void onActualizarResumenLote();

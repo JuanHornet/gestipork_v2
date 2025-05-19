@@ -52,7 +52,7 @@ public class NotasAdapter extends RecyclerView.Adapter<NotasAdapter.ViewHolder> 
                         notifyItemRemoved(position);
                         notifyItemRangeChanged(position, listaNotas.size());
 
-                        // ✅ Comprobar si hay que mostrar texto vacío
+                        // Comprobar si hay que mostrar texto vacío
                         if (context instanceof NotasActivity) {
                             ((NotasActivity) context).comprobarNotasVacias();
                         }

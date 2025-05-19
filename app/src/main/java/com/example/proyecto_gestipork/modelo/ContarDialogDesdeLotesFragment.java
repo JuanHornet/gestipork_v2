@@ -57,7 +57,7 @@ public class ContarDialogDesdeLotesFragment extends DialogFragment {
         EditText editNumero = view.findViewById(R.id.editNumeroAnimales);
         EditText editObservaciones = view.findViewById(R.id.editObservaciones);
 
-        // ✅ Mostrar el spinner porque estamos en versión DesdeLotes
+        // Mostrar el spinner porque estamos en versión DesdeLotes
         spinnerLote.setVisibility(View.VISIBLE);
 
         // Llenar spinner con lotes

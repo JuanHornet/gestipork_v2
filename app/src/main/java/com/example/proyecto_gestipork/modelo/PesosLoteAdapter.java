@@ -41,12 +41,12 @@ public class PesosLoteAdapter extends RecyclerView.Adapter<PesosLoteAdapter.View
     @Override
     public void onBindViewHolder(@NonNull PesosLoteAdapter.ViewHolder holder, int position) {
         PesoItem pesoItem = listaPesos.get(position);
-        int peso = pesoItem.getPesoKg();  // ✅ CORRECTO
+        int peso = pesoItem.getPesoKg();
 
         holder.txtPeso.setText(String.valueOf(peso));
 
 
-        // ✅ Peso en rojo si <150kg, si no negro
+        // Peso en rojo si <150kg, si no negro
         if (peso < 150) {
             holder.txtPeso.setTextColor(ContextCompat.getColor(context, android.R.color.holo_red_dark));
         } else {

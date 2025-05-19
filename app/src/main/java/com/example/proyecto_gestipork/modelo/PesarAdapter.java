@@ -21,7 +21,7 @@ public class PesarAdapter extends RecyclerView.Adapter<PesarAdapter.ViewHolder> 
 
     private Context context;
     private String codExplotacion, codLote;
-    private List<String> fechas;     // ✅ ahora las fechas son el dataset
+    private List<String> fechas;     // las fechas son el dataset
 
     public PesarAdapter(Context context, String codExplotacion, String codLote, List<String> fechas) {
         this.context = context;
@@ -41,7 +41,7 @@ public class PesarAdapter extends RecyclerView.Adapter<PesarAdapter.ViewHolder> 
         String fecha = fechas.get(position);
         DBHelper db = new DBHelper(context);
 
-        // ✅ Consultar pesos de esa fecha
+        // Consultar pesos de esa fecha
         Cursor cursor = db.obtenerPesosPorLoteYFecha(codExplotacion, codLote, fecha);
 
         int total = 0, suma = 0;
@@ -58,7 +58,7 @@ public class PesarAdapter extends RecyclerView.Adapter<PesarAdapter.ViewHolder> 
         }
         cursor.close();
 
-        // ✅ Mostrar datos
+        // Mostrar datos
         holder.txtFecha.setText(fecha);
         holder.txtTotal.setText("Animales: " + total);
         holder.txtMediaKg.setText("Media kg: " + (total > 0 ? (suma / total) : 0));
@@ -68,12 +68,12 @@ public class PesarAdapter extends RecyclerView.Adapter<PesarAdapter.ViewHolder> 
         holder.txtTramo15.setText("14-15@: " + tramo_15);
         holder.txtTramo16.setText("+15@: " + tramo_16);
 
-        // ✅ Al pulsar → abrir CargarPesosActivity con esa fecha
+        // Al pulsar abrir CargarPesosActivity con esa fecha
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, CargarPesosActivity.class);
             intent.putExtra("cod_explotacion", codExplotacion);
             intent.putExtra("cod_lote", codLote);
-            intent.putExtra("fecha", fecha);               // ✅ PASAMOS FECHA
+            intent.putExtra("fecha", fecha);               // PASAMOS FECHA
             context.startActivity(intent);
         });
     }

@@ -162,7 +162,6 @@ public class AccionDialogFragment extends DialogFragment {
                 calendar.get(Calendar.DAY_OF_MONTH)
         );
 
-        // No forzamos temas ni accedemos a getCalendarView()
         picker.show();
     }
 

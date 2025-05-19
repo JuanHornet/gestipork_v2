@@ -28,7 +28,7 @@ public class ContarAdapter extends RecyclerView.Adapter<ContarAdapter.ViewHolder
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // ✅ Obtener contexto desde parent
+        // Obtener contexto desde parent
         Context context = parent.getContext();
         View view = LayoutInflater.from(context).inflate(R.layout.item_conteo, parent, false);
         return new ViewHolder(view, context);
@@ -48,7 +48,7 @@ public class ContarAdapter extends RecyclerView.Adapter<ContarAdapter.ViewHolder
 
         holder.txtFecha.setText("Fecha: " + conteo.getFecha());
 
-        // 🔴 Papelera para eliminar
+        //  Papelera para eliminar
         holder.imgDelete.setOnClickListener(v -> new AlertDialog.Builder(holder.context)
                 .setTitle("Eliminar conteo")
                 .setMessage("¿Deseas eliminar este registro de conteo?")

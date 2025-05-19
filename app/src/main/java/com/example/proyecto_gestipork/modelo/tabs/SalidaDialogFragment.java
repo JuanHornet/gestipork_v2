@@ -98,7 +98,7 @@ public class SalidaDialogFragment extends DialogFragment {
 
                 if (callback != null) callback.onSalidaGuardada();
 
-                // 👉 Notificar al Activity si implementa OnActualizarResumenListener
+                // Notificar al Activity si implementa OnActualizarResumenListener
                 if (getActivity() instanceof com.example.proyecto_gestipork.modelo.DetalleLoteActivity) {
                     ((com.example.proyecto_gestipork.modelo.DetalleLoteActivity) getActivity()).refrescarResumenLote();
                 }

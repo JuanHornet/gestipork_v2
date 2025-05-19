@@ -52,7 +52,7 @@ public class ContarDialogFragment extends DialogFragment {
 
         View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_contar, null);
 
-        Spinner spinnerLote = view.findViewById(R.id.spinnerLote); // ⛔ NO visible en esta versión
+        Spinner spinnerLote = view.findViewById(R.id.spinnerLote);
         spinnerLote.setVisibility(View.GONE);
 
         EditText editNumero = view.findViewById(R.id.editNumeroAnimales);

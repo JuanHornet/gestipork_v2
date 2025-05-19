@@ -49,7 +49,7 @@ public class CargarPesosActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cargar_pesos);
 
-        // ✅ Toolbar estandar
+        // Toolbar estandar
         MaterialToolbar toolbar = findViewById(R.id.toolbar_estandar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -59,7 +59,7 @@ public class CargarPesosActivity extends AppCompatActivity {
         }
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        // ✅ Inicializar vistas
+        // Inicializar vistas
         spinnerLotes = findViewById(R.id.spinnerLotes);
         txtAnimalesPesados = findViewById(R.id.txtAnimalesPesados);
         txtMediaKg = findViewById(R.id.txtMediaKg);
@@ -71,12 +71,12 @@ public class CargarPesosActivity extends AppCompatActivity {
         dbHelper = new DBHelper(this);
         listaPesos = new ArrayList<>();
 
-        // ✅ Recibir datos
+        // Recibir datos
         Intent intent = getIntent();
         codExplotacion = intent.getStringExtra("cod_explotacion");
         String loteSeleccionado = intent.getStringExtra("cod_lote");
 
-        // ✅ Cargar lotes al spinner con tamaño personalizado
+        // Cargar lotes al spinner con tamaño personalizado
         List<String> lotesActivos = dbHelper.obtenerLotesActivos(codExplotacion);
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
                 this,
@@ -87,7 +87,7 @@ public class CargarPesosActivity extends AppCompatActivity {
         spinnerLotes.setAdapter(spinnerAdapter);
 
 
-        // ✅ Seleccionar lote actual o primero
+        // Seleccionar lote actual o primero
         if (loteSeleccionado != null && lotesActivos.contains(loteSeleccionado)) {
             spinnerLotes.setSelection(lotesActivos.indexOf(loteSeleccionado));
             codLote = loteSeleccionado;
@@ -95,10 +95,10 @@ public class CargarPesosActivity extends AppCompatActivity {
             codLote = lotesActivos.get(0);
         }
 
-        // ✅ Cargar pesos del lote actual
+        // Cargar pesos del lote actual
         cargarPesosBD();
 
-        // ✅ Listener cambio de lote
+        // Listener cambio de lote
         spinnerLotes.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -110,7 +110,7 @@ public class CargarPesosActivity extends AppCompatActivity {
             public void onNothingSelected(AdapterView<?> parent) { }
         });
 
-        // ✅ Adapter y RecyclerView
+        // Adapter y RecyclerView
         adapter = new PesosLoteAdapter(this, listaPesos, position -> {
             int idEliminar = listaPesos.get(position).getId();
             dbHelper.eliminarPesoPorId(idEliminar);
@@ -122,7 +122,7 @@ public class CargarPesosActivity extends AppCompatActivity {
         recyclerPesos.setLayoutManager(new GridLayoutManager(this, 3));
         recyclerPesos.setAdapter(adapter);
 
-        // ✅ Guardar nuevo peso
+        // Guardar nuevo peso
         btnGuardarPeso.setOnClickListener(v -> {
             String pesoStr = edtPeso.getText().toString().trim();
             if (!pesoStr.isEmpty()) {
@@ -130,7 +130,7 @@ public class CargarPesosActivity extends AppCompatActivity {
                     int peso = Integer.parseInt(pesoStr);
                     if (peso <= 0) throw new NumberFormatException();
 
-                    // ✅ NUEVO: obtener la fecha seleccionada
+                    // obtener la fecha seleccionada
                     TextView textFechaSeleccionada = findViewById(R.id.textFechaSeleccionada);
                     String fechaSeleccionada = textFechaSeleccionada.getText().toString();
 
@@ -151,7 +151,7 @@ public class CargarPesosActivity extends AppCompatActivity {
 
         TextView textFechaSeleccionada = findViewById(R.id.textFechaSeleccionada);
 
-        // ✅ Si viene fecha desde el intent,le da prioridad; si no, fecha actual
+        // Si viene fecha desde el intent,le da prioridad; si no, fecha actual
         String fechaRecibida = getIntent().getStringExtra("fecha");
         if (fechaRecibida != null && !fechaRecibida.isEmpty()) {
             textFechaSeleccionada.setText(fechaRecibida);
@@ -161,7 +161,7 @@ public class CargarPesosActivity extends AppCompatActivity {
             textFechaSeleccionada.setText(sdf.format(calendario.getTime()));
         }
 
-        // ✅ Abrir DatePicker al pulsar sobre el TextView
+        // Abrir DatePicker al pulsar sobre el TextView
         textFechaSeleccionada.setOnClickListener(v -> {
             Calendar calendario = Calendar.getInstance();
 
@@ -200,11 +200,11 @@ public class CargarPesosActivity extends AppCompatActivity {
     private void cargarPesosBD() {
         listaPesos.clear();
 
-        // ✅ Leer la fecha seleccionada
+        // Leer la fecha seleccionada
         TextView textFechaSeleccionada = findViewById(R.id.textFechaSeleccionada);
         String fechaSeleccionada = textFechaSeleccionada.getText().toString();
 
-        // ✅ Leer pesos filtrando por explotación, lote y fecha
+        // Leer pesos filtrando por explotación, lote y fecha
         Cursor cursor = dbHelper.obtenerPesosPorLoteYFecha(codExplotacion, codLote, fechaSeleccionada);
         while (cursor.moveToNext()) {
             int id = cursor.getInt(0);

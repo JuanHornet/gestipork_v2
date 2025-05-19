@@ -3,13 +3,14 @@
     <style name="Base.Theme.Proyecto_Gestipork" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <item name="colorPrimary">@color/principal</item>
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
 
     </style>
 
+
+
     <style name="PopupMenuOverlayWhiteIcon" parent="ThemeOverlay.Material3.Light">
         <!-- Evita heredar iconos oscuros -->
-        <!-- Esto puede afectar el color del icono de overflow -->
         <item name="android:textColor">@android:color/black</item> <!-- texto del menú -->
         <item name="android:tint">@android:color/white</item>     <!-- icono de overflow -->
     </style>

@@ -22,7 +22,7 @@ public class NotasDialogFragment extends DialogFragment {
 
     private String codLote, codExplotacion;
 
-    // ✅ INTERFAZ CALLBACK
+    // INTERFAZ CALLBACK
     public interface OnNotaGuardadaListener {
         void onNotaGuardada();
     }
@@ -72,7 +72,7 @@ public class NotasDialogFragment extends DialogFragment {
                     db.insertarNota(codLote, codExplotacion, fecha, observacion);
 
                     if (listener != null) {
-                        listener.onNotaGuardada();   // ✅ AVISAR PARA REFRESCAR
+                        listener.onNotaGuardada();   // AVISAR PARA REFRESCAR
                     }
 
                     Toast.makeText(getContext(), "Nota registrada", Toast.LENGTH_SHORT).show();

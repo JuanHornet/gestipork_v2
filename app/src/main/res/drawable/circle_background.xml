@@ -1,5 +1,4 @@
-<!-- res/drawable/circle_background.xml -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
-    <solid android:color="#FF0000"/> <!-- Se cambiará desde código -->
+    <solid android:color="#FF0000"/> <!-- Se cambiará desde el código -->
 </shape>

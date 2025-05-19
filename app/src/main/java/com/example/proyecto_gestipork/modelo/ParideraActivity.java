@@ -68,7 +68,7 @@ public class ParideraActivity extends AppCompatActivity {
 
         btnGuardar.setOnClickListener(v -> {
             guardarCambios();
-            finish(); // ✅ Vuelve atrás
+            finish(); // Vuelve atrás
         });
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar_estandar);

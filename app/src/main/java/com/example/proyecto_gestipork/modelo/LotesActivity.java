@@ -84,7 +84,7 @@ public class LotesActivity extends BaseActivity {
     private final BottomNavigationView.OnNavigationItemSelectedListener navListener = item -> {
         int id = item.getItemId();
 
-        View parentLayout = findViewById(android.R.id.content); // ✅ necesario para Snackbar
+        View parentLayout = findViewById(android.R.id.content); //necesario para Snackbar
 
         if (id == R.id.nav_contar) {
             if (codExplotacionSeleccionada != null && codLoteSeleccionado != null) {
@@ -167,8 +167,8 @@ public class LotesActivity extends BaseActivity {
 
         Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
                 "SELECT id, cod_explotacion, nDisponibles, nIniciales, cod_lote, cod_paridera, " +
-                        "cod_cubricion, cod_itaca, raza, estado, color " +                     // ← lee lotes.color
-                        "FROM lotes " +                                                        // ← sin JOIN
+                        "cod_cubricion, cod_itaca, raza, estado, color " +                     // lee lotes.color
+                        "FROM lotes " +
                         "WHERE estado = 1 AND cod_explotacion = ?",
                 new String[]{codExplotacionSeleccionada}
         );
@@ -211,7 +211,7 @@ public class LotesActivity extends BaseActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_add_lote) {
-            // ✅ LLAMADA AL NUEVO FRAGMENT
+            // LLAMADA AL NUEVO FRAGMENT
             NuevoLoteDialogFragment dialog = NuevoLoteDialogFragment.newInstance(codExplotacionSeleccionada);
             dialog.show(getSupportFragmentManager(), "NuevoLoteDialog");
             return true;
@@ -219,7 +219,7 @@ public class LotesActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    // 👇 Este método lo usa NuevoLoteDialogFragment para refrescar
+    // Este método lo usa NuevoLoteDialogFragment para refrescar
     public void recargarLotes() {
         cargarLotes();
         adapter.notifyDataSetChanged();
@@ -228,7 +228,7 @@ public class LotesActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        recargarLotes();    // 👈 fuerza a recargar siempre al volver
+        recargarLotes();    //fuerza a recargar siempre al volver
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {

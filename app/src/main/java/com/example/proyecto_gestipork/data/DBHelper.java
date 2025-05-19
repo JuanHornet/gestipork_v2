@@ -18,7 +18,7 @@ import java.util.List;
 public class DBHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "gestipork.db";
-    private static final int DB_VERSION = 3;
+    private static final int DB_VERSION = 4;
 
     public DBHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -44,7 +44,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Lógica de actualización de esquema si cambias versiones
+        // Lógica de actualización de esquema cuando cambio versiones
         db.execSQL("DROP TABLE IF EXISTS usuarios");
         db.execSQL("DROP TABLE IF EXISTS explotaciones");
         db.execSQL("DROP TABLE IF EXISTS itaca");
@@ -262,7 +262,7 @@ public class DBHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    // (Opcional) Obtener todas las explotaciones de un usuario
+    // Obtener todas las explotaciones de un usuario
     public Cursor obtenerExplotacionesDeUsuario(int idUsuario) {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery("SELECT nombre FROM explotaciones WHERE iduser = ?", new String[]{String.valueOf(idUsuario)});
@@ -389,7 +389,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         db.insert("acciones", null, values);
 
-        // ✅ NUEVO BLOQUE: actualizar lote y alimentacion si es DESTETE
+        // actualizar lote y alimentacion si es DESTETE
         if (tipo.equalsIgnoreCase("Destete")) {
             // 1. Actualizar lote
             ContentValues loteUpdate = new ContentValues();
@@ -452,7 +452,7 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         c.close();
 
-        // Ahora sí elimina la acción
+        // eliminar la acción
         int filas = db.delete("acciones", "id = ?", new String[]{String.valueOf(id)});
         db.close();
 
@@ -475,7 +475,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         db.insert("salidas", null, values);
 
-        // ✅ Siempre restar animales al lote y alimentación
+        // restar animales al lote y alimentación
         int disponibles = obtenerAnimalesDisponiblesLote(codLote, codExplotacion);
         int nuevosDisponibles = Math.max(0, disponibles - nAnimales);
 
@@ -485,7 +485,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 "cod_lote = ? AND cod_explotacion = ?",
                 new String[]{codLote, codExplotacion});
 
-        // ✅ Restar animales en alimentación (en ese tipo específico)
+        // Restar animales en alimentación
         restarAnimalesAlimentacion(codLote, codExplotacion, tipoAlimentacion, nAnimales);
 
         db.close();
@@ -498,7 +498,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        // ✅ 1️⃣ Recuperar la salida anterior para saber qué cantidad había
+        // Recuperar la salida anterior para saber qué cantidad había
         Cursor cursor = db.rawQuery("SELECT nAnimales, cod_lote, cod_explotacion, tipoAlimentacion FROM salidas WHERE id = ?",
                 new String[]{String.valueOf(id)});
 
@@ -508,7 +508,7 @@ public class DBHelper extends SQLiteOpenHelper {
             String codExplotacion = cursor.getString(cursor.getColumnIndexOrThrow("cod_explotacion"));
             String alimentacionAnterior = cursor.getString(cursor.getColumnIndexOrThrow("tipoAlimentacion"));
 
-            // ✅ 2️⃣ Revertir la salida anterior (sumar de nuevo los animales que se quitaron)
+            // Revertir la salida anterior (sumar de nuevo los animales que se quitaron)
             sumarAnimalesAlimentacion(codLote, codExplotacion, alimentacionAnterior, cantidadAnterior);
             int disponiblesActuales = obtenerAnimalesDisponiblesLote(codLote, codExplotacion);
             ContentValues loteUpdate = new ContentValues();
@@ -516,7 +516,7 @@ public class DBHelper extends SQLiteOpenHelper {
             db.update("lotes", loteUpdate, "cod_lote = ? AND cod_explotacion = ?",
                     new String[]{codLote, codExplotacion});
 
-            // ✅ 3️⃣ Actualizar la salida con los nuevos datos
+            // Actualizar la salida con los nuevos datos
             ContentValues values = new ContentValues();
             values.put("tipoSalida", tipoSalida);
             values.put("tipoAlimentacion", tipoAlimentacion);
@@ -525,7 +525,7 @@ public class DBHelper extends SQLiteOpenHelper {
             values.put("observacion", observacion);
             db.update("salidas", values, "id = ?", new String[]{String.valueOf(id)});
 
-            // ✅ 4️⃣ Aplicar nueva salida (restar animales de nuevo)
+            // Aplicar nueva salida (restar animales de nuevo)
             restarAnimalesAlimentacion(codLote, codExplotacion, tipoAlimentacion, nAnimales);
             int disponiblesFinal = obtenerAnimalesDisponiblesLote(codLote, codExplotacion);
             ContentValues loteUpdateFinal = new ContentValues();

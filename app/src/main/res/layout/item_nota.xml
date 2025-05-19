@@ -38,7 +38,7 @@
                 android:text="Observación" />
         </LinearLayout>
 
-        <!-- ✅ Icono eliminar -->
+        <!-- Icono eliminar -->
         <ImageView
             android:id="@+id/btnEliminarNota"
             android:layout_width="24dp"

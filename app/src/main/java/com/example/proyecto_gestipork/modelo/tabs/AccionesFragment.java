@@ -53,7 +53,7 @@ public class AccionesFragment extends Fragment {
                     () -> {
                         cargarAcciones(); // Recarga la lista
 
-                        // Verifica si fue destete (opcional, si solo quieres hacerlo en ese caso)
+                        // Verificar si fue destete
                         DBHelper dbHelper = new DBHelper(getContext());
                         Cursor c = dbHelper.getReadableDatabase().rawQuery(
                                 "SELECT tipoAccion FROM acciones WHERE cod_lote = ? AND cod_explotacion = ? ORDER BY id DESC LIMIT 1",
@@ -152,7 +152,7 @@ public class AccionesFragment extends Fragment {
                             if (eliminado) {
                                 cargarAcciones();
 
-                                // 👇 ACTUALIZAR LA VISTA SUPERIOR DEL LOTE
+                                // ACTUALIZAR LA VISTA SUPERIOR DEL LOTE
                                 if (getActivity() instanceof DetalleLoteActivity) {
                                     ((DetalleLoteActivity) getActivity()).actualizarAnimalesDisponibles();
                                 }

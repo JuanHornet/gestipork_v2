@@ -24,7 +24,7 @@ public class NotasActivity extends AppCompatActivity {
     private NotasAdapter adapter;
     private DBHelper dbHelper;
     private List<Nota> listaNotas;
-    private TextView textoVacioNotas;  // ✅ Nuevo
+    private TextView textoVacioNotas;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,13 +48,13 @@ public class NotasActivity extends AppCompatActivity {
         RecyclerView recyclerView = findViewById(R.id.recycler_notas);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        textoVacioNotas = findViewById(R.id.texto_vacio_notas); // ✅ Referencia al texto vacío
+        textoVacioNotas = findViewById(R.id.texto_vacio_notas); // Referencia al texto vacío
 
         listaNotas = cargarNotas();
         adapter = new NotasAdapter(listaNotas);
         recyclerView.setAdapter(adapter);
 
-        comprobarNotasVacias();  // ✅ Comprobar al inicio
+        comprobarNotasVacias();  // Comprobar al inicio
     }
 
     @Override
@@ -74,7 +74,7 @@ public class NotasActivity extends AppCompatActivity {
                 listaNotas.clear();
                 listaNotas.addAll(cargarNotas());
                 adapter.notifyDataSetChanged();
-                comprobarNotasVacias(); // ✅ Comprobar tras añadir
+                comprobarNotasVacias(); // Comprobar despues de añadir
             });
             dialog.show(getSupportFragmentManager(), "NotasDialog");
             return true;
@@ -101,7 +101,7 @@ public class NotasActivity extends AppCompatActivity {
         return notas;
     }
 
-    // ✅ NUEVO MÉTODO
+
     public void comprobarNotasVacias() {
         if (listaNotas.isEmpty()) {
             textoVacioNotas.setVisibility(View.VISIBLE);

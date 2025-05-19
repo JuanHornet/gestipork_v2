@@ -7,7 +7,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.proyecto_gestipork_dev"
+        applicationId = "com.example.proyecto_gestipork"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

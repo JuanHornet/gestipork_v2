@@ -52,7 +52,7 @@ public class LoteAdapter extends RecyclerView.Adapter<LoteAdapter.LoteViewHolder
         holder.txtRaza.setText(lote.getRaza());
         holder.txtDisponibles.setText(String.valueOf(lote.getnDisponibles()));
 
-        // 🎯 NUEVO: obtener DCER desde tabla itaca
+        // obtener DCER desde tabla itaca
         DBHelper dbHelper = new DBHelper(context);
         String dcer = "";
         Cursor cursor = dbHelper.getReadableDatabase().rawQuery(

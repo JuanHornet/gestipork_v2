@@ -27,13 +27,13 @@ public class PesarActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pesar);
 
-        // ✅ Recibir datos
+        // Recibir datos
         codExplotacion = getIntent().getStringExtra("cod_explotacion");
         codLote = getIntent().getStringExtra("cod_lote");
 
         dbHelper = new DBHelper(this);
 
-        // ✅ Toolbar
+        // Toolbar
         MaterialToolbar toolbar = findViewById(R.id.toolbar_pesar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -42,14 +42,14 @@ public class PesarActivity extends AppCompatActivity {
         }
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        // ✅ RecyclerView
+        // RecyclerView
         RecyclerView recyclerView = findViewById(R.id.recycler_pesajes);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // ✅ Obtener fechas de pesajes
+        // Obtener fechas de pesajes
         List<String> fechas = obtenerFechasPesajes();
 
-        // ✅ Adaptador
+        // Adaptador
         adapter = new PesarAdapter(this, codExplotacion, codLote, fechas);
         recyclerView.setAdapter(adapter);
 

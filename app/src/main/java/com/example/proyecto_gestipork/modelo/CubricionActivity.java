@@ -72,20 +72,20 @@ public class CubricionActivity extends AppCompatActivity {
 
         btnGuardar.setOnClickListener(v -> {
             guardarCambios();
-            finish(); // ✅ Vuelve a DetalleLoteActivity
+            finish(); // Vuelve a DetalleLoteActivity
         });
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar_estandar);
         setSupportActionBar(toolbar);
 
-// Esta línea hace que se muestre la flecha
+        // Esta línea hace que se muestre la flecha
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle("Cubrición " + codLote);
 
         }
 
-// Esta línea es la que gestiona el clic en la flecha 🔙
+        // Esta línea es la que gestiona el clic en la flecha
         toolbar.setNavigationOnClickListener(v -> finish());
 
     }
