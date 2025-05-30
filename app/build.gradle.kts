@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.proyecto_gestipork"
+    namespace = "com.example.gestipork_v2"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.proyecto_gestipork"
+        applicationId = "com.example.gestipork_v2"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
