@@ -7,6 +7,23 @@ public class Conteo {
     private int nAnimales;
     private String observaciones;
     private String fecha;
+    private int sincronizado; // nuevo
+    private String fechaActualizacion; // nuevo
+
+    public Conteo(int id, String codExplotacion, String codLote, int nAnimales, String observaciones, String fecha, int sincronizado, String fechaActualizacion) {
+        this.id = id;
+        this.codExplotacion = codExplotacion;
+        this.codLote = codLote;
+        this.nAnimales = nAnimales;
+        this.observaciones = observaciones;
+        this.fecha = fecha;
+        this.sincronizado = sincronizado;
+        this.fechaActualizacion = fechaActualizacion;
+    }
+
+    public Conteo() {
+
+    }
 
     // Getters y setters
     public int getId() { return id; }
@@ -26,4 +43,20 @@ public class Conteo {
 
     public String getFecha() { return fecha; }
     public void setFecha(String fecha) { this.fecha = fecha; }
+
+    public int getSincronizado() {
+        return sincronizado;
+    }
+
+    public void setSincronizado(int sincronizado) {
+        this.sincronizado = sincronizado;
+    }
+
+    public String getFechaActualizacion() {
+        return fechaActualizacion;
+    }
+
+    public void setFechaActualizacion(String fechaActualizacion) {
+        this.fechaActualizacion = fechaActualizacion;
+    }
 }

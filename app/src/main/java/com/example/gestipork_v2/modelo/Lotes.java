@@ -1,15 +1,50 @@
 package com.example.gestipork_v2.modelo;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 public class Lotes {
+    @Expose(serialize = false)
+    private int id;
+    @Expose
+    @SerializedName("ndisponibles")
+    private int nDisponibles;
+    @Expose
+    @SerializedName("niniciales")
+    private int nIniciales;
+    @Expose
+    @SerializedName("cod_lote")
+    private String cod_lote;
+    @Expose
+    @SerializedName("cod_explotacion")
+    private String cod_explotacion;
+    @Expose
+    @SerializedName("cod_paridera")
+    private String cod_paridera;
+    @Expose
+    @SerializedName("cod_cubricion")
+    private String cod_cubricion;
+    @Expose
+    @SerializedName("cod_itaca")
+    private String cod_itaca;
+    @Expose
+    private String raza;
+    @Expose
+    private String color;
+    @Expose
+    private int estado; // se envía como int, ya que Supabase lo guarda como integer
+    @Expose
+    @SerializedName("fecha_actualizacion")
+    private String fecha_actualizacion;
 
-    private int id, nDisponibles, nIniciales;
-    private String cod_lote, cod_explotacion, cod_paridera, cod_cubricion, cod_itaca, raza, color;
-    private boolean estado;
+    @Expose(serialize = false)
+    private int sincronizado; // solo en SQLite, no se debe enviar
 
-    public Lotes() {
-    }
+    public Lotes() {}
 
-    public Lotes(int id, int nDisponibles, int nIniciales, String cod_lote, String cod_explotacion, String cod_paridera, String cod_cubricion, String cod_itaca, String raza, String color, boolean estado) {
+    // Constructor completo si lo necesitas
+
+    public Lotes(int id, int nDisponibles, int nIniciales, String cod_lote, String cod_explotacion, String cod_paridera, String cod_cubricion, String cod_itaca, String raza, String color, int estado, String fecha_actualizacion, int sincronizado) {
         this.id = id;
         this.nDisponibles = nDisponibles;
         this.nIniciales = nIniciales;
@@ -21,7 +56,12 @@ public class Lotes {
         this.raza = raza;
         this.color = color;
         this.estado = estado;
+        this.fecha_actualizacion = fecha_actualizacion;
+        this.sincronizado = sincronizado;
     }
+
+
+    // Getters y setters
 
     public int getId() {
         return id;
@@ -103,11 +143,27 @@ public class Lotes {
         this.color = color;
     }
 
-    public boolean isEstado() {
+    public int getEstado() {
         return estado;
     }
 
-    public void setEstado(boolean estado) {
+    public void setEstado(int estado) {
         this.estado = estado;
+    }
+
+    public int getSincronizado() {
+        return sincronizado;
+    }
+
+    public void setSincronizado(int sincronizado) {
+        this.sincronizado = sincronizado;
+    }
+
+    public String getFecha_actualizacion() {
+        return fecha_actualizacion;
+    }
+
+    public void setFecha_actualizacion(String fecha_actualizacion) {
+        this.fecha_actualizacion = fecha_actualizacion;
     }
 }

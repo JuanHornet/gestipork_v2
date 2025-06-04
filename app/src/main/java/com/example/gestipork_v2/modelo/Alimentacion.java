@@ -7,6 +7,8 @@ public class Alimentacion {
     private int id, nAnimales;
     private String tipoAlimentacion, cod_lote, cod_explotacion;
     private Date fechaInicioAlimentacion;
+    private int sincronizado;
+    private String fechaActualizacion;
 
     public Alimentacion() {
     }
@@ -18,6 +20,17 @@ public class Alimentacion {
         this.cod_lote = cod_lote;
         this.cod_explotacion = cod_explotacion;
         this.fechaInicioAlimentacion = fechaInicioAlimentacion;
+    }
+
+    public Alimentacion(int id, int nAnimales, String tipoAlimentacion, String cod_lote, String cod_explotacion, Date fechaInicioAlimentacion, int sincronizado, String fechaActualizacion) {
+        this.id = id;
+        this.nAnimales = nAnimales;
+        this.tipoAlimentacion = tipoAlimentacion;
+        this.cod_lote = cod_lote;
+        this.cod_explotacion = cod_explotacion;
+        this.fechaInicioAlimentacion = fechaInicioAlimentacion;
+        this.sincronizado = sincronizado;
+        this.fechaActualizacion = fechaActualizacion;
     }
 
     public int getId() {
@@ -66,5 +79,21 @@ public class Alimentacion {
 
     public void setFechaInicioAlimentacion(Date fechaInicioAlimentacion) {
         this.fechaInicioAlimentacion = fechaInicioAlimentacion;
+    }
+
+    public int getSincronizado() {
+        return sincronizado;
+    }
+
+    public void setSincronizado(int sincronizado) {
+        this.sincronizado = sincronizado;
+    }
+
+    public String getFechaActualizacion() {
+        return fechaActualizacion;
+    }
+
+    public void setFechaActualizacion(String fechaActualizacion) {
+        this.fechaActualizacion = fechaActualizacion;
     }
 }

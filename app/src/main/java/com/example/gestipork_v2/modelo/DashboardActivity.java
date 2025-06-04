@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,10 +22,20 @@ import com.example.gestipork_v2.R;
 import com.example.gestipork_v2.base.BaseActivity;
 import com.example.gestipork_v2.data.DBHelper;
 import com.example.gestipork_v2.login.LoginActivity;
+import com.example.gestipork_v2.sync.SyncWorker;
 import com.google.android.material.appbar.MaterialToolbar;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.Constraints;
+import androidx.work.NetworkType;
+import androidx.work.ExistingPeriodicWorkPolicy;
+
+import java.util.concurrent.TimeUnit;
 
 public class DashboardActivity extends BaseActivity implements NuevoExplotacionDialogFragment.OnExplotacionCreadaListener {
 
@@ -54,6 +65,29 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
         recyclerResumen.setLayoutManager(new LinearLayoutManager(this));
 
         cargarExplotaciones();
+
+        //sincronizamos datos con supabase cada 15 minutos
+
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        PeriodicWorkRequest syncRequest = new PeriodicWorkRequest.Builder(
+                SyncWorker.class, 15, TimeUnit.MINUTES)
+                .setConstraints(constraints)
+                .build();
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                "syncGestipork",
+                ExistingPeriodicWorkPolicy.KEEP,
+                syncRequest
+        );
+
+        Button btnSync = findViewById(R.id.btnSincronizar);
+        btnSync.setOnClickListener(v -> sincronizarManualAhora());
+
+        //sincronizarManualAhora(); // 🔁 prueba directa al arrancar la app
+
     }
 
     public void cargarExplotaciones() {
@@ -215,5 +249,10 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
         super.onResume();
         cargarCodExplotacionYActualizarDashboard();
     }
+    public void sincronizarManualAhora() {
+        OneTimeWorkRequest syncNow = new OneTimeWorkRequest.Builder(SyncWorker.class).build();
+        WorkManager.getInstance(this).enqueue(syncNow);
+    }
+
 
 }

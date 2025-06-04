@@ -7,6 +7,8 @@ public class Parideras {
     private int id, nacidosVivos, nParidas, nVacias;
     private String cod_paridera, cod_explotacion, cod_lote;
     private Date fechaInicioParidera, fechaFinParidera;
+    private int sincronizado; // nuevo
+    private String fechaActualizacion; // nuevo
 
     public Parideras() {
     }
@@ -21,6 +23,20 @@ public class Parideras {
         this.cod_lote = cod_lote;
         this.fechaInicioParidera = fechaInicioParidera;
         this.fechaFinParidera = fechaFinParidera;
+    }
+
+    public Parideras(int id, int nacidosVivos, int nParidas, int nVacias, String cod_paridera, String cod_explotacion, String cod_lote, Date fechaInicioParidera, Date fechaFinParidera, int sincronizado, String fechaActualizacion) {
+        this.id = id;
+        this.nacidosVivos = nacidosVivos;
+        this.nParidas = nParidas;
+        this.nVacias = nVacias;
+        this.cod_paridera = cod_paridera;
+        this.cod_explotacion = cod_explotacion;
+        this.cod_lote = cod_lote;
+        this.fechaInicioParidera = fechaInicioParidera;
+        this.fechaFinParidera = fechaFinParidera;
+        this.sincronizado = sincronizado;
+        this.fechaActualizacion = fechaActualizacion;
     }
 
     public int getId() {
@@ -93,5 +109,21 @@ public class Parideras {
 
     public void setFechaFinParidera(Date fechaFinParidera) {
         this.fechaFinParidera = fechaFinParidera;
+    }
+
+    public int getSincronizado() {
+        return sincronizado;
+    }
+
+    public void setSincronizado(int sincronizado) {
+        this.sincronizado = sincronizado;
+    }
+
+    public String getFechaActualizacion() {
+        return fechaActualizacion;
+    }
+
+    public void setFechaActualizacion(String fechaActualizacion) {
+        this.fechaActualizacion = fechaActualizacion;
     }
 }

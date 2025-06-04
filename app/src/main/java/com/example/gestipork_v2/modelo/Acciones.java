@@ -8,6 +8,8 @@ public class Acciones {
     private String tipoAccion, cod_lote, cod_explotacion, observacion;
     private Date fechaAccion;
     private boolean estado;
+    private int sincronizado;
+    private String fechaActualizacion;
 
     public Acciones() {
     }
@@ -21,6 +23,19 @@ public class Acciones {
         this.observacion = observacion;
         this.fechaAccion = fechaAccion;
         this.estado = estado;
+    }
+
+    public Acciones(int id, int nAanimales, String tipoAccion, String cod_lote, String cod_explotacion, String observacion, Date fechaAccion, boolean estado, int sincronizado, String fechaActualizacion) {
+        this.id = id;
+        this.nAanimales = nAanimales;
+        this.tipoAccion = tipoAccion;
+        this.cod_lote = cod_lote;
+        this.cod_explotacion = cod_explotacion;
+        this.observacion = observacion;
+        this.fechaAccion = fechaAccion;
+        this.estado = estado;
+        this.sincronizado = sincronizado;
+        this.fechaActualizacion = fechaActualizacion;
     }
 
     public int getId() {
@@ -85,5 +100,21 @@ public class Acciones {
 
     public void setEstado(boolean estado) {
         this.estado = estado;
+    }
+
+    public int getSincronizado() {
+        return sincronizado;
+    }
+
+    public void setSincronizado(int sincronizado) {
+        this.sincronizado = sincronizado;
+    }
+
+    public String getFechaActualizacion() {
+        return fechaActualizacion;
+    }
+
+    public void setFechaActualizacion(String fechaActualizacion) {
+        this.fechaActualizacion = fechaActualizacion;
     }
 }

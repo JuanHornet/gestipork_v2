@@ -6,12 +6,24 @@ public class Accion {
     private String fecha;
     private int cantidad;
     private String observaciones;
+    private int sincronizado;
+    private String fechaActualizacion;
 
     public Accion(int id, String tipo, String fecha, int cantidad) {
         this.id = id;
         this.tipo = tipo;
         this.fecha = fecha;
         this.cantidad = cantidad;
+    }
+
+    public Accion(int id, String tipo, String fecha, int cantidad, String observaciones, int sincronizado, String fechaActualizacion) {
+        this.id = id;
+        this.tipo = tipo;
+        this.fecha = fecha;
+        this.cantidad = cantidad;
+        this.observaciones = observaciones;
+        this.sincronizado = sincronizado;
+        this.fechaActualizacion = fechaActualizacion;
     }
 
     public Accion(int id, String tipo, String fecha, int cantidad, String observaciones) {
@@ -60,6 +72,22 @@ public class Accion {
 
     public void setObservaciones(String observaciones) {
         this.observaciones = observaciones;
+    }
+
+    public int getSincronizado() {
+        return sincronizado;
+    }
+
+    public void setSincronizado(int sincronizado) {
+        this.sincronizado = sincronizado;
+    }
+
+    public String getFechaActualizacion() {
+        return fechaActualizacion;
+    }
+
+    public void setFechaActualizacion(String fechaActualizacion) {
+        this.fechaActualizacion = fechaActualizacion;
     }
 }
 

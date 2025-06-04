@@ -8,6 +8,8 @@ public class Cubriciones {
     private String cod_cubricion, cod_explotacion, cod_lote;
     private int nMadres, nPadres;
     private Date fechaInicioCubricion, fechaFinCubricion;
+    private int sincronizado; // nuevo
+    private String fechaActualizacion; // nuevo
 
     public Cubriciones() {
     }
@@ -21,6 +23,19 @@ public class Cubriciones {
         this.nPadres = nPadres;
         this.fechaInicioCubricion = fechaInicioCubricion;
         this.fechaFinCubricion = fechaFinCubricion;
+    }
+
+    public Cubriciones(int id, String cod_cubricion, String cod_explotacion, String cod_lote, int nMadres, int nPadres, Date fechaInicioCubricion, Date fechaFinCubricion, int sincronizado, String fechaActualizacion) {
+        this.id = id;
+        this.cod_cubricion = cod_cubricion;
+        this.cod_explotacion = cod_explotacion;
+        this.cod_lote = cod_lote;
+        this.nMadres = nMadres;
+        this.nPadres = nPadres;
+        this.fechaInicioCubricion = fechaInicioCubricion;
+        this.fechaFinCubricion = fechaFinCubricion;
+        this.sincronizado = sincronizado;
+        this.fechaActualizacion = fechaActualizacion;
     }
 
     public int getId() {
@@ -85,5 +100,21 @@ public class Cubriciones {
 
     public void setFechaFinCubricion(Date fechaFinCubricion) {
         this.fechaFinCubricion = fechaFinCubricion;
+    }
+
+    public int getSincronizado() {
+        return sincronizado;
+    }
+
+    public void setSincronizado(int sincronizado) {
+        this.sincronizado = sincronizado;
+    }
+
+    public String getFechaActualizacion() {
+        return fechaActualizacion;
+    }
+
+    public void setFechaActualizacion(String fechaActualizacion) {
+        this.fechaActualizacion = fechaActualizacion;
     }
 }

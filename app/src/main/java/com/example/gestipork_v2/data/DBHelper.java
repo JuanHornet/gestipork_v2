@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.widget.Toast;
 
 import com.example.gestipork_v2.modelo.Conteo;
+import com.example.gestipork_v2.modelo.Lotes;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -65,8 +66,10 @@ public class DBHelper extends SQLiteOpenHelper {
     // TABLA USUARIOS
 
     private static final String CREATE_TABLE_USUARIOS = "CREATE TABLE IF NOT EXISTS usuarios (" +
-            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "id TEXT PRIMARY KEY, " +  // UUID generado en Java
             "email TEXT UNIQUE, " +
+            "sincronizado INTEGER DEFAULT 0, " +
+            "fecha_actualizacion TEXT, " +
             "password TEXT)";
 
     //TABLA EXPLOTACIONES
@@ -75,6 +78,8 @@ public class DBHelper extends SQLiteOpenHelper {
             "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
             "cod_explotacion TEXT, " +
             "nombre TEXT, " +
+            "sincronizado INTEGER DEFAULT 0, " +
+            "fecha_actualizacion TEXT, " +
             "iduser INTEGER)";
 
     // TABLA LOTES
@@ -89,6 +94,8 @@ public class DBHelper extends SQLiteOpenHelper {
             "cod_itaca TEXT, " +
             "raza TEXT, " +
             "estado INTEGER, " +
+            "sincronizado INTEGER DEFAULT 0, " +
+            "fecha_actualizacion TEXT, " +
             "color TEXT" +
             ")";
 
@@ -106,6 +113,8 @@ public class DBHelper extends SQLiteOpenHelper {
             "color TEXT, " +
             "crotalesSolicitados INTEGER, " +
             "cod_lote TEXT, " +
+            "sincronizado INTEGER DEFAULT 0, " +
+            "fecha_actualizacion TEXT, " +
             "cod_explotacion TEXT " +
             ")";
 
@@ -119,6 +128,8 @@ public class DBHelper extends SQLiteOpenHelper {
             "fechaInicioCubricion TEXT, " +  // Usamos TEXT para fechas
             "fechaFinCubricion TEXT, " +
             "cod_explotacion TEXT, " +
+            "sincronizado INTEGER DEFAULT 0, " +
+            "fecha_actualizacion TEXT, " +
             "cod_lote TEXT" +
             ")";
 
@@ -132,6 +143,8 @@ public class DBHelper extends SQLiteOpenHelper {
             "nParidas INTEGER, " +
             "nVacias INTEGER, " +
             "cod_lote TEXT, " +
+            "sincronizado INTEGER DEFAULT 0, " +
+            "fecha_actualizacion TEXT, " +
             "cod_explotacion TEXT" +
             ")";
 
@@ -143,6 +156,8 @@ public class DBHelper extends SQLiteOpenHelper {
             "fechaInicioAlimentacion TEXT, " +
             "cod_lote TEXT, " +
             "cod_explotacion TEXT," +
+            "sincronizado INTEGER DEFAULT 0, " +
+            "fecha_actualizacion TEXT, " +
             "UNIQUE(cod_lote, cod_explotacion, tipoAlimentacion)" +
             ")";
 
@@ -155,6 +170,8 @@ public class DBHelper extends SQLiteOpenHelper {
             "cod_lote TEXT, " +
             "cod_explotacion TEXT, " +
             "observacion TEXT, " +
+            "sincronizado INTEGER DEFAULT 0, " +
+            "fecha_actualizacion TEXT, " +
             "estado INTEGER" +
             ")";
 
@@ -167,6 +184,8 @@ public class DBHelper extends SQLiteOpenHelper {
             "cod_lote TEXT, " +
             "cod_explotacion TEXT," +
             "tipoAlimentacion TEXT," +
+            "sincronizado INTEGER DEFAULT 0, " +
+            "fecha_actualizacion TEXT, " +
             "observacion TEXT" +
             ")";
 
@@ -177,7 +196,9 @@ public class DBHelper extends SQLiteOpenHelper {
             "cod_explotacion TEXT NOT NULL, " +
             "cod_lote TEXT NOT NULL, " +
             "nAnimales INTEGER NOT NULL, " +
-            "fecha TEXT NOT NULL, " + // guardaremos fecha como String (yyyy-MM-dd)
+            "fecha TEXT NOT NULL, " +
+            "sincronizado INTEGER DEFAULT 0, " +
+            "fecha_actualizacion TEXT, " +// guardaremos fecha como String (yyyy-MM-dd)
             "observaciones TEXT" +
             ")";
 
@@ -187,6 +208,8 @@ public class DBHelper extends SQLiteOpenHelper {
             "cod_explotacion TEXT NOT NULL, " +
             "cod_lote TEXT NOT NULL, " +
             "peso INTEGER NOT NULL, " +
+            "sincronizado INTEGER DEFAULT 0, " +
+            "fecha_actualizacion TEXT, " +
             "fecha TEXT NOT NULL)";
 
     //TABLA NOTAS
@@ -195,11 +218,15 @@ public class DBHelper extends SQLiteOpenHelper {
             "cod_lote TEXT NOT NULL, " +
             "cod_explotacion TEXT NOT NULL, " +
             "fecha TEXT NOT NULL, " +
+            "sincronizado INTEGER DEFAULT 0, " +
+            "fecha_actualizacion TEXT, " +
             "observacion TEXT NOT NULL)";
 
     //TABLA AFOROS
     private static final String CREATE_TABLE_AFORO = "CREATE TABLE IF NOT EXISTS aforo_explotacion (" +
             "cod_explotacion TEXT PRIMARY KEY, " +
+            "sincronizado INTEGER DEFAULT 0, " +
+            "fecha_actualizacion TEXT, " +
             "aforo_maximo INTEGER)";
 
 
@@ -744,6 +771,70 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return total;
+    }
+    public List<Lotes> obtenerLotesNoSincronizados() {
+        List<Lotes> lista = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT * FROM lotes WHERE sincronizado = 0", null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                Lotes lote = new Lotes();
+                lote.setId(cursor.getInt(cursor.getColumnIndexOrThrow("id")));
+                lote.setCod_explotacion(cursor.getString(cursor.getColumnIndexOrThrow("cod_explotacion")));
+                lote.setnDisponibles(cursor.getInt(cursor.getColumnIndexOrThrow("nDisponibles")));
+                lote.setnIniciales(cursor.getInt(cursor.getColumnIndexOrThrow("nIniciales")));
+                lote.setCod_lote(cursor.getString(cursor.getColumnIndexOrThrow("cod_lote")));
+                lote.setCod_paridera(cursor.getString(cursor.getColumnIndexOrThrow("cod_paridera")));
+                lote.setCod_cubricion(cursor.getString(cursor.getColumnIndexOrThrow("cod_cubricion")));
+                lote.setCod_itaca(cursor.getString(cursor.getColumnIndexOrThrow("cod_itaca")));
+                lote.setRaza(cursor.getString(cursor.getColumnIndexOrThrow("raza")));
+                lote.setColor(cursor.getString(cursor.getColumnIndexOrThrow("color")));
+                lote.setEstado(cursor.getInt(cursor.getColumnIndexOrThrow("estado")));
+                lote.setSincronizado(0);
+                lote.setFecha_actualizacion(cursor.getString(cursor.getColumnIndexOrThrow("fecha_actualizacion")));
+                lista.add(lote);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        return lista;
+    }
+
+    public void marcarLoteComoSincronizado(int id, String fechaActualizacion) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("sincronizado", 1);
+        values.put("fecha_actualizacion", fechaActualizacion);
+        db.update("lotes", values, "id = ?", new String[]{String.valueOf(id)});
+    }
+    public void insertarOActualizarLote(Lotes lote) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery("SELECT id FROM lotes WHERE id = ?", new String[]{String.valueOf(lote.getId())});
+
+        ContentValues values = new ContentValues();
+        values.put("id", lote.getId());
+        values.put("cod_explotacion", lote.getCod_explotacion());
+        values.put("nDisponibles", lote.getnDisponibles());
+        values.put("nIniciales", lote.getnIniciales());
+        values.put("cod_lote", lote.getCod_lote());
+        values.put("cod_paridera", lote.getCod_paridera());
+        values.put("cod_cubricion", lote.getCod_cubricion());
+        values.put("cod_itaca", lote.getCod_itaca());
+        values.put("raza", lote.getRaza());
+        values.put("color", lote.getColor());
+        values.put("estado", lote.getEstado());
+        values.put("sincronizado", 1); // si viene de la nube, ya está sincronizado
+        values.put("fecha_actualizacion", lote.getFecha_actualizacion());
+
+        if (cursor.moveToFirst()) {
+            db.update("lotes", values, "id = ?", new String[]{String.valueOf(lote.getId())});
+        } else {
+            db.insert("lotes", null, values);
+        }
+
+        cursor.close();
     }
 
 

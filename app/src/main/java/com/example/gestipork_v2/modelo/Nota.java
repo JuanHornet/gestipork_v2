@@ -7,12 +7,25 @@ public class Nota {
     private String fecha;
     private String observacion;
 
+    private int sincronizado; // nuevo
+    private String fechaActualizacion; // nuevo
+
     public Nota(int id, String codLote, String codExplotacion, String fecha, String observacion) {
         this.id = id;
         this.codLote = codLote;
         this.codExplotacion = codExplotacion;
         this.fecha = fecha;
         this.observacion = observacion;
+    }
+
+    public Nota(int id, String codLote, String codExplotacion, String fecha, String observacion, int sincronizado, String fechaActualizacion) {
+        this.id = id;
+        this.codLote = codLote;
+        this.codExplotacion = codExplotacion;
+        this.fecha = fecha;
+        this.observacion = observacion;
+        this.sincronizado = sincronizado;
+        this.fechaActualizacion = fechaActualizacion;
     }
 
     public int getId() {
@@ -53,5 +66,21 @@ public class Nota {
 
     public void setObservacion(String observacion) {
         this.observacion = observacion;
+    }
+
+    public int getSincronizado() {
+        return sincronizado;
+    }
+
+    public void setSincronizado(int sincronizado) {
+        this.sincronizado = sincronizado;
+    }
+
+    public String getFechaActualizacion() {
+        return fechaActualizacion;
+    }
+
+    public void setFechaActualizacion(String fechaActualizacion) {
+        this.fechaActualizacion = fechaActualizacion;
     }
 }

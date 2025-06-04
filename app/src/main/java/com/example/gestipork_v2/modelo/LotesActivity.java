@@ -186,7 +186,7 @@ public class LotesActivity extends BaseActivity {
                 lote.setCod_cubricion(cursor.getString(6));
                 lote.setCod_itaca(cursor.getString(7));
                 lote.setRaza(cursor.getString(8));
-                lote.setEstado(cursor.getInt(9) == 1);
+                lote.setEstado(cursor.getInt(9));
                 lote.setColor(cursor.getString(10));
                 listaLotes.add(0, lote);
             } while (cursor.moveToNext());

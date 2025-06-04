@@ -48,6 +48,11 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:paddingTop="16dp" />
+        <Button
+            android:id="@+id/btnSincronizar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sincronizar ahora" />
 
 
     </LinearLayout>
