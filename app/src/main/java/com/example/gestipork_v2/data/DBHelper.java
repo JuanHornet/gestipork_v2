@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.widget.Toast;
 
+import com.example.gestipork_v2.login.Usuario;
 import com.example.gestipork_v2.modelo.Conteo;
 import com.example.gestipork_v2.modelo.Lotes;
 
@@ -15,6 +16,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class DBHelper extends SQLiteOpenHelper {
 
@@ -234,37 +236,74 @@ public class DBHelper extends SQLiteOpenHelper {
     public boolean registrarUsuario(String email, String password) {
         SQLiteDatabase db = this.getWritableDatabase();
 
+        String id = UUID.randomUUID().toString();
         String hashedPassword = hashPassword(password);
+        String fechaActualizacion = obtenerFechaActual(); // método auxiliar
+
         ContentValues values = new ContentValues();
+        values.put("id", id);
         values.put("email", email);
         values.put("password", hashedPassword);
+        values.put("fecha_actualizacion", fechaActualizacion);
+        values.put("sincronizado", 0); // aún no sincronizado
 
         long result = db.insert("usuarios", null, values);
         return result != -1;
     }
 
-    public boolean validarUsuario(String email, String password) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        String hashedPassword = hashPassword(password);
-        Cursor cursor = db.rawQuery("SELECT id FROM usuarios WHERE email = ? AND password = ?",
-                new String[]{email, hashedPassword});
+    public boolean registrarUsuarioConUUID(Usuario usuario) {
+        SQLiteDatabase db = this.getWritableDatabase();
 
-        boolean valido = cursor.moveToFirst();
-        cursor.close();
-        return valido;
+        ContentValues values = new ContentValues();
+        values.put("id", usuario.getId());
+        values.put("email", usuario.getEmail());
+        values.put("password", usuario.getPassword());
+        values.put("fecha_actualizacion", obtenerFechaActual());
+        values.put("sincronizado", 1); // ya está en Supabase
+
+        long result = db.insert("usuarios", null, values);
+        return result != -1;
     }
 
-    public int obtenerIdUsuarioDesdeEmail(String email) {
+
+    public static String obtenerFechaActual() {
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault());
+        return sdf.format(new java.util.Date());
+    }
+
+
+
+
+    public String validarYObtenerUUID(String email, String password) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String hashedPassword = hashPassword(password);
+
+        Cursor cursor = db.rawQuery(
+                "SELECT id FROM usuarios WHERE email = ? AND password = ?",
+                new String[]{email, hashedPassword}
+        );
+
+        String uuid = null;
+        if (cursor.moveToFirst()) {
+            uuid = cursor.getString(0);
+        }
+        cursor.close();
+        return uuid;
+    }
+
+
+    public String obtenerIdUsuarioDesdeEmail(String email) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT id FROM usuarios WHERE email = ?", new String[]{email});
 
-        int id = -1;
+        String id = null;
         if (cursor.moveToFirst()) {
-            id = cursor.getInt(0);
+            id = cursor.getString(0);  // UUID
         }
         cursor.close();
         return id;
     }
+
 
 
 

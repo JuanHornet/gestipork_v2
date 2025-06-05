@@ -202,6 +202,7 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
     }
 
+
     private void editarExplotacionSeleccionada() {
         int posicion = spinnerExplotaciones.getSelectedItemPosition();
         if (posicion == -1) {

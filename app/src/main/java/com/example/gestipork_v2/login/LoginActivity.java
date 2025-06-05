@@ -64,20 +64,22 @@ public class LoginActivity extends AppCompatActivity {
                 EditText emailField = findViewById(R.id.editTextUsername);
                 EditText passwordField = findViewById(R.id.editTextPassword);
 
-                String email = emailField.getText().toString().trim();
-                String password = passwordField.getText().toString().trim();
+                String email = txtEmail.getText().toString().trim();
+                String password = txtPassword.getText().toString().trim();
 
                 if (email.isEmpty() || password.isEmpty()) {
                     Toast.makeText(LoginActivity.this, "Todos los campos son obligatorios", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                if (dbHelper.validarUsuario(email, password)) {
+                String uuid = dbHelper.validarYObtenerUUID(email, password);
+                if (uuid != null) {
                     Toast.makeText(LoginActivity.this, "Login exitoso", Toast.LENGTH_SHORT).show();
 
                     SharedPreferences.Editor editor = preferences.edit();
                     editor.putBoolean("isLoggedIn", true);
                     editor.putString("userEmail", email);
+                    editor.putString("userUUID", uuid);  // 👈 Guardamos el UUID
                     editor.apply();
 
                     Intent intent = new Intent(LoginActivity.this, DashboardActivity.class);
@@ -88,6 +90,7 @@ public class LoginActivity extends AppCompatActivity {
                 } else {
                     Toast.makeText(LoginActivity.this, "Credenciales incorrectas", Toast.LENGTH_SHORT).show();
                 }
+
             }
         });
 
