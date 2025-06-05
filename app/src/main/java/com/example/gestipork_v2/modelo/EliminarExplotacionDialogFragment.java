@@ -34,12 +34,18 @@ public class EliminarExplotacionDialogFragment extends DialogFragment {
                 .setTitle("Eliminar Explotación")
                 .setMessage("¿Seguro que deseas eliminar \"" + nombre + "\"?")
                 .setPositiveButton("Eliminar", (dialog, which) -> {
+                    // ✅ Obtener UUID del usuario desde SharedPreferences
                     SharedPreferences prefs = context.getSharedPreferences("loginPrefs", Context.MODE_PRIVATE);
-                    String email = prefs.getString("userEmail", "");
-                    DBHelper dbHelper = new DBHelper(context);
-                    int idUsuario = dbHelper.obtenerIdUsuarioDesdeEmail(email);
+                    String uuidUsuario = prefs.getString("userUUID", null);
 
-                    boolean eliminado = dbHelper.eliminarExplotacionPorNombre(nombre, idUsuario);
+                    if (uuidUsuario == null) {
+                        Toast.makeText(context, "Error: usuario no identificado", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    DBHelper dbHelper = new DBHelper(context);
+                    // ✅ Usar nuevo método basado en UUID
+                    boolean eliminado = dbHelper.eliminarExplotacionPorNombreYUUID(nombre, uuidUsuario);
                     if (eliminado) {
                         Toast.makeText(context, "Explotación eliminada", Toast.LENGTH_SHORT).show();
                         ((DashboardActivity) requireActivity()).cargarExplotaciones();

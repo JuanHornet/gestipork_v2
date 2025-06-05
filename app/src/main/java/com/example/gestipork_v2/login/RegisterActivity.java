@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -47,7 +48,7 @@ public class RegisterActivity extends AppCompatActivity {
             String uuid = java.util.UUID.randomUUID().toString();
             String hashedPassword = DBHelper.hashPassword(password);
 
-            Usuario usuario = new Usuario(uuid, "", email, hashedPassword);
+            Usuario usuario = new Usuario(uuid, email, hashedPassword);
 
             UsuarioService service = ApiClient.getClient().create(UsuarioService.class);
             Call<Void> call = service.registrarUsuario(
@@ -70,7 +71,19 @@ public class RegisterActivity extends AppCompatActivity {
                             Toast.makeText(RegisterActivity.this, "Error al guardar en SQLite", Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        Toast.makeText(RegisterActivity.this, "Error: el usuario ya existe", Toast.LENGTH_SHORT).show();
+                        int code = response.code();
+                        if (code == 409) {
+                            Toast.makeText(RegisterActivity.this, "Este email ya está registrado", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(RegisterActivity.this, "Error al registrar (HTTP " + code + ")", Toast.LENGTH_SHORT).show();
+                            try {
+                                String errorBody = response.errorBody() != null ? response.errorBody().string() : "Sin detalles";
+                                Log.e("RegistroError", "Cuerpo del error: " + errorBody);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                        }
                     }
                 }
 
@@ -79,6 +92,7 @@ public class RegisterActivity extends AppCompatActivity {
                     Toast.makeText(RegisterActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
+
         });
 
     }

@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.widget.Toast;
 
+import com.example.gestipork_v2.base.FechaUtils;
 import com.example.gestipork_v2.login.Usuario;
 import com.example.gestipork_v2.modelo.Conteo;
 import com.example.gestipork_v2.modelo.Lotes;
@@ -77,12 +78,13 @@ public class DBHelper extends SQLiteOpenHelper {
     //TABLA EXPLOTACIONES
 
     private static final String CREATE_TABLE_EXPLOTACIONES = "CREATE TABLE IF NOT EXISTS explotaciones (" +
-            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            "cod_explotacion TEXT, " +
+            "id TEXT PRIMARY KEY, " +  // UUID
+            "id_usuario TEXT, " +      // UUID del usuario
+            "cod_explotacion TEXT, " + // Valor derivado
             "nombre TEXT, " +
             "sincronizado INTEGER DEFAULT 0, " +
-            "fecha_actualizacion TEXT, " +
-            "iduser INTEGER)";
+            "fecha_actualizacion TEXT)";
+
 
     // TABLA LOTES
     private static final String CREATE_TABLE_LOTES = "CREATE TABLE lotes (" +
@@ -292,47 +294,43 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
 
-    public String obtenerIdUsuarioDesdeEmail(String email) {
+    public String obtenerUuidUsuarioDesdeEmail(String email) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT id FROM usuarios WHERE email = ?", new String[]{email});
-
-        String id = null;
         if (cursor.moveToFirst()) {
-            id = cursor.getString(0);  // UUID
+            String uuid = cursor.getString(0);
+            cursor.close();
+            return uuid;
         }
         cursor.close();
-        return id;
+        return null;
     }
 
 
 
 
-    public boolean insertarExplotacion(String nombre, int idUsuario) {
+
+    public boolean insertarExplotacionNueva(String nombre, String uuidUsuario, String uuidExplotacion, String codExplotacion) {
         SQLiteDatabase db = this.getWritableDatabase();
-
-        // Insertar sin cod_explotacion aún
         ContentValues values = new ContentValues();
+        values.put("id", uuidExplotacion);
         values.put("nombre", nombre);
-        values.put("iduser", idUsuario);
-        long nuevaId = db.insert("explotaciones", null, values);
+        values.put("iduser", uuidUsuario);
+        values.put("cod_explotacion", codExplotacion);
+        values.put("fecha_actualizacion", FechaUtils.obtenerFechaActual());
 
-        if (nuevaId == -1) return false;
-
-        // Generar y actualizar cod_explotacion
-        String codExplotacion = "E" + idUsuario + nuevaId;
-        ContentValues updateValues = new ContentValues();
-        updateValues.put("cod_explotacion", codExplotacion);
-
-        db.update("explotaciones", updateValues, "id = ?", new String[]{String.valueOf(nuevaId)});
-
-        return true;
+        long resultado = db.insert("explotaciones", null, values);
+        return resultado != -1;
     }
+
+
 
     // Obtener todas las explotaciones de un usuario
-    public Cursor obtenerExplotacionesDeUsuario(int idUsuario) {
+    public Cursor obtenerExplotacionesDeUsuario(String uuidUsuario) {
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT nombre FROM explotaciones WHERE iduser = ?", new String[]{String.valueOf(idUsuario)});
+        return db.rawQuery("SELECT nombre FROM explotaciones WHERE id_usuario = ?", new String[]{uuidUsuario});
     }
+
 
     public static String hashPassword(String password) {
         try {
@@ -874,6 +872,22 @@ public class DBHelper extends SQLiteOpenHelper {
         }
 
         cursor.close();
+    }
+    public boolean actualizarNombreExplotacionPorUUID(String nombreViejo, String nombreNuevo, String uuidUsuario) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put("nombre", nombreNuevo);
+
+        int filas = db.update("explotaciones", values,
+                "nombre = ? AND id_usuario = ?", new String[]{nombreViejo, uuidUsuario});
+
+        return filas > 0;
+    }
+    public boolean eliminarExplotacionPorNombreYUUID(String nombre, String uuidUsuario) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int filas = db.delete("explotaciones", "nombre = ? AND id_usuario = ?", new String[]{nombre, uuidUsuario});
+        return filas > 0;
     }
 
 

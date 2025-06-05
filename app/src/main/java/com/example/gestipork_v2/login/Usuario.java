@@ -7,10 +7,7 @@ public class Usuario {
 
     @Expose
     @SerializedName("id")
-    private String id; // UUID de Supabase
-
-    @Expose
-    private String nombre;
+    private String id;
 
     @Expose
     private String email;
@@ -18,13 +15,12 @@ public class Usuario {
     @Expose
     private String password;
 
-
-    public Usuario(String id, String nombre, String email, String password) {
+    public Usuario(String id, String email, String password) {
         this.id = id;
-        this.nombre = nombre;
         this.email = email;
         this.password = password;
     }
+
 
     public String getId() {
         return id;
@@ -32,14 +28,6 @@ public class Usuario {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
     }
 
     public String getEmail() {

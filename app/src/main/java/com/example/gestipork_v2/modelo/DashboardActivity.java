@@ -27,15 +27,14 @@ import com.google.android.material.appbar.MaterialToolbar;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
-import androidx.work.Constraints;
 import androidx.work.NetworkType;
-import androidx.work.ExistingPeriodicWorkPolicy;
-
-import java.util.concurrent.TimeUnit;
 
 public class DashboardActivity extends BaseActivity implements NuevoExplotacionDialogFragment.OnExplotacionCreadaListener {
 
@@ -50,7 +49,6 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
 
-        // Toolbar
         MaterialToolbar toolbar = findViewById(R.id.toolbar_estandar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -66,14 +64,11 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
 
         cargarExplotaciones();
 
-        //sincronizamos datos con supabase cada 15 minutos
-
         Constraints constraints = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build();
 
-        PeriodicWorkRequest syncRequest = new PeriodicWorkRequest.Builder(
-                SyncWorker.class, 15, TimeUnit.MINUTES)
+        PeriodicWorkRequest syncRequest = new PeriodicWorkRequest.Builder(SyncWorker.class, 15, TimeUnit.MINUTES)
                 .setConstraints(constraints)
                 .build();
 
@@ -85,18 +80,20 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
 
         Button btnSync = findViewById(R.id.btnSincronizar);
         btnSync.setOnClickListener(v -> sincronizarManualAhora());
-
-        //sincronizarManualAhora(); // 🔁 prueba directa al arrancar la app
-
     }
 
     public void cargarExplotaciones() {
         SharedPreferences prefs = getSharedPreferences("loginPrefs", MODE_PRIVATE);
-        String email = prefs.getString("userEmail", "");
-        DBHelper dbHelper = new DBHelper(this);
-        int idUsuario = dbHelper.obtenerIdUsuarioDesdeEmail(email);
+        String uuidUsuario = prefs.getString("userUUID", null);
 
-        Cursor cursor = dbHelper.obtenerExplotacionesDeUsuario(idUsuario);
+        if (uuidUsuario == null) {
+            Toast.makeText(this, "Error al obtener el usuario", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        DBHelper dbHelper = new DBHelper(this);
+        Cursor cursor = dbHelper.obtenerExplotacionesDeUsuario(uuidUsuario);
+
         List<String> listaExplotaciones = new ArrayList<>();
 
         if (cursor.moveToFirst()) {
@@ -110,11 +107,7 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
         txtVacio.setVisibility(hayExplotaciones ? View.GONE : View.VISIBLE);
         recyclerResumen.setVisibility(hayExplotaciones ? View.VISIBLE : View.GONE);
 
-        ArrayAdapter<String> adapterSpinner = new ArrayAdapter<>(
-                this,
-                R.layout.spinner_item,
-                listaExplotaciones
-        );
+        ArrayAdapter<String> adapterSpinner = new ArrayAdapter<>(this, R.layout.spinner_item, listaExplotaciones);
         adapterSpinner.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerExplotaciones.setAdapter(adapterSpinner);
 
@@ -130,27 +123,26 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
             }
 
             @Override
-            public void onNothingSelected(android.widget.AdapterView<?> parent) {
-            }
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {}
         });
     }
 
     private void cargarCodExplotacionYActualizarDashboard() {
-        // Evita error si aún no hay ítem seleccionado
-        if (spinnerExplotaciones == null || spinnerExplotaciones.getSelectedItem() == null) {
+        if (spinnerExplotaciones == null || spinnerExplotaciones.getSelectedItem() == null) return;
+
+        String nombreSeleccionado = spinnerExplotaciones.getSelectedItem().toString();
+        SharedPreferences prefs = getSharedPreferences("loginPrefs", MODE_PRIVATE);
+        String uuidUsuario = prefs.getString("userUUID", null);
+
+        if (uuidUsuario == null) {
+            Toast.makeText(this, "Error al obtener el usuario", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String nombreSeleccionado = spinnerExplotaciones.getSelectedItem().toString();
-
-        SharedPreferences prefs = getSharedPreferences("loginPrefs", MODE_PRIVATE);
-        String email = prefs.getString("userEmail", "");
         DBHelper dbHelper = new DBHelper(this);
-        int idUsuario = dbHelper.obtenerIdUsuarioDesdeEmail(email);
-
         Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
                 "SELECT cod_explotacion FROM explotaciones WHERE nombre = ? AND iduser = ?",
-                new String[]{nombreSeleccionado, String.valueOf(idUsuario)}
+                new String[]{nombreSeleccionado, uuidUsuario}
         );
 
         if (cursor.moveToFirst()) {
@@ -164,7 +156,6 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
         }
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_dashboard, menu);
@@ -176,8 +167,7 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
         int id = item.getItemId();
 
         if (id == R.id.menu_add_explotacion) {
-            NuevoExplotacionDialogFragment dialog = new NuevoExplotacionDialogFragment();
-            dialog.show(getSupportFragmentManager(), "NuevoExplotacionDialog");
+            new NuevoExplotacionDialogFragment().show(getSupportFragmentManager(), "NuevoExplotacionDialog");
             return true;
         } else if (id == R.id.menu_logout) {
             cerrarSesion();
@@ -189,6 +179,7 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
             eliminarExplotacionSeleccionada();
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -201,7 +192,6 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
         startActivity(intent);
         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
     }
-
 
     private void editarExplotacionSeleccionada() {
         int posicion = spinnerExplotaciones.getSelectedItemPosition();
@@ -245,15 +235,15 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
         intent.putExtra("nombre_explotacion", nombreSeleccionado);
         startActivity(intent);
     }
+
     @Override
     protected void onResume() {
         super.onResume();
         cargarCodExplotacionYActualizarDashboard();
     }
+
     public void sincronizarManualAhora() {
         OneTimeWorkRequest syncNow = new OneTimeWorkRequest.Builder(SyncWorker.class).build();
         WorkManager.getInstance(this).enqueue(syncNow);
     }
-
-
 }
