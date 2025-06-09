@@ -12,7 +12,7 @@ public class Explotacion {
     private String nombre;
 
     @Expose
-    private String iduser; // UUID del usuario
+    private String id_usuario; // UUID del usuario
 
     @Expose
     private String cod_explotacion;
@@ -20,7 +20,7 @@ public class Explotacion {
     public Explotacion(String id, String nombre, String iduser, String cod_explotacion) {
         this.id = id;
         this.nombre = nombre;
-        this.iduser = iduser;
+        this.id_usuario = iduser;
         this.cod_explotacion = cod_explotacion;
     }
 
@@ -41,11 +41,11 @@ public class Explotacion {
     }
 
     public String getIduser() {
-        return iduser;
+        return id_usuario;
     }
 
     public void setIduser(String iduser) {
-        this.iduser = iduser;
+        this.id_usuario = iduser;
     }
 
     public String getCod_explotacion() {

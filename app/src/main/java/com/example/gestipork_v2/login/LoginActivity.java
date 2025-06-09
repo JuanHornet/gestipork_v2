@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.gestipork_v2.data.ConstantesPrefs;
 import com.example.gestipork_v2.data.DBHelper;
 import com.example.gestipork_v2.modelo.DashboardActivity;
 
@@ -40,7 +41,8 @@ public class LoginActivity extends AppCompatActivity {
 
         dbHelper = new DBHelper(this);
 
-        preferences = getSharedPreferences("loginPrefs", MODE_PRIVATE);
+        preferences = getSharedPreferences(ConstantesPrefs.PREFS_LOGIN, MODE_PRIVATE);
+
 
         // teclado enfoca directamente el campo Usuario
         txtEmail.requestFocus();
@@ -52,7 +54,7 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         // Si ya estaba logueado, entrar directamente
-        boolean isLoggedIn = preferences.getBoolean("isLoggedIn", false);
+        boolean isLoggedIn = preferences.getBoolean(ConstantesPrefs.PREFS_IS_LOGGED_IN, false);
         if (isLoggedIn) {
             startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
             finish();
@@ -77,9 +79,9 @@ public class LoginActivity extends AppCompatActivity {
                     Toast.makeText(LoginActivity.this, "Login exitoso", Toast.LENGTH_SHORT).show();
 
                     SharedPreferences.Editor editor = preferences.edit();
-                    editor.putBoolean("isLoggedIn", true);
-                    editor.putString("userEmail", email);
-                    editor.putString("userUUID", uuid);  // 👈 Guardamos el UUID
+                    editor.putBoolean(ConstantesPrefs.PREFS_IS_LOGGED_IN, true);
+                    editor.putString(ConstantesPrefs.PREFS_USER_EMAIL, email);
+                    editor.putString(ConstantesPrefs.PREFS_USER_UUID, uuid);// 👈 Guardamos el UUID
                     editor.apply();
 
                     Intent intent = new Intent(LoginActivity.this, DashboardActivity.class);

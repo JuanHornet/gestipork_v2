@@ -14,6 +14,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
 import com.example.gestipork_v2.R;
+import com.example.gestipork_v2.data.ConstantesPrefs;
 import com.example.gestipork_v2.data.DBHelper;
 
 public class EditarExplotacionDialogFragment extends DialogFragment {
@@ -46,8 +47,9 @@ public class EditarExplotacionDialogFragment extends DialogFragment {
                     if (!nuevoNombre.isEmpty()) {
 
                         // ✅ Obtener UUID del usuario desde SharedPreferences
-                        SharedPreferences prefs = context.getSharedPreferences("loginPrefs", Context.MODE_PRIVATE);
-                        String uuidUsuario = prefs.getString("userUUID", null);
+                        SharedPreferences prefs = context.getSharedPreferences(ConstantesPrefs.PREFS_LOGIN, Context.MODE_PRIVATE);
+                        String uuidUsuario = prefs.getString(ConstantesPrefs.PREFS_USER_UUID, null);
+
 
                         if (uuidUsuario == null) {
                             Toast.makeText(context, "Error: usuario no identificado", Toast.LENGTH_SHORT).show();

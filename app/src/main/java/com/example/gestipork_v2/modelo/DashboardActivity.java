@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.gestipork_v2.R;
 import com.example.gestipork_v2.base.BaseActivity;
+import com.example.gestipork_v2.data.ConstantesPrefs;
 import com.example.gestipork_v2.data.DBHelper;
 import com.example.gestipork_v2.login.LoginActivity;
 import com.example.gestipork_v2.sync.SyncWorker;
@@ -84,7 +85,7 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
 
     public void cargarExplotaciones() {
         SharedPreferences prefs = getSharedPreferences("loginPrefs", MODE_PRIVATE);
-        String uuidUsuario = prefs.getString("userUUID", null);
+        String uuidUsuario = prefs.getString(ConstantesPrefs.PREFS_USER_UUID, null);
 
         if (uuidUsuario == null) {
             Toast.makeText(this, "Error al obtener el usuario", Toast.LENGTH_SHORT).show();
@@ -141,7 +142,7 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
 
         DBHelper dbHelper = new DBHelper(this);
         Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
-                "SELECT cod_explotacion FROM explotaciones WHERE nombre = ? AND iduser = ?",
+                "SELECT cod_explotacion FROM explotaciones WHERE nombre = ? AND id_usuario = ?",
                 new String[]{nombreSeleccionado, uuidUsuario}
         );
 
@@ -184,8 +185,8 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
     }
 
     private void cerrarSesion() {
-        SharedPreferences preferences = getSharedPreferences("loginPrefs", MODE_PRIVATE);
-        preferences.edit().clear().apply();
+        SharedPreferences prefs = getSharedPreferences(ConstantesPrefs.PREFS_LOGIN, MODE_PRIVATE);
+        prefs.edit().clear().apply();
 
         Intent intent = new Intent(DashboardActivity.this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

@@ -315,7 +315,7 @@ public class DBHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put("id", uuidExplotacion);
         values.put("nombre", nombre);
-        values.put("iduser", uuidUsuario);
+        values.put("id_usuario", uuidUsuario);
         values.put("cod_explotacion", codExplotacion);
         values.put("fecha_actualizacion", FechaUtils.obtenerFechaActual());
 
@@ -889,6 +889,14 @@ public class DBHelper extends SQLiteOpenHelper {
         int filas = db.delete("explotaciones", "nombre = ? AND id_usuario = ?", new String[]{nombre, uuidUsuario});
         return filas > 0;
     }
+
+    public void marcarExplotacionSincronizada(String uuidExplotacion) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("sincronizado", 1);
+        db.update("explotaciones", values, "id = ?", new String[]{uuidExplotacion});
+    }
+
 
 
 }

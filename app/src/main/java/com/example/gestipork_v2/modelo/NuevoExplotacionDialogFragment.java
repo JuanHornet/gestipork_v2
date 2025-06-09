@@ -24,6 +24,8 @@ import com.example.gestipork_v2.network.SupabaseConfig;
 import java.util.UUID;
 
 import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class NuevoExplotacionDialogFragment extends DialogFragment {
 
@@ -56,8 +58,8 @@ public class NuevoExplotacionDialogFragment extends DialogFragment {
                     String nombre = editTextNombre.getText().toString().trim();
                     if (!TextUtils.isEmpty(nombre)) {
                         guardarExplotacion(nombre);
-                    } else {
-                        Toast.makeText(getContext(), "Introduce un nombre", Toast.LENGTH_SHORT).show();
+                    } else if (isAdded()) {
+                        Toast.makeText(requireContext(), "Introduce un nombre", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
@@ -70,7 +72,9 @@ public class NuevoExplotacionDialogFragment extends DialogFragment {
         String uuidUsuario = prefs.getString("userUUID", null);
 
         if (uuidUsuario == null) {
-            Toast.makeText(getContext(), "Error: usuario no identificado", Toast.LENGTH_SHORT).show();
+            if (isAdded()) {
+                Toast.makeText(requireContext(), "Error: usuario no identificado", Toast.LENGTH_SHORT).show();
+            }
             return;
         }
 
@@ -81,9 +85,11 @@ public class NuevoExplotacionDialogFragment extends DialogFragment {
         boolean insertado = dbHelper.insertarExplotacionNueva(nombre, uuidUsuario, uuidExplotacion, codExplotacion);
 
         if (insertado) {
-            Toast.makeText(getContext(), "Explotación guardada localmente", Toast.LENGTH_SHORT).show();
+            if (isAdded()) {
+                Toast.makeText(requireContext(), "Explotación guardada localmente", Toast.LENGTH_SHORT).show();
+            }
 
-            // Enviar a Supabase
+            // Crear objeto con id_usuario (no iduser)
             Explotacion nuevaExplotacion = new Explotacion(uuidExplotacion, nombre, uuidUsuario, codExplotacion);
 
             ExplotacionService service = ApiClient.getClient().create(ExplotacionService.class);
@@ -94,24 +100,34 @@ public class NuevoExplotacionDialogFragment extends DialogFragment {
                     SupabaseConfig.getContentType()
             );
 
-            call.enqueue(new retrofit2.Callback<Void>() {
+            call.enqueue(new Callback<Void>() {
                 @Override
-                public void onResponse(Call<Void> call, retrofit2.Response<Void> response) {
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    if (!isAdded()) return;
+
                     if (response.isSuccessful()) {
+
+                        DBHelper dbHelper = new DBHelper(requireContext());
+                        dbHelper.marcarExplotacionSincronizada(uuidExplotacion);
                         if (listener != null) listener.onExplotacionCreada();
+
                     } else {
-                        Toast.makeText(getContext(), "Error Supabase: HTTP " + response.code(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Error Supabase: HTTP " + response.code(), Toast.LENGTH_SHORT).show();
                     }
                 }
 
                 @Override
                 public void onFailure(Call<Void> call, Throwable t) {
-                    Toast.makeText(getContext(), "Fallo de red al subir explotación", Toast.LENGTH_SHORT).show();
+                    if (isAdded()) {
+                        Toast.makeText(requireContext(), "Fallo de red al subir explotación", Toast.LENGTH_SHORT).show();
+                    }
                 }
             });
 
         } else {
-            Toast.makeText(getContext(), "Error al guardar en SQLite", Toast.LENGTH_SHORT).show();
+            if (isAdded()) {
+                Toast.makeText(requireContext(), "Error al guardar en SQLite", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

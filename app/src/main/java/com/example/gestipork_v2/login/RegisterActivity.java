@@ -1,22 +1,19 @@
 package com.example.gestipork_v2.login;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.gestipork_v2.R;
+import com.example.gestipork_v2.data.ConstantesPrefs;
 import com.example.gestipork_v2.data.DBHelper;
-
-import com.example.gestipork_v2.login.Usuario;
 import com.example.gestipork_v2.network.ApiClient;
-import com.example.gestipork_v2.network.UsuarioService;
 import com.example.gestipork_v2.network.SupabaseConfig;
+import com.example.gestipork_v2.network.UsuarioService;
 
 import retrofit2.Call;
 
@@ -82,7 +79,6 @@ public class RegisterActivity extends AppCompatActivity {
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
-
                         }
                     }
                 }
@@ -92,8 +88,6 @@ public class RegisterActivity extends AppCompatActivity {
                     Toast.makeText(RegisterActivity.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
-
         });
-
     }
 }
