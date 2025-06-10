@@ -8,9 +8,15 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.example.gestipork_v2.data.DBHelper;
 import com.example.gestipork_v2.modelo.Lotes;
+import com.example.gestipork_v2.network.ApiClient;
+import com.example.gestipork_v2.network.LoteService;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoteRepository {
 
@@ -84,4 +90,32 @@ public class LoteRepository {
 
         cursor.close();
     }
+    public void descargarLotesDesdeSupabase(String fechaUltimaSync, String auth, String apiKey, Context context) {
+        LoteService loteService = ApiClient.getClient().create(LoteService.class);
+
+        Call<List<Lotes>> call = loteService.getLotesModificados(
+                "gt." + fechaUltimaSync,
+                "fecha_actualizacion.asc",
+                auth,
+                apiKey,
+                "application/json"
+        );
+
+        call.enqueue(new Callback<List<Lotes>>() {
+            @Override
+            public void onResponse(Call<List<Lotes>> call, Response<List<Lotes>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    for (Lotes lote : response.body()) {
+                        insertarOActualizarLote(lote);  // ya marca sincronizado = 1
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Lotes>> call, Throwable t) {
+                t.printStackTrace();
+            }
+        });
+    }
+
 }

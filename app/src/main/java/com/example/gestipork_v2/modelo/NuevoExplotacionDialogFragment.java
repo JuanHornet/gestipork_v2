@@ -89,7 +89,10 @@ public class NuevoExplotacionDialogFragment extends DialogFragment {
                 Toast.makeText(requireContext(), "Explotación guardada localmente", Toast.LENGTH_SHORT).show();
             }
 
-            // Crear objeto con id_usuario (no iduser)
+            // ✅ Notificar inmediatamente al Dashboard para recargar el spinner
+            if (listener != null) listener.onExplotacionCreada();
+
+            // Luego crear el objeto y subirlo a Supabase
             Explotacion nuevaExplotacion = new Explotacion(uuidExplotacion, nombre, uuidUsuario, codExplotacion);
 
             ExplotacionService service = ApiClient.getClient().create(ExplotacionService.class);
@@ -106,11 +109,8 @@ public class NuevoExplotacionDialogFragment extends DialogFragment {
                     if (!isAdded()) return;
 
                     if (response.isSuccessful()) {
-
                         DBHelper dbHelper = new DBHelper(requireContext());
                         dbHelper.marcarExplotacionSincronizada(uuidExplotacion);
-                        if (listener != null) listener.onExplotacionCreada();
-
                     } else {
                         Toast.makeText(requireContext(), "Error Supabase: HTTP " + response.code(), Toast.LENGTH_SHORT).show();
                     }
@@ -129,5 +129,6 @@ public class NuevoExplotacionDialogFragment extends DialogFragment {
                 Toast.makeText(requireContext(), "Error al guardar en SQLite", Toast.LENGTH_SHORT).show();
             }
         }
+
     }
 }

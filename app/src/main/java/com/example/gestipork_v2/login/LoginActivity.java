@@ -75,23 +75,20 @@ public class LoginActivity extends AppCompatActivity {
                 }
 
                 String uuid = dbHelper.validarYObtenerUUID(email, password);
+
                 if (uuid != null) {
-                    Toast.makeText(LoginActivity.this, "Login exitoso", Toast.LENGTH_SHORT).show();
-
-                    SharedPreferences.Editor editor = preferences.edit();
-                    editor.putBoolean(ConstantesPrefs.PREFS_IS_LOGGED_IN, true);
-                    editor.putString(ConstantesPrefs.PREFS_USER_EMAIL, email);
-                    editor.putString(ConstantesPrefs.PREFS_USER_UUID, uuid);// 👈 Guardamos el UUID
-                    editor.apply();
-
-                    Intent intent = new Intent(LoginActivity.this, DashboardActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-
+                    loginExitoso(uuid, email);
                 } else {
-                    Toast.makeText(LoginActivity.this, "Credenciales incorrectas", Toast.LENGTH_SHORT).show();
+                    // No está en SQLite, intentamos login online
+                    dbHelper.validarOnlineYGuardarSiExitoso(email, password, LoginActivity.this, resultado -> {
+                        if (resultado != null) {
+                            loginExitoso(resultado, email);
+                        } else {
+                            runOnUiThread(() -> Toast.makeText(LoginActivity.this, "Credenciales incorrectas", Toast.LENGTH_SHORT).show());
+                        }
+                    });
                 }
+
 
             }
         });
@@ -108,4 +105,21 @@ public class LoginActivity extends AppCompatActivity {
         });
 
     }
+    private void loginExitoso(String uuid, String email) {
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean(ConstantesPrefs.PREFS_IS_LOGGED_IN, true);
+        editor.putString(ConstantesPrefs.PREFS_USER_EMAIL, email);
+        editor.putString(ConstantesPrefs.PREFS_USER_UUID, uuid);
+        editor.apply();
+
+        dbHelper.importarExplotacionesSiNoExisten(uuid, this, () -> {
+        new com.example.gestipork_v2.sync.SincronizadorLotes(LoginActivity.this).sincronizarLotes();
+
+        Intent intent = new Intent(LoginActivity.this, DashboardActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        });
+    }
+
 }

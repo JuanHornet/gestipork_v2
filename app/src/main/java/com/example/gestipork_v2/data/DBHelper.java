@@ -10,7 +10,12 @@ import android.widget.Toast;
 import com.example.gestipork_v2.base.FechaUtils;
 import com.example.gestipork_v2.login.Usuario;
 import com.example.gestipork_v2.modelo.Conteo;
+import com.example.gestipork_v2.modelo.Explotacion;
 import com.example.gestipork_v2.modelo.Lotes;
+import com.example.gestipork_v2.network.ApiClient;
+import com.example.gestipork_v2.network.ExplotacionService;
+import com.example.gestipork_v2.network.SupabaseConfig;
+import com.example.gestipork_v2.network.UsuarioService;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -18,6 +23,17 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.http.GET;
+import retrofit2.http.Query;
+import retrofit2.http.Header;
+
+
+
 
 public class DBHelper extends SQLiteOpenHelper {
 
@@ -318,6 +334,7 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put("id_usuario", uuidUsuario);
         values.put("cod_explotacion", codExplotacion);
         values.put("fecha_actualizacion", FechaUtils.obtenerFechaActual());
+        values.put("sincronizado", 0);
 
         long resultado = db.insert("explotaciones", null, values);
         return resultado != -1;
@@ -347,22 +364,23 @@ public class DBHelper extends SQLiteOpenHelper {
         }
     }
 
-    public boolean actualizarNombreExplotacion(String nombreViejo, String nombreNuevo, int idUsuario) {
+    public boolean actualizarNombreExplotacion(String nombreViejo, String nombreNuevo, String uuidUsuario) {
         SQLiteDatabase db = this.getWritableDatabase();
-
         ContentValues values = new ContentValues();
         values.put("nombre", nombreNuevo);
 
         int filas = db.update("explotaciones", values,
-                "nombre = ? AND iduser = ?", new String[]{nombreViejo, String.valueOf(idUsuario)});
+                "nombre = ? AND id_usuario = ?", new String[]{nombreViejo, uuidUsuario});
 
         return filas > 0;
     }
-    public boolean eliminarExplotacionPorNombre(String nombre, int idUsuario) {
+
+    public boolean eliminarExplotacionPorNombre(String nombre, String uuidUsuario) {
         SQLiteDatabase db = this.getWritableDatabase();
-        int filas = db.delete("explotaciones", "nombre = ? AND iduser = ?", new String[]{nombre, String.valueOf(idUsuario)});
+        int filas = db.delete("explotaciones", "nombre = ? AND id_usuario = ?", new String[]{nombre, uuidUsuario});
         return filas > 0;
     }
+
     public void insertarRegistrosRelacionadosLote(Context context, SQLiteDatabase db, String codLote, String codExplotacion, String raza) {
         // 1. Insertar en parideras
         String codParidera = "P" + codLote + codExplotacion;
@@ -897,6 +915,88 @@ public class DBHelper extends SQLiteOpenHelper {
         db.update("explotaciones", values, "id = ?", new String[]{uuidExplotacion});
     }
 
+    public interface LoginCallback {
+        void onResultado(String uuid); // uuid != null si login válido
+    }
+    public void validarOnlineYGuardarSiExitoso(String email, String password, Context context, LoginCallback callback) {
+        String hashedPassword = hashPassword(password);
+
+        UsuarioService service = ApiClient.getClient().create(UsuarioService.class);
+        Call<List<Usuario>> call = service.obtenerUsuarioPorCredenciales(
+                "eq." + email,
+                "eq." + hashedPassword,
+                SupabaseConfig.getAuthHeader(),
+                SupabaseConfig.getApiKey(),
+                SupabaseConfig.getContentType()
+        );
+
+        call.enqueue(new Callback<List<Usuario>>() {
+            @Override
+            public void onResponse(Call<List<Usuario>> call, Response<List<Usuario>> response) {
+                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                    Usuario usuario = response.body().get(0);
+                    registrarUsuarioConUUID(usuario); // Guardar en SQLite como sincronizado
+                    callback.onResultado(usuario.getId());
+                } else {
+                    callback.onResultado(null);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Usuario>> call, Throwable t) {
+                callback.onResultado(null);
+            }
+        });
+    }
+
+    public void guardarExplotacionesImportadas(List<Explotacion> lista) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        for (Explotacion e : lista) {
+            ContentValues values = new ContentValues();
+            values.put("id", e.getId());
+            values.put("nombre", e.getNombre());
+            values.put("id_usuario", e.getIduser());
+            values.put("cod_explotacion", e.getCod_explotacion());
+            values.put("fecha_actualizacion", FechaUtils.obtenerFechaActual());
+            values.put("sincronizado", 1); // ya viene de la nube
+            db.insert("explotaciones", null, values);
+        }
+    }
+        public void importarExplotacionesSiNoExisten(String uuidUsuario, Context context, Runnable onFinish) {
+            Cursor cursor = obtenerExplotacionesDeUsuario(uuidUsuario);
+            if (cursor.getCount() > 0) {
+                cursor.close();
+                onFinish.run(); // Ya hay explotaciones
+                return;
+            }
+            cursor.close();
+
+            ExplotacionService service = ApiClient.getClient().create(ExplotacionService.class);
+            Call<List<Explotacion>> call = service.obtenerExplotacionesPorUsuario(
+                    "eq." + uuidUsuario,
+                    SupabaseConfig.getAuthHeader(),
+                    SupabaseConfig.getApiKey(),
+                    SupabaseConfig.getContentType()
+            );
+
+            call.enqueue(new Callback<List<Explotacion>>() {
+                @Override
+                public void onResponse(Call<List<Explotacion>> call, Response<List<Explotacion>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        guardarExplotacionesImportadas(response.body());
+                    }
+                    onFinish.run();
+                }
+
+                @Override
+                public void onFailure(Call<List<Explotacion>> call, Throwable t) {
+                    onFinish.run(); // continuar aunque haya fallo
+                }
+            });
+        }
+
+    }
 
 
-}
+
+

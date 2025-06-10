@@ -19,6 +19,7 @@ public class SyncWorker extends Worker {
     @Override
     public Result doWork() {
         Log.d("SYNC_WORKER", "Sincronización iniciada por WorkManager");
+        new SincronizadorLotes(getApplicationContext()).sincronizarLotes();
 
         try {
             SincronizadorGeneral sincronizador = new SincronizadorGeneral(getApplicationContext());
