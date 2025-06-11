@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName;
 
 public class Lotes {
     @Expose(serialize = false)
-    private int id;
+    private String id;
     @Expose
     @SerializedName("ndisponibles")
     private int nDisponibles;
@@ -44,7 +44,7 @@ public class Lotes {
 
     // Constructor completo si lo necesitas
 
-    public Lotes(int id, int nDisponibles, int nIniciales, String cod_lote, String cod_explotacion, String cod_paridera, String cod_cubricion, String cod_itaca, String raza, String color, int estado, String fecha_actualizacion, int sincronizado) {
+    public Lotes(String id, int nDisponibles, int nIniciales, String cod_lote, String cod_explotacion, String cod_paridera, String cod_cubricion, String cod_itaca, String raza, String color, int estado, String fecha_actualizacion, int sincronizado) {
         this.id = id;
         this.nDisponibles = nDisponibles;
         this.nIniciales = nIniciales;
@@ -63,11 +63,11 @@ public class Lotes {
 
     // Getters y setters
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 

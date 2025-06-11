@@ -34,7 +34,7 @@ public class LoteRepository {
         if (cursor.moveToFirst()) {
             do {
                 Lotes lote = new Lotes();
-                lote.setId(cursor.getInt(cursor.getColumnIndexOrThrow("id")));
+                lote.setId(cursor.getString(cursor.getColumnIndexOrThrow("id")));
                 lote.setCod_explotacion(cursor.getString(cursor.getColumnIndexOrThrow("cod_explotacion")));
                 lote.setnDisponibles(cursor.getInt(cursor.getColumnIndexOrThrow("nDisponibles")));
                 lote.setnIniciales(cursor.getInt(cursor.getColumnIndexOrThrow("nIniciales")));
@@ -55,17 +55,17 @@ public class LoteRepository {
         return lista;
     }
 
-    public void marcarLoteComoSincronizado(int id, String fechaActualizacion) {
+    public void marcarLoteComoSincronizado(String id, String fechaActualizacion) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("sincronizado", 1);
         values.put("fecha_actualizacion", fechaActualizacion);
-        db.update("lotes", values, "id = ?", new String[]{String.valueOf(id)});
+        db.update("lotes", values, "id = ?", new String[]{id});
     }
 
     public void insertarOActualizarLote(Lotes lote) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        Cursor cursor = db.rawQuery("SELECT id FROM lotes WHERE id = ?", new String[]{String.valueOf(lote.getId())});
+        Cursor cursor = db.rawQuery("SELECT id FROM lotes WHERE id = ?", new String[]{lote.getId()});
 
         ContentValues values = new ContentValues();
         values.put("id", lote.getId());
@@ -83,7 +83,7 @@ public class LoteRepository {
         values.put("fecha_actualizacion", lote.getFecha_actualizacion());
 
         if (cursor.moveToFirst()) {
-            db.update("lotes", values, "id = ?", new String[]{String.valueOf(lote.getId())});
+            db.update("lotes", values, "id = ?", new String[]{lote.getId()});
         } else {
             db.insert("lotes", null, values);
         }

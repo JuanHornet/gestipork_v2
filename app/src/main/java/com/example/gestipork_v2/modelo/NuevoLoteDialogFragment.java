@@ -1,5 +1,7 @@
 package com.example.gestipork_v2.modelo;
 
+import static com.example.gestipork_v2.base.FechaUtils.obtenerFechaActual;
+
 import android.app.Dialog;
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -89,8 +91,10 @@ public class NuevoLoteDialogFragment extends DialogFragment {
             return;
         }
         cursor.close();
+        String uuidLote = java.util.UUID.randomUUID().toString();
 
         ContentValues values = new ContentValues();
+        values.put("id", uuidLote);
         values.put("cod_lote", codLote);
         values.put("raza", raza);
         values.put("cod_explotacion", codExplotacion);
@@ -101,6 +105,8 @@ public class NuevoLoteDialogFragment extends DialogFragment {
         values.put("cod_paridera", "");
         values.put("cod_cubricion", "");
         values.put("cod_itaca", "");
+        values.put("sincronizado", 0);
+        values.put("fecha_actualizacion", obtenerFechaActual());
 
         long resultado = db.insert("lotes", null, values);
 

@@ -381,12 +381,12 @@ public class DBHelper extends SQLiteOpenHelper {
         return filas > 0;
     }
 
-    public void insertarRegistrosRelacionadosLote(Context context, SQLiteDatabase db, String codLote, String codExplotacion, String raza) {
+    public void insertarRegistrosRelacionadosLote(Context context, SQLiteDatabase db, String uuidLote, String codExplotacion, String raza) {
         // 1. Insertar en parideras
-        String codParidera = "P" + codLote + codExplotacion;
+        String codParidera = "P" + uuidLote + codExplotacion;
         ContentValues paridera = new ContentValues();
         paridera.put("cod_paridera", codParidera);
-        paridera.put("cod_lote", codLote);
+        paridera.put("cod_lote", uuidLote); // usar UUID como clave
         paridera.put("cod_explotacion", codExplotacion);
         paridera.put("fechaInicioParidera", "");
         paridera.put("fechaFinParidera", "");
@@ -400,15 +400,13 @@ public class DBHelper extends SQLiteOpenHelper {
         }
 
         // 2. Insertar en cubriciones
-        String codCubricion = "C" + codLote + codExplotacion;
+        String codCubricion = "C" + uuidLote + codExplotacion;
         ContentValues cubricion = new ContentValues();
         cubricion.put("cod_cubricion", codCubricion);
-        cubricion.put("cod_lote", codLote);
+        cubricion.put("cod_lote", uuidLote);
         cubricion.put("cod_explotacion", codExplotacion);
-        cubricion.put("nMadres", 0);
-        cubricion.put("nPadres", 0);
-        cubricion.put("fechaInicioCubricion", "");
-        cubricion.put("fechaFinCubricion", "");
+        cubricion.put("fecha", "");
+        cubricion.put("tipo", "");
 
         long resultadoCubricion = db.insert("cubriciones", null, cubricion);
         if (resultadoCubricion == -1) {
@@ -416,26 +414,26 @@ public class DBHelper extends SQLiteOpenHelper {
         }
 
         // 3. Insertar en itaca
-        String codItaca = "I" + codLote + codExplotacion;
+        String codItaca = "I" + uuidLote + codExplotacion;
         ContentValues itaca = new ContentValues();
         itaca.put("cod_itaca", codItaca);
-        itaca.put("DCER", "");
-        itaca.put("cod_lote", codLote);
+        itaca.put("cod_lote", uuidLote);
         itaca.put("cod_explotacion", codExplotacion);
         itaca.put("raza", raza);
-        itaca.put("nAnimales", 0);
+        itaca.put("color", "");
         itaca.put("nMadres", 0);
         itaca.put("nPadres", 0);
-        itaca.put("fechaPNacimiento", "");
-        itaca.put("fechaUltNacimiento", "");
-        itaca.put("color", "Seleccione color de crotal");    // 👈 CAMBIO CLAVE
-        itaca.put("crotalesSolicitados", 0);
+        itaca.put("nAnimales", 0);
+        itaca.put("fechaPrimerNacimiento", "");
+        itaca.put("fechaUltimoNacimiento", "");
+        itaca.put("crotalesSolicitados", "");
 
         long resultadoItaca = db.insert("itaca", null, itaca);
         if (resultadoItaca == -1) {
-            Toast.makeText(context, "Lote guardado, pero error en itaca", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Lote guardado, pero error en Itaca", Toast.LENGTH_SHORT).show();
         }
     }
+
 
 
     public boolean eliminarLoteConRelaciones(String codLote, String codExplotacion) {
@@ -836,7 +834,7 @@ public class DBHelper extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             do {
                 Lotes lote = new Lotes();
-                lote.setId(cursor.getInt(cursor.getColumnIndexOrThrow("id")));
+                lote.setId(cursor.getString(cursor.getColumnIndexOrThrow("id")));
                 lote.setCod_explotacion(cursor.getString(cursor.getColumnIndexOrThrow("cod_explotacion")));
                 lote.setnDisponibles(cursor.getInt(cursor.getColumnIndexOrThrow("nDisponibles")));
                 lote.setnIniciales(cursor.getInt(cursor.getColumnIndexOrThrow("nIniciales")));
