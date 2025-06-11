@@ -104,7 +104,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     // TABLA LOTES
     private static final String CREATE_TABLE_LOTES = "CREATE TABLE lotes (" +
-            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "id TEXT PRIMARY KEY, " +
             "cod_explotacion TEXT, " +
             "nDisponibles INTEGER, " +
             "nIniciales INTEGER, " +
@@ -121,7 +121,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     // TABLA ITACA
     private static final String CREATE_TABLE_ITACA = "CREATE TABLE itaca (" +
-            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "id TEXT PRIMARY KEY, " +
             "cod_itaca TEXT UNIQUE NOT NULL, " +
             "DCER TEXT, " +
             "nAnimales INTEGER, " +
@@ -141,7 +141,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     // TABLA CUBRICIONES
     private static final String CREATE_TABLE_CUBRICIONES = "CREATE TABLE cubriciones (" +
-            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "id TEXT PRIMARY KEY, " +
             "cod_cubricion TEXT, " +
             "nMadres INTEGER, " +
             "nPadres INTEGER, " +
@@ -155,7 +155,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     // TABLA PARIDERAS
     private static final String CREATE_TABLE_PARIDERAS = "CREATE TABLE parideras (" +
-            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "id TEXT PRIMARY KEY, " +
             "cod_paridera TEXT, " +
             "fechaInicioParidera TEXT, " +
             "fechaFinParidera TEXT, " +
@@ -385,14 +385,17 @@ public class DBHelper extends SQLiteOpenHelper {
         // 1. Insertar en parideras
         String codParidera = "P" + uuidLote + codExplotacion;
         ContentValues paridera = new ContentValues();
+        paridera.put("id", java.util.UUID.randomUUID().toString());
         paridera.put("cod_paridera", codParidera);
-        paridera.put("cod_lote", uuidLote); // usar UUID como clave
+        paridera.put("cod_lote", uuidLote);
         paridera.put("cod_explotacion", codExplotacion);
         paridera.put("fechaInicioParidera", "");
         paridera.put("fechaFinParidera", "");
         paridera.put("nacidosVivos", 0);
         paridera.put("nParidas", 0);
         paridera.put("nVacias", 0);
+        paridera.put("sincronizado", 0);
+        paridera.put("fecha_actualizacion", com.example.gestipork_v2.base.FechaUtils.obtenerFechaActual());
 
         long resultadoParidera = db.insert("parideras", null, paridera);
         if (resultadoParidera == -1) {
@@ -402,11 +405,16 @@ public class DBHelper extends SQLiteOpenHelper {
         // 2. Insertar en cubriciones
         String codCubricion = "C" + uuidLote + codExplotacion;
         ContentValues cubricion = new ContentValues();
+        cubricion.put("id", java.util.UUID.randomUUID().toString());
         cubricion.put("cod_cubricion", codCubricion);
         cubricion.put("cod_lote", uuidLote);
         cubricion.put("cod_explotacion", codExplotacion);
-        cubricion.put("fecha", "");
-        cubricion.put("tipo", "");
+        cubricion.put("nMadres", 0);
+        cubricion.put("nPadres", 0);
+        cubricion.put("fechaInicioCubricion", "");
+        cubricion.put("fechaFinCubricion", "");
+        cubricion.put("sincronizado", 0);
+        cubricion.put("fecha_actualizacion", com.example.gestipork_v2.base.FechaUtils.obtenerFechaActual());
 
         long resultadoCubricion = db.insert("cubriciones", null, cubricion);
         if (resultadoCubricion == -1) {
@@ -416,6 +424,7 @@ public class DBHelper extends SQLiteOpenHelper {
         // 3. Insertar en itaca
         String codItaca = "I" + uuidLote + codExplotacion;
         ContentValues itaca = new ContentValues();
+        itaca.put("id", java.util.UUID.randomUUID().toString());
         itaca.put("cod_itaca", codItaca);
         itaca.put("cod_lote", uuidLote);
         itaca.put("cod_explotacion", codExplotacion);
@@ -427,12 +436,15 @@ public class DBHelper extends SQLiteOpenHelper {
         itaca.put("fechaPrimerNacimiento", "");
         itaca.put("fechaUltimoNacimiento", "");
         itaca.put("crotalesSolicitados", "");
+        itaca.put("sincronizado", 0);
+        itaca.put("fecha_actualizacion", com.example.gestipork_v2.base.FechaUtils.obtenerFechaActual());
 
         long resultadoItaca = db.insert("itaca", null, itaca);
         if (resultadoItaca == -1) {
             Toast.makeText(context, "Lote guardado, pero error en Itaca", Toast.LENGTH_SHORT).show();
         }
     }
+
 
 
 

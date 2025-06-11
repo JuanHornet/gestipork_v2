@@ -4,28 +4,17 @@ import java.util.Date;
 
 public class Cubriciones {
 
-    private int id;
+    private String id;
     private String cod_cubricion, cod_explotacion, cod_lote;
     private int nMadres, nPadres;
-    private Date fechaInicioCubricion, fechaFinCubricion;
+    private String fechaInicioCubricion, fechaFinCubricion;
     private int sincronizado; // nuevo
     private String fechaActualizacion; // nuevo
 
     public Cubriciones() {
     }
 
-    public Cubriciones(int id, String cod_cubricion, String cod_explotacion, String cod_lote, int nMadres, int nPadres, Date fechaInicioCubricion, Date fechaFinCubricion) {
-        this.id = id;
-        this.cod_cubricion = cod_cubricion;
-        this.cod_explotacion = cod_explotacion;
-        this.cod_lote = cod_lote;
-        this.nMadres = nMadres;
-        this.nPadres = nPadres;
-        this.fechaInicioCubricion = fechaInicioCubricion;
-        this.fechaFinCubricion = fechaFinCubricion;
-    }
-
-    public Cubriciones(int id, String cod_cubricion, String cod_explotacion, String cod_lote, int nMadres, int nPadres, Date fechaInicioCubricion, Date fechaFinCubricion, int sincronizado, String fechaActualizacion) {
+    public Cubriciones(String id, String cod_cubricion, String cod_explotacion, String cod_lote, int nMadres, int nPadres, String fechaInicioCubricion, String fechaFinCubricion, int sincronizado, String fechaActualizacion) {
         this.id = id;
         this.cod_cubricion = cod_cubricion;
         this.cod_explotacion = cod_explotacion;
@@ -38,11 +27,11 @@ public class Cubriciones {
         this.fechaActualizacion = fechaActualizacion;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -86,19 +75,19 @@ public class Cubriciones {
         this.nPadres = nPadres;
     }
 
-    public Date getFechaInicioCubricion() {
+    public String getFechaInicioCubricion() {
         return fechaInicioCubricion;
     }
 
-    public void setFechaInicioCubricion(Date fechaInicioCubricion) {
+    public void setFechaInicioCubricion(String fechaInicioCubricion) {
         this.fechaInicioCubricion = fechaInicioCubricion;
     }
 
-    public Date getFechaFinCubricion() {
+    public String getFechaFinCubricion() {
         return fechaFinCubricion;
     }
 
-    public void setFechaFinCubricion(Date fechaFinCubricion) {
+    public void setFechaFinCubricion(String fechaFinCubricion) {
         this.fechaFinCubricion = fechaFinCubricion;
     }
 

@@ -4,10 +4,10 @@ import java.util.Date;
 
 public class Itaca {
 
-    private int id;
+    private String id;
     private String cod_itaca,DCER;
     private int nAnimales, nMadres, nPadres;
-    private Date fechaPNacimiento, fechaUNacimiento;
+    private String fechaPNacimiento, fechaUNacimiento;
     private String raza;
     private String color;
     private int crotalesSolicitados;
@@ -15,7 +15,10 @@ public class Itaca {
     private int sincronizado; // nuevo
     private String fechaActualizacion; // nuevo
 
-    public Itaca(int id, String cod_itaca, String DCER, int nAnimales, int nMadres, int nPadres, Date fechaPNacimiento, Date fechaUNacimiento, String raza, String color, int crotalesSolicitados, String cod_lote, String cod_explotacion, int sincronizado, String fechaActualizacion) {
+    public Itaca() {
+    }
+
+    public Itaca(String id, String cod_itaca, String DCER, int nAnimales, int nMadres, int nPadres, String fechaPNacimiento, String fechaUNacimiento, String raza, String color, int crotalesSolicitados, String cod_lote, String cod_explotacion, int sincronizado, String fechaActualizacion) {
         this.id = id;
         this.cod_itaca = cod_itaca;
         this.DCER = DCER;
@@ -33,21 +36,11 @@ public class Itaca {
         this.fechaActualizacion = fechaActualizacion;
     }
 
-    public Itaca() {}
-
-    public String getDCER() {
-        return DCER;
-    }
-
-    public void setDCER(String DCER) {
-        this.DCER = DCER;
-    }
-
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -57,6 +50,14 @@ public class Itaca {
 
     public void setCod_itaca(String cod_itaca) {
         this.cod_itaca = cod_itaca;
+    }
+
+    public String getDCER() {
+        return DCER;
+    }
+
+    public void setDCER(String DCER) {
+        this.DCER = DCER;
     }
 
     public int getnAnimales() {
@@ -83,19 +84,19 @@ public class Itaca {
         this.nPadres = nPadres;
     }
 
-    public Date getFechaPNacimiento() {
+    public String getFechaPNacimiento() {
         return fechaPNacimiento;
     }
 
-    public void setFechaPNacimiento(Date fechaPNacimiento) {
+    public void setFechaPNacimiento(String fechaPNacimiento) {
         this.fechaPNacimiento = fechaPNacimiento;
     }
 
-    public Date getFechaUNacimiento() {
+    public String getFechaUNacimiento() {
         return fechaUNacimiento;
     }
 
-    public void setFechaUNacimiento(Date fechaUNacimiento) {
+    public void setFechaUNacimiento(String fechaUNacimiento) {
         this.fechaUNacimiento = fechaUNacimiento;
     }
 

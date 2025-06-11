@@ -1,6 +1,5 @@
 package com.example.gestipork_v2.modelo;
 
-
 import android.app.DatePickerDialog;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -25,22 +24,18 @@ public class CubricionActivity extends AppCompatActivity {
 
     private EditText editNMadres, editNPadres, editFechaInicio, editFechaFin;
     private Button btnEditar, btnGuardar, btnCancelar;
-
-    private String codLote, codExplotacion;
-    private String inicialMadres, inicialPadres, inicialInicio, inicialFin;
-
     private LinearLayout layoutBotones;
 
+    private String idCubricion; // UUID de cubrición
+    private String inicialMadres, inicialPadres, inicialInicio, inicialFin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cubricion);
 
-
-
-        codLote = getIntent().getStringExtra("cod_lote");
-        codExplotacion = getIntent().getStringExtra("cod_explotacion");
+        // Obtener UUID desde el intent
+        idCubricion = getIntent().getStringExtra("id_cubricion");
 
         editNMadres = findViewById(R.id.edit_n_madres);
         editNPadres = findViewById(R.id.edit_n_padres);
@@ -49,7 +44,6 @@ public class CubricionActivity extends AppCompatActivity {
         btnEditar = findViewById(R.id.btn_editar);
         btnGuardar = findViewById(R.id.btn_guardar_cubricion);
         btnCancelar = findViewById(R.id.btn_cancelar);
-
         layoutBotones = findViewById(R.id.layout_botones_edicion);
 
         cargarDatos();
@@ -72,22 +66,18 @@ public class CubricionActivity extends AppCompatActivity {
 
         btnGuardar.setOnClickListener(v -> {
             guardarCambios();
-            finish(); // Vuelve a DetalleLoteActivity
+            finish();
         });
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar_estandar);
         setSupportActionBar(toolbar);
 
-        // Esta línea hace que se muestre la flecha
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Cubrición " + codLote);
-
+            getSupportActionBar().setTitle("Cubrición");
         }
 
-        // Esta línea es la que gestiona el clic en la flecha
         toolbar.setNavigationOnClickListener(v -> finish());
-
     }
 
     private void cargarDatos() {
@@ -95,8 +85,9 @@ public class CubricionActivity extends AppCompatActivity {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
         Cursor cursor = db.rawQuery(
-                "SELECT nMadres, nPadres, fechaInicioCubricion, fechaFinCubricion FROM cubriciones WHERE cod_lote = ? AND cod_explotacion = ?",
-                new String[]{codLote, codExplotacion});
+                "SELECT nMadres, nPadres, fechaInicioCubricion, fechaFinCubricion FROM cubriciones WHERE id = ?",
+                new String[]{idCubricion}
+        );
 
         if (cursor.moveToFirst()) {
             inicialMadres = String.valueOf(cursor.getInt(0));
@@ -114,35 +105,6 @@ public class CubricionActivity extends AppCompatActivity {
         db.close();
     }
 
-    private void bloquearCampos() {
-        editNMadres.setEnabled(false);
-        editNPadres.setEnabled(false);
-        editFechaInicio.setEnabled(false);
-        editFechaFin.setEnabled(false);
-
-        btnEditar.setVisibility(View.VISIBLE);
-        layoutBotones.setVisibility(View.GONE);
-
-    }
-
-    private void activarEdicion() {
-        editNMadres.setEnabled(true);
-        editNPadres.setEnabled(true);
-        editFechaInicio.setEnabled(true);
-        editFechaFin.setEnabled(true);
-
-        btnEditar.setVisibility(View.GONE);
-        layoutBotones.setVisibility(View.VISIBLE);
-
-    }
-
-    private void restaurarDatos() {
-        editNMadres.setText(inicialMadres);
-        editNPadres.setText(inicialPadres);
-        editFechaInicio.setText(inicialInicio);
-        editFechaFin.setText(inicialFin);
-    }
-
     private void guardarCambios() {
         String madres = editNMadres.getText().toString().trim();
         String padres = editNPadres.getText().toString().trim();
@@ -152,11 +114,36 @@ public class CubricionActivity extends AppCompatActivity {
         DBHelper dbHelper = new DBHelper(this);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-        db.execSQL("UPDATE cubriciones SET nMadres = ?, nPadres = ?, fechaInicioCubricion = ?, fechaFinCubricion = ? WHERE cod_lote = ? AND cod_explotacion = ?",
-                new Object[]{madres, padres, inicio, fin, codLote, codExplotacion});
+        db.execSQL("UPDATE cubriciones SET nMadres = ?, nPadres = ?, fechaInicioCubricion = ?, fechaFinCubricion = ?, sincronizado = 0, fecha_actualizacion = datetime('now') WHERE id = ?",
+                new Object[]{madres, padres, inicio, fin, idCubricion});
 
         db.close();
         Toast.makeText(this, "Cubrición actualizada", Toast.LENGTH_SHORT).show();
+    }
+
+    private void bloquearCampos() {
+        editNMadres.setEnabled(false);
+        editNPadres.setEnabled(false);
+        editFechaInicio.setEnabled(false);
+        editFechaFin.setEnabled(false);
+        btnEditar.setVisibility(View.VISIBLE);
+        layoutBotones.setVisibility(View.GONE);
+    }
+
+    private void activarEdicion() {
+        editNMadres.setEnabled(true);
+        editNPadres.setEnabled(true);
+        editFechaInicio.setEnabled(true);
+        editFechaFin.setEnabled(true);
+        btnEditar.setVisibility(View.GONE);
+        layoutBotones.setVisibility(View.VISIBLE);
+    }
+
+    private void restaurarDatos() {
+        editNMadres.setText(inicialMadres);
+        editNPadres.setText(inicialPadres);
+        editFechaInicio.setText(inicialInicio);
+        editFechaFin.setText(inicialFin);
     }
 
     private void mostrarDatePicker(EditText target) {
@@ -170,15 +157,12 @@ public class CubricionActivity extends AppCompatActivity {
                 (view, year, month, dayOfMonth) -> {
                     Calendar fechaSeleccionada = Calendar.getInstance();
                     fechaSeleccionada.set(year, month, dayOfMonth);
-
                     SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", locale);
-                    String fechaFormateada = sdf.format(fechaSeleccionada.getTime());
-                    target.setText(fechaFormateada);
+                    target.setText(sdf.format(fechaSeleccionada.getTime()));
                 },
                 calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH)
         ).show();
     }
-
 }

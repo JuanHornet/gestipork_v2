@@ -177,7 +177,7 @@ public class LotesActivity extends BaseActivity {
         if (cursor.moveToFirst()) {
             do {
                 Lotes lote = new Lotes();
-                lote.setId(cursor.getInt(0));
+                lote.setId(cursor.getString(cursor.getColumnIndexOrThrow("id")));
                 lote.setCod_explotacion(cursor.getString(1));
                 lote.setnDisponibles(cursor.getInt(2));
                 lote.setnIniciales(cursor.getInt(3));

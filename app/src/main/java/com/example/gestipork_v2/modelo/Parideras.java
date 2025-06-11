@@ -4,28 +4,17 @@ import java.util.Date;
 
 public class Parideras {
 
-    private int id, nacidosVivos, nParidas, nVacias;
+    private String id;
+    private int nacidosVivos, nParidas, nVacias;
     private String cod_paridera, cod_explotacion, cod_lote;
-    private Date fechaInicioParidera, fechaFinParidera;
+    private String fechaInicioParidera, fechaFinParidera;
     private int sincronizado; // nuevo
     private String fechaActualizacion; // nuevo
 
     public Parideras() {
     }
 
-    public Parideras(int id, int nacidosVivos, int nParidas, int nVacias, String cod_paridera, String cod_explotacion, String cod_lote, Date fechaInicioParidera, Date fechaFinParidera) {
-        this.id = id;
-        this.nacidosVivos = nacidosVivos;
-        this.nParidas = nParidas;
-        this.nVacias = nVacias;
-        this.cod_paridera = cod_paridera;
-        this.cod_explotacion = cod_explotacion;
-        this.cod_lote = cod_lote;
-        this.fechaInicioParidera = fechaInicioParidera;
-        this.fechaFinParidera = fechaFinParidera;
-    }
-
-    public Parideras(int id, int nacidosVivos, int nParidas, int nVacias, String cod_paridera, String cod_explotacion, String cod_lote, Date fechaInicioParidera, Date fechaFinParidera, int sincronizado, String fechaActualizacion) {
+    public Parideras(String id, int nacidosVivos, int nParidas, int nVacias, String cod_paridera, String cod_explotacion, String cod_lote, String fechaInicioParidera, String fechaFinParidera, int sincronizado, String fechaActualizacion) {
         this.id = id;
         this.nacidosVivos = nacidosVivos;
         this.nParidas = nParidas;
@@ -39,11 +28,11 @@ public class Parideras {
         this.fechaActualizacion = fechaActualizacion;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -95,19 +84,19 @@ public class Parideras {
         this.cod_lote = cod_lote;
     }
 
-    public Date getFechaInicioParidera() {
+    public String getFechaInicioParidera() {
         return fechaInicioParidera;
     }
 
-    public void setFechaInicioParidera(Date fechaInicioParidera) {
+    public void setFechaInicioParidera(String fechaInicioParidera) {
         this.fechaInicioParidera = fechaInicioParidera;
     }
 
-    public Date getFechaFinParidera() {
+    public String getFechaFinParidera() {
         return fechaFinParidera;
     }
 
-    public void setFechaFinParidera(Date fechaFinParidera) {
+    public void setFechaFinParidera(String fechaFinParidera) {
         this.fechaFinParidera = fechaFinParidera;
     }
 
