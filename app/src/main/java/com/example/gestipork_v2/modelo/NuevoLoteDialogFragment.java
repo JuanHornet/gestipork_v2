@@ -81,9 +81,12 @@ public class NuevoLoteDialogFragment extends DialogFragment {
         DBHelper dbHelper = new DBHelper(getContext());
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-        // Verificar si existe lote en esta explotación
+        // Ya recibimos el UUID correcto de la explotación
+        String idExplotacion = codExplotacion;
+
+        // Verificar si ya existe ese lote para esta explotación
         Cursor cursor = db.rawQuery("SELECT id FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?",
-                new String[]{codLote, codExplotacion});
+                new String[]{codLote, idExplotacion});
         if (cursor.moveToFirst()) {
             cursor.close();
             db.close();
@@ -91,31 +94,30 @@ public class NuevoLoteDialogFragment extends DialogFragment {
             return;
         }
         cursor.close();
+
         String uuidLote = java.util.UUID.randomUUID().toString();
 
         ContentValues values = new ContentValues();
         values.put("id", uuidLote);
         values.put("cod_lote", codLote);
         values.put("raza", raza);
-        values.put("cod_explotacion", codExplotacion);
+        values.put("cod_explotacion", idExplotacion); // UUID real
         values.put("estado", 1);
         values.put("color", "#F7F1F9");
         values.put("nDisponibles", 0);
         values.put("nIniciales", 0);
-        values.put("cod_paridera", "");
-        values.put("cod_cubricion", "");
-        values.put("cod_itaca", "");
+        values.putNull("cod_paridera");
+        values.putNull("cod_cubricion");
+        values.putNull("cod_itaca");
         values.put("sincronizado", 0);
         values.put("fecha_actualizacion", obtenerFechaActual());
 
         long resultado = db.insert("lotes", null, values);
 
         if (resultado != -1) {
-            // ✅ Insertar registros relacionados
-            dbHelper.insertarRegistrosRelacionadosLote(getContext(), db, codLote, codExplotacion, raza);
+            dbHelper.insertarRegistrosRelacionadosLote(getContext(), db, uuidLote, idExplotacion, raza);
             Toast.makeText(getContext(), "Lote guardado", Toast.LENGTH_SHORT).show();
 
-            // ✅ Refrescar la lista en LotesActivity
             if (getActivity() instanceof LotesActivity) {
                 ((LotesActivity) getActivity()).recargarLotes();
             }
@@ -125,4 +127,6 @@ public class NuevoLoteDialogFragment extends DialogFragment {
 
         db.close();
     }
+
+
 }

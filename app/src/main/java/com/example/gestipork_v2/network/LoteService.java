@@ -20,7 +20,10 @@ public interface LoteService {
     );
 
     // Insertar lote nuevo
-    @Headers("Content-Type: application/json")
+    @Headers({
+            "Content-Type: application/json",
+            "Prefer: return=representation"
+    })
     @POST("lotes")
     Call<Void> insertarLote(
             @Body Lotes lote,

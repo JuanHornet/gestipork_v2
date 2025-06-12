@@ -110,6 +110,8 @@ public class LoginActivity extends AppCompatActivity {
         editor.putBoolean(ConstantesPrefs.PREFS_IS_LOGGED_IN, true);
         editor.putString(ConstantesPrefs.PREFS_USER_EMAIL, email);
         editor.putString(ConstantesPrefs.PREFS_USER_UUID, uuid);
+        editor.putString("authHeader", "Bearer TU_TOKEN_REAL");
+        editor.putString("apiKey", "TU_API_KEY_REAL");
         editor.apply();
 
         dbHelper.importarExplotacionesSiNoExisten(uuid, this, () -> {

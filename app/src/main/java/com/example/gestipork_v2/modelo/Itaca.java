@@ -1,24 +1,77 @@
 package com.example.gestipork_v2.modelo;
 
-import java.util.Date;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 public class Itaca {
 
+    @SerializedName("id")
+    @Expose
     private String id;
-    private String cod_itaca,DCER;
-    private int nAnimales, nMadres, nPadres;
-    private String fechaPNacimiento, fechaUNacimiento;
+
+    @SerializedName("cod_itaca")
+    @Expose
+    private String cod_itaca;
+
+    @SerializedName("DCER")
+    @Expose
+    private String DCER;
+
+    @SerializedName("nAnimales")
+    @Expose
+    private int nAnimales;
+
+    @SerializedName("nMadres")
+    @Expose
+    private int nMadres;
+
+    @SerializedName("nPadres")
+    @Expose
+    private int nPadres;
+
+    @SerializedName("fechaPNacimiento")
+    @Expose
+    private String fechaPNacimiento;
+
+
+    @SerializedName("fechaUltNacimiento")
+    @Expose
+    private String fechaUltNacimiento;
+
+    @SerializedName("raza")
+    @Expose
     private String raza;
+
+    @SerializedName("color")
+    @Expose
     private String color;
+
+    @SerializedName("crotalesSolicitados")
+    @Expose
     private int crotalesSolicitados;
-    private String cod_lote, cod_explotacion;
-    private int sincronizado; // nuevo
-    private String fechaActualizacion; // nuevo
 
-    public Itaca() {
-    }
+    @SerializedName("cod_lote")
+    @Expose
+    private String cod_lote;
 
-    public Itaca(String id, String cod_itaca, String DCER, int nAnimales, int nMadres, int nPadres, String fechaPNacimiento, String fechaUNacimiento, String raza, String color, int crotalesSolicitados, String cod_lote, String cod_explotacion, int sincronizado, String fechaActualizacion) {
+    @SerializedName("cod_explotacion")
+    @Expose
+    private String cod_explotacion;
+
+    @SerializedName("sincronizado")
+    @Expose
+    private int sincronizado;
+
+    @SerializedName("fechaActualizacion")
+    @Expose
+    private String fechaActualizacion;
+
+    public Itaca() {}
+
+    public Itaca(String id, String cod_itaca, String DCER, int nAnimales, int nMadres, int nPadres,
+                 String fechaPNacimiento, String fechaUltNacimiento, String raza, String color,
+                 int crotalesSolicitados, String cod_lote, String cod_explotacion,
+                 int sincronizado, String fechaActualizacion) {
         this.id = id;
         this.cod_itaca = cod_itaca;
         this.DCER = DCER;
@@ -26,7 +79,7 @@ public class Itaca {
         this.nMadres = nMadres;
         this.nPadres = nPadres;
         this.fechaPNacimiento = fechaPNacimiento;
-        this.fechaUNacimiento = fechaUNacimiento;
+        this.fechaUltNacimiento = fechaUltNacimiento;
         this.raza = raza;
         this.color = color;
         this.crotalesSolicitados = crotalesSolicitados;
@@ -35,6 +88,7 @@ public class Itaca {
         this.sincronizado = sincronizado;
         this.fechaActualizacion = fechaActualizacion;
     }
+
 
     public String getId() {
         return id;
@@ -92,12 +146,12 @@ public class Itaca {
         this.fechaPNacimiento = fechaPNacimiento;
     }
 
-    public String getFechaUNacimiento() {
-        return fechaUNacimiento;
+    public String getFechaUltNacimiento() {
+        return fechaUltNacimiento;
     }
 
-    public void setFechaUNacimiento(String fechaUNacimiento) {
-        this.fechaUNacimiento = fechaUNacimiento;
+    public void setFechaUltNacimiento(String fechaUNacimiento) {
+        this.fechaUltNacimiento = fechaUNacimiento;
     }
 
     public String getRaza() {

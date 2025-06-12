@@ -142,7 +142,7 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
 
         DBHelper dbHelper = new DBHelper(this);
         Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
-                "SELECT cod_explotacion FROM explotaciones WHERE nombre = ? AND id_usuario = ?",
+                "SELECT id FROM explotaciones WHERE nombre = ? AND id_usuario = ?",
                 new String[]{nombreSeleccionado, uuidUsuario}
         );
 

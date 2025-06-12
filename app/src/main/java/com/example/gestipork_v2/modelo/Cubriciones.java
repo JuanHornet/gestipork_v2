@@ -1,20 +1,54 @@
 package com.example.gestipork_v2.modelo;
 
-import java.util.Date;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 public class Cubriciones {
 
+    @Expose
     private String id;
-    private String cod_cubricion, cod_explotacion, cod_lote;
-    private int nMadres, nPadres;
-    private String fechaInicioCubricion, fechaFinCubricion;
-    private int sincronizado; // nuevo
-    private String fechaActualizacion; // nuevo
+
+    @Expose
+    @SerializedName("cod_cubricion")
+    private String cod_cubricion;
+
+    @Expose
+    @SerializedName("cod_explotacion")
+    private String cod_explotacion;
+
+    @Expose
+    @SerializedName("cod_lote")
+    private String cod_lote;
+
+    @Expose
+    @SerializedName("nMadres")
+    private int nMadres;
+
+    @Expose
+    @SerializedName("nPadres")
+    private int nPadres;
+
+    @Expose
+    @SerializedName("fechaInicioCubricion")
+    private String fechaInicioCubricion;
+
+    @Expose
+    @SerializedName("fechaFinCubricion")
+    private String fechaFinCubricion;
+
+    @Expose
+    @SerializedName("fecha_actualizacion")
+    private String fechaActualizacion;
+
+    @Expose(serialize = false) // Solo local, no se envía a Supabase
+    private int sincronizado;
 
     public Cubriciones() {
     }
 
-    public Cubriciones(String id, String cod_cubricion, String cod_explotacion, String cod_lote, int nMadres, int nPadres, String fechaInicioCubricion, String fechaFinCubricion, int sincronizado, String fechaActualizacion) {
+    public Cubriciones(String id, String cod_cubricion, String cod_explotacion, String cod_lote,
+                       int nMadres, int nPadres, String fechaInicioCubricion, String fechaFinCubricion,
+                       int sincronizado, String fechaActualizacion) {
         this.id = id;
         this.cod_cubricion = cod_cubricion;
         this.cod_explotacion = cod_explotacion;
@@ -27,83 +61,45 @@ public class Cubriciones {
         this.fechaActualizacion = fechaActualizacion;
     }
 
-    public String getId() {
-        return id;
-    }
+    // Getters y setters
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    public String getId() { return id; }
 
-    public String getCod_cubricion() {
-        return cod_cubricion;
-    }
+    public void setId(String id) { this.id = id; }
 
-    public void setCod_cubricion(String cod_cubricion) {
-        this.cod_cubricion = cod_cubricion;
-    }
+    public String getCod_cubricion() { return cod_cubricion; }
 
-    public String getCod_explotacion() {
-        return cod_explotacion;
-    }
+    public void setCod_cubricion(String cod_cubricion) { this.cod_cubricion = cod_cubricion; }
 
-    public void setCod_explotacion(String cod_explotacion) {
-        this.cod_explotacion = cod_explotacion;
-    }
+    public String getCod_explotacion() { return cod_explotacion; }
 
-    public String getCod_lote() {
-        return cod_lote;
-    }
+    public void setCod_explotacion(String cod_explotacion) { this.cod_explotacion = cod_explotacion; }
 
-    public void setCod_lote(String cod_lote) {
-        this.cod_lote = cod_lote;
-    }
+    public String getCod_lote() { return cod_lote; }
 
-    public int getnMadres() {
-        return nMadres;
-    }
+    public void setCod_lote(String cod_lote) { this.cod_lote = cod_lote; }
 
-    public void setnMadres(int nMadres) {
-        this.nMadres = nMadres;
-    }
+    public int getnMadres() { return nMadres; }
 
-    public int getnPadres() {
-        return nPadres;
-    }
+    public void setnMadres(int nMadres) { this.nMadres = nMadres; }
 
-    public void setnPadres(int nPadres) {
-        this.nPadres = nPadres;
-    }
+    public int getnPadres() { return nPadres; }
 
-    public String getFechaInicioCubricion() {
-        return fechaInicioCubricion;
-    }
+    public void setnPadres(int nPadres) { this.nPadres = nPadres; }
 
-    public void setFechaInicioCubricion(String fechaInicioCubricion) {
-        this.fechaInicioCubricion = fechaInicioCubricion;
-    }
+    public String getFechaInicioCubricion() { return fechaInicioCubricion; }
 
-    public String getFechaFinCubricion() {
-        return fechaFinCubricion;
-    }
+    public void setFechaInicioCubricion(String fechaInicioCubricion) { this.fechaInicioCubricion = fechaInicioCubricion; }
 
-    public void setFechaFinCubricion(String fechaFinCubricion) {
-        this.fechaFinCubricion = fechaFinCubricion;
-    }
+    public String getFechaFinCubricion() { return fechaFinCubricion; }
 
-    public int getSincronizado() {
-        return sincronizado;
-    }
+    public void setFechaFinCubricion(String fechaFinCubricion) { this.fechaFinCubricion = fechaFinCubricion; }
 
-    public void setSincronizado(int sincronizado) {
-        this.sincronizado = sincronizado;
-    }
+    public int getSincronizado() { return sincronizado; }
 
-    public String getFechaActualizacion() {
-        return fechaActualizacion;
-    }
+    public void setSincronizado(int sincronizado) { this.sincronizado = sincronizado; }
 
-    public void setFechaActualizacion(String fechaActualizacion) {
-        this.fechaActualizacion = fechaActualizacion;
-    }
+    public String getFechaActualizacion() { return fechaActualizacion; }
+
+    public void setFechaActualizacion(String fechaActualizacion) { this.fechaActualizacion = fechaActualizacion; }
 }

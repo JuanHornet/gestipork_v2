@@ -27,6 +27,9 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
     private String codLote;
     private String codExplotacion;
 
+    private String idCubricion, idParidera, idItaca;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +64,8 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setOnItemSelectedListener(navListener);
+
+        obtenerIdsRelacionados();
     }
 
     private final NavigationBarView.OnItemSelectedListener navListener = item -> {
@@ -180,21 +185,35 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
             mostrarDialogoEliminarLote();
             return true;
         } else if (id == R.id.menu_ver_cubricion) {
-            startActivity(new Intent(this, CubricionActivity.class)
-                    .putExtra("cod_lote", codLote)
-                    .putExtra("cod_explotacion", codExplotacion));
+            if (idCubricion != null) {
+                startActivity(new Intent(this, CubricionActivity.class)
+                        .putExtra("id_cubricion", idCubricion));
+            } else {
+                Toast.makeText(this, "No se encontró la cubrición", Toast.LENGTH_SHORT).show();
+            }
             return true;
+
         } else if (id == R.id.menu_ver_paridera) {
-            startActivityForResult(new Intent(this, ParideraActivity.class)
-                    .putExtra("cod_lote", codLote)
-                    .putExtra("cod_explotacion", codExplotacion), 1001);
+            if (idParidera != null) {
+                startActivityForResult(new Intent(this, ParideraActivity.class)
+                        .putExtra("id_paridera", idParidera), 1001);
+            } else {
+                Toast.makeText(this, "No se encontró la paridera", Toast.LENGTH_SHORT).show();
+            }
             return true;
+
         } else if (id == R.id.menu_ver_itaca) {
-            startActivityForResult(new Intent(this, ItacaActivity.class)
-                    .putExtra("cod_lote", codLote)
-                    .putExtra("cod_explotacion", codExplotacion), 1001);
+            if (idItaca != null) {
+                startActivityForResult(new Intent(this, ItacaActivity.class)
+                        .putExtra("id_itaca", idItaca)
+                        .putExtra("cod_lote", codLote)
+                        .putExtra("cod_explotacion", codExplotacion), 1001);
+            } else {
+                Toast.makeText(this, "No se encontró Itaca", Toast.LENGTH_SHORT).show();
+            }
             return true;
         }
+
 
         return super.onOptionsItemSelected(item);
     }
@@ -264,6 +283,31 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
     }
     public interface OnActualizarResumenListener {
         void onActualizarResumenLote();
+    }
+
+    private void obtenerIdsRelacionados() {
+        DBHelper dbHelper = new DBHelper(this);
+        Cursor cursor;
+
+        cursor = dbHelper.getReadableDatabase().rawQuery(
+                "SELECT id FROM cubriciones WHERE cod_lote = ? AND cod_explotacion = ?",
+                new String[]{codLote, codExplotacion});
+        if (cursor.moveToFirst()) idCubricion = cursor.getString(0);
+        cursor.close();
+
+        cursor = dbHelper.getReadableDatabase().rawQuery(
+                "SELECT id FROM parideras WHERE cod_lote = ? AND cod_explotacion = ?",
+                new String[]{codLote, codExplotacion});
+        if (cursor.moveToFirst()) idParidera = cursor.getString(0);
+        cursor.close();
+
+        cursor = dbHelper.getReadableDatabase().rawQuery(
+                "SELECT id FROM itaca WHERE cod_lote = ? AND cod_explotacion = ?",
+                new String[]{codLote, codExplotacion});
+        if (cursor.moveToFirst()) idItaca = cursor.getString(0);
+        cursor.close();
+
+        dbHelper.close();
     }
 
 }

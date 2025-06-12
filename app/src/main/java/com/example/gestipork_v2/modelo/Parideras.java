@@ -1,20 +1,59 @@
 package com.example.gestipork_v2.modelo;
 
-import java.util.Date;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 public class Parideras {
 
+    @SerializedName("id")
+    @Expose
     private String id;
-    private int nacidosVivos, nParidas, nVacias;
-    private String cod_paridera, cod_explotacion, cod_lote;
-    private String fechaInicioParidera, fechaFinParidera;
-    private int sincronizado; // nuevo
-    private String fechaActualizacion; // nuevo
 
-    public Parideras() {
-    }
+    @SerializedName("nacidosVivos")
+    @Expose
+    private int nacidosVivos;
 
-    public Parideras(String id, int nacidosVivos, int nParidas, int nVacias, String cod_paridera, String cod_explotacion, String cod_lote, String fechaInicioParidera, String fechaFinParidera, int sincronizado, String fechaActualizacion) {
+    @SerializedName("nParidas")
+    @Expose
+    private int nParidas;
+
+    @SerializedName("nVacias")
+    @Expose
+    private int nVacias;
+
+    @SerializedName("cod_paridera")
+    @Expose
+    private String cod_paridera;
+
+    @SerializedName("cod_explotacion")
+    @Expose
+    private String cod_explotacion;
+
+    @SerializedName("cod_lote")
+    @Expose
+    private String cod_lote;
+
+    @SerializedName("fechaInicioParidera")
+    @Expose
+    private String fechaInicioParidera;
+
+    @SerializedName("fechaFinParidera")
+    @Expose
+    private String fechaFinParidera;
+
+    @SerializedName("sincronizado")
+    @Expose
+    private int sincronizado;
+
+    @SerializedName("fecha_actualizacion")
+    @Expose
+    private String fechaActualizacion;
+
+    public Parideras() {}
+
+    public Parideras(String id, int nacidosVivos, int nParidas, int nVacias, String cod_paridera, String cod_explotacion,
+                     String cod_lote, String fechaInicioParidera, String fechaFinParidera,
+                     int sincronizado, String fechaActualizacion) {
         this.id = id;
         this.nacidosVivos = nacidosVivos;
         this.nParidas = nParidas;

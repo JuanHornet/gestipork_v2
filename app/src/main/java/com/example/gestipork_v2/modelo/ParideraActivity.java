@@ -27,7 +27,7 @@ public class ParideraActivity extends AppCompatActivity {
     private Button btnEditar, btnGuardar, btnCancelar;
     private LinearLayout layoutBotones;
 
-    private String codLote, codExplotacion;
+    private String idParidera; // UUID
     private String inicialVivos, inicialParidas, inicialVacias, inicialInicio, inicialFin;
 
     @Override
@@ -35,8 +35,7 @@ public class ParideraActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_paridera);
 
-        codLote = getIntent().getStringExtra("cod_lote");
-        codExplotacion = getIntent().getStringExtra("cod_explotacion");
+        idParidera = getIntent().getStringExtra("id_paridera");
 
         editNacidosVivos = findViewById(R.id.edit_nacidos_vivos);
         editCerdasParidas = findViewById(R.id.edit_cerdas_paridas);
@@ -68,14 +67,15 @@ public class ParideraActivity extends AppCompatActivity {
 
         btnGuardar.setOnClickListener(v -> {
             guardarCambios();
-            finish(); // Vuelve atrás
+            finish();
         });
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar_estandar);
         setSupportActionBar(toolbar);
+
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Paridera " + codLote);
+            getSupportActionBar().setTitle("Paridera");
         }
 
         toolbar.setNavigationOnClickListener(v -> finish());
@@ -86,8 +86,8 @@ public class ParideraActivity extends AppCompatActivity {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
         Cursor cursor = db.rawQuery(
-                "SELECT nacidosVivos, nParidas, nVacias, fechaInicioParidera, fechaFinParidera FROM parideras WHERE cod_lote = ? AND cod_explotacion = ?",
-                new String[]{codLote, codExplotacion});
+                "SELECT nacidosVivos, nParidas, nVacias, fechaInicioParidera, fechaFinParidera FROM parideras WHERE id = ?",
+                new String[]{idParidera});
 
         if (cursor.moveToFirst()) {
             inicialVivos = String.valueOf(cursor.getInt(0));
@@ -107,13 +107,37 @@ public class ParideraActivity extends AppCompatActivity {
         db.close();
     }
 
+    private void guardarCambios() {
+        String vivos = editNacidosVivos.getText().toString().trim();
+        String paridas = editCerdasParidas.getText().toString().trim();
+        String vacias = editCerdasVacias.getText().toString().trim();
+        String inicio = editFechaInicio.getText().toString().trim();
+        String fin = editFechaFin.getText().toString().trim();
+
+        if (vivos.isEmpty()) vivos = "0";
+        if (paridas.isEmpty()) paridas = "0";
+        if (vacias.isEmpty()) vacias = "0";
+
+        DBHelper dbHelper = new DBHelper(this);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        db.execSQL("UPDATE parideras SET nacidosVivos = ?, nParidas = ?, nVacias = ?, fechaInicioParidera = ?, fechaFinParidera = ?, sincronizado = 0, fecha_actualizacion = datetime('now') WHERE id = ?",
+                new Object[]{vivos, paridas, vacias, inicio, fin, idParidera});
+
+        db.close();
+        Toast.makeText(this, "Paridera actualizada", Toast.LENGTH_SHORT).show();
+
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("paridera_actualizada", true);
+        setResult(RESULT_OK, resultIntent);
+    }
+
     private void bloquearCampos() {
         editNacidosVivos.setEnabled(false);
         editCerdasParidas.setEnabled(false);
         editCerdasVacias.setEnabled(false);
         editFechaInicio.setEnabled(false);
         editFechaFin.setEnabled(false);
-
         btnEditar.setVisibility(View.VISIBLE);
         layoutBotones.setVisibility(View.GONE);
     }
@@ -124,7 +148,6 @@ public class ParideraActivity extends AppCompatActivity {
         editCerdasVacias.setEnabled(true);
         editFechaInicio.setEnabled(true);
         editFechaFin.setEnabled(true);
-
         btnEditar.setVisibility(View.GONE);
         layoutBotones.setVisibility(View.VISIBLE);
     }
@@ -136,34 +159,6 @@ public class ParideraActivity extends AppCompatActivity {
         editFechaInicio.setText(inicialInicio);
         editFechaFin.setText(inicialFin);
     }
-
-    private void guardarCambios() {
-        String vivos = editNacidosVivos.getText().toString().trim();
-        String paridas = editCerdasParidas.getText().toString().trim();
-        String vacias = editCerdasVacias.getText().toString().trim();
-        String inicio = editFechaInicio.getText().toString().trim();
-        String fin = editFechaFin.getText().toString().trim();
-
-        // Seguridad para campos vacíos
-        if (vivos.isEmpty()) vivos = "0";
-        if (paridas.isEmpty()) paridas = "0";
-        if (vacias.isEmpty()) vacias = "0";
-        if (inicio.isEmpty()) inicio = null;
-        if (fin.isEmpty()) fin = null;
-
-        DBHelper dbHelper = new DBHelper(this);
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-
-        db.execSQL("UPDATE parideras SET nacidosVivos = ?, nParidas = ?, nVacias = ?, fechaInicioParidera = ?, fechaFinParidera = ? WHERE cod_lote = ? AND cod_explotacion = ?",
-                new Object[]{vivos, paridas, vacias, inicio, fin, codLote, codExplotacion});
-
-        db.close();
-        Toast.makeText(this, "Paridera actualizada", Toast.LENGTH_SHORT).show();
-        Intent resultIntent = new Intent();
-        resultIntent.putExtra("paridera_actualizada", true);
-        setResult(RESULT_OK, resultIntent);
-    }
-
 
     private void mostrarDatePicker(EditText target) {
         Locale locale = new Locale("es", "ES");

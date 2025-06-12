@@ -4,7 +4,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 public class Lotes {
-    @Expose(serialize = false)
+    @Expose
     private String id;
     @Expose
     @SerializedName("ndisponibles")

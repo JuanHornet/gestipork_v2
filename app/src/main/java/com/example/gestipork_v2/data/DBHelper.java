@@ -10,8 +10,11 @@ import android.widget.Toast;
 import com.example.gestipork_v2.base.FechaUtils;
 import com.example.gestipork_v2.login.Usuario;
 import com.example.gestipork_v2.modelo.Conteo;
+import com.example.gestipork_v2.modelo.Cubriciones;
 import com.example.gestipork_v2.modelo.Explotacion;
+import com.example.gestipork_v2.modelo.Itaca;
 import com.example.gestipork_v2.modelo.Lotes;
+import com.example.gestipork_v2.modelo.Parideras;
 import com.example.gestipork_v2.network.ApiClient;
 import com.example.gestipork_v2.network.ExplotacionService;
 import com.example.gestipork_v2.network.SupabaseConfig;
@@ -290,8 +293,6 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
 
-
-
     public String validarYObtenerUUID(String email, String password) {
         SQLiteDatabase db = this.getReadableDatabase();
         String hashedPassword = hashPassword(password);
@@ -433,9 +434,9 @@ public class DBHelper extends SQLiteOpenHelper {
         itaca.put("nMadres", 0);
         itaca.put("nPadres", 0);
         itaca.put("nAnimales", 0);
-        itaca.put("fechaPrimerNacimiento", "");
-        itaca.put("fechaUltimoNacimiento", "");
-        itaca.put("crotalesSolicitados", "");
+        itaca.put("fechaPNacimiento", "");
+        itaca.put("fechaUltNacimiento", "");
+        itaca.put("crotalesSolicitados", 0);
         itaca.put("sincronizado", 0);
         itaca.put("fecha_actualizacion", com.example.gestipork_v2.base.FechaUtils.obtenerFechaActual());
 
@@ -1004,8 +1005,75 @@ public class DBHelper extends SQLiteOpenHelper {
                 }
             });
         }
-
+    public void marcarCubricionComoSincronizada(SQLiteDatabase db, String id) {
+        ContentValues values = new ContentValues();
+        values.put("sincronizado", 1);
+        db.update("cubriciones", values, "id = ?", new String[]{id});
     }
+    public void marcarParideraComoSincronizada(SQLiteDatabase db, String id) {
+        ContentValues values = new ContentValues();
+        values.put("sincronizado", 1);
+        db.update("parideras", values, "id = ?", new String[]{id});
+    }
+    public void marcarItacaComoSincronizada(SQLiteDatabase db, String id) {
+        ContentValues values = new ContentValues();
+        values.put("sincronizado", 1);
+        db.update("itaca", values, "id = ?", new String[]{id});
+    }
+    public static Cubriciones cursorACubricion(Cursor cursor) {
+        Cubriciones c = new Cubriciones();
+
+        c.setId(cursor.getString(cursor.getColumnIndexOrThrow("id")));
+        c.setCod_cubricion(cursor.getString(cursor.getColumnIndexOrThrow("cod_cubricion")));
+        c.setCod_explotacion(cursor.getString(cursor.getColumnIndexOrThrow("cod_explotacion")));
+        c.setCod_lote(cursor.getString(cursor.getColumnIndexOrThrow("cod_lote")));
+        c.setnMadres(cursor.getInt(cursor.getColumnIndexOrThrow("nMadres")));
+        c.setnPadres(cursor.getInt(cursor.getColumnIndexOrThrow("nPadres")));
+        c.setFechaInicioCubricion(cursor.getString(cursor.getColumnIndexOrThrow("fechaInicioCubricion")));
+        c.setFechaFinCubricion(cursor.getString(cursor.getColumnIndexOrThrow("fechaFinCubricion")));
+        c.setSincronizado(cursor.getInt(cursor.getColumnIndexOrThrow("sincronizado")));
+        c.setFechaActualizacion(cursor.getString(cursor.getColumnIndexOrThrow("fecha_actualizacion")));
+
+        return c;
+    }
+
+    public static Parideras cursorAParidera(Cursor cursor) {
+        return new Parideras(
+                cursor.getString(cursor.getColumnIndexOrThrow("id")),
+                cursor.getInt(cursor.getColumnIndexOrThrow("nacidosVivos")),
+                cursor.getInt(cursor.getColumnIndexOrThrow("nParidas")),
+                cursor.getInt(cursor.getColumnIndexOrThrow("nVacias")),
+                cursor.getString(cursor.getColumnIndexOrThrow("cod_paridera")),
+                cursor.getString(cursor.getColumnIndexOrThrow("cod_explotacion")),
+                cursor.getString(cursor.getColumnIndexOrThrow("cod_lote")),
+                cursor.getString(cursor.getColumnIndexOrThrow("fechaInicioParidera")),
+                cursor.getString(cursor.getColumnIndexOrThrow("fechaFinParidera")),
+                cursor.getInt(cursor.getColumnIndexOrThrow("sincronizado")),
+                cursor.getString(cursor.getColumnIndexOrThrow("fecha_actualizacion"))
+        );
+    }
+
+    public static Itaca cursorAItaca(Cursor cursor) {
+        return new Itaca(
+                cursor.getString(cursor.getColumnIndexOrThrow("id")),
+                cursor.getString(cursor.getColumnIndexOrThrow("cod_itaca")),
+                cursor.getString(cursor.getColumnIndexOrThrow("DCER")),
+                cursor.getInt(cursor.getColumnIndexOrThrow("nAnimales")),
+                cursor.getInt(cursor.getColumnIndexOrThrow("nMadres")),
+                cursor.getInt(cursor.getColumnIndexOrThrow("nPadres")),
+                cursor.getString(cursor.getColumnIndexOrThrow("fechaPNacimiento")),
+                cursor.getString(cursor.getColumnIndexOrThrow("fechaUltNacimiento")),
+                cursor.getString(cursor.getColumnIndexOrThrow("raza")),
+                cursor.getString(cursor.getColumnIndexOrThrow("color")),
+                cursor.getInt(cursor.getColumnIndexOrThrow("crotalesSolicitados")),
+                cursor.getString(cursor.getColumnIndexOrThrow("cod_lote")),
+                cursor.getString(cursor.getColumnIndexOrThrow("cod_explotacion")),
+                cursor.getInt(cursor.getColumnIndexOrThrow("sincronizado")),
+                cursor.getString(cursor.getColumnIndexOrThrow("fecha_actualizacion"))
+        );
+    }
+
+}
 
 
 
