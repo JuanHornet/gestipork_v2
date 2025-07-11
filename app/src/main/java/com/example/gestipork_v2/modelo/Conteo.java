@@ -2,18 +2,18 @@ package com.example.gestipork_v2.modelo;
 
 public class Conteo {
     private int id;
-    private String codExplotacion;
-    private String codLote;
+    private String id_explotacion;
+    private String id_lote;
     private int nAnimales;
     private String observaciones;
     private String fecha;
     private int sincronizado; // nuevo
     private String fechaActualizacion; // nuevo
 
-    public Conteo(int id, String codExplotacion, String codLote, int nAnimales, String observaciones, String fecha, int sincronizado, String fechaActualizacion) {
+    public Conteo(int id, String id_explotacion, String id_lote, int nAnimales, String observaciones, String fecha, int sincronizado, String fechaActualizacion) {
         this.id = id;
-        this.codExplotacion = codExplotacion;
-        this.codLote = codLote;
+        this.id_explotacion = id_explotacion;
+        this.id_lote = id_lote;
         this.nAnimales = nAnimales;
         this.observaciones = observaciones;
         this.fecha = fecha;
@@ -29,11 +29,11 @@ public class Conteo {
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
-    public String getCodExplotacion() { return codExplotacion; }
-    public void setCodExplotacion(String codExplotacion) { this.codExplotacion = codExplotacion; }
+    public String getId_explotacion() { return id_explotacion; }
+    public void setId_explotacion(String id_explotacion) { this.id_explotacion = id_explotacion; }
 
-    public String getCodLote() { return codLote; }
-    public void setCodLote(String codLote) { this.codLote = codLote; }
+    public String getId_lote() { return id_lote; }
+    public void setId_lote(String id_lote) { this.id_lote = id_lote; }
 
     public int getnAnimales() { return nAnimales; }
     public void setnAnimales(int nAnimales) { this.nAnimales = nAnimales; }

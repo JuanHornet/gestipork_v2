@@ -24,8 +24,8 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 public class DetalleLoteActivity extends BaseActivity implements MoverAlimentacionDialogFragment.OnAlimentacionActualizadaListener {
 
-    private String codLote;
-    private String codExplotacion;
+    private String idLote;
+    private String idExplotacion;
 
     private String idCubricion, idParidera, idItaca;
 
@@ -35,8 +35,8 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detalle_lote);
 
-        codLote = getIntent().getStringExtra("cod_lote");
-        codExplotacion = getIntent().getStringExtra("cod_explotacion");
+        idLote = getIntent().getStringExtra("id_lote");
+        idExplotacion = getIntent().getStringExtra("id_explotacion");
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar_estandar);
         setSupportActionBar(toolbar);
@@ -52,7 +52,7 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
 
         ViewPager2 viewPager = findViewById(R.id.view_pager);
         TabLayout tabLayout = findViewById(R.id.tab_layout);
-        viewPager.setAdapter(new DetalleLotePagerAdapter(this, codLote, codExplotacion));
+        viewPager.setAdapter(new DetalleLotePagerAdapter(this, idLote, idExplotacion));
         new TabLayoutMediator(tabLayout, viewPager,
                 (tab, position) -> tab.setText(position == 0 ? "Acciones" : "Salidas")
         ).attach();
@@ -73,51 +73,58 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
 
         if (itemId == R.id.nav_contar) {
             startActivity(new Intent(this, ContarActivity.class)
-                    .putExtra("cod_explotacion", codExplotacion)
-                    .putExtra("cod_lote", codLote));
+                    .putExtra("id_explotacion", idExplotacion)
+                    .putExtra("id_lote", idLote));
             return true;
         } else if (itemId == R.id.nav_baja) {
-            BajaDialogFragment dialog = BajaDialogFragment.newInstance(codLote, codExplotacion);
+            BajaDialogFragment dialog = BajaDialogFragment.newInstance(idLote, idExplotacion);
             dialog.show(getSupportFragmentManager(), "BajaDialogFragment");
             return true;
         } else if (itemId == R.id.nav_notas) {
             startActivity(new Intent(this, NotasActivity.class)
-                    .putExtra("cod_explotacion", codExplotacion)
-                    .putExtra("cod_lote", codLote));
+                    .putExtra("id_explotacion", idExplotacion)
+                    .putExtra("id_lote", idLote));
             return true;
         } else if (itemId == R.id.nav_pesar) {
             startActivity(new Intent(this, CargarPesosActivity.class)
-                    .putExtra("cod_explotacion", codExplotacion)
-                    .putExtra("cod_lote", codLote));
+                    .putExtra("id_explotacion", idExplotacion)
+                    .putExtra("id_lote", idLote));
             return true;
         }
         return false;
     };
 
     private void actualizarDatosLote() {
-        TextView textCodLote = findViewById(R.id.text_cod_lote);
+        TextView textCodLote = findViewById(R.id.text_id_lote);
         TextView textRazaEdad = findViewById(R.id.text_raza_edad);
 
         DBHelper dbHelper = new DBHelper(this);
+
+        // ✅ Obtener id_lote visible y raza desde la tabla lotes
         Cursor loteCursor = dbHelper.getReadableDatabase().rawQuery(
-                "SELECT cod_lote, raza FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?",
-                new String[]{codLote, codExplotacion}
+                "SELECT id_lote, raza FROM lotes WHERE id_lote = ? AND id_explotacion = ?",
+                new String[]{idLote, idExplotacion}
         );
 
         if (loteCursor.moveToFirst()) {
+            String codLote = loteCursor.getString(0); // Solo visual
             String raza = loteCursor.getString(1);
-            textCodLote.setText(loteCursor.getString(0));
+            textCodLote.setText(codLote);
 
+            // ✅ Obtener la fecha fin paridera para calcular la edad
             Cursor parideraCursor = dbHelper.getReadableDatabase().rawQuery(
-                    "SELECT fechaFinParidera FROM parideras WHERE cod_lote = ? AND cod_explotacion = ?",
-                    new String[]{codLote, codExplotacion}
+                    "SELECT fechaFinParidera FROM parideras WHERE id_lote = ? AND id_explotacion = ?",
+                    new String[]{this.idLote, idExplotacion}
             );
 
             if (parideraCursor.moveToFirst()) {
                 String fechaFin = parideraCursor.getString(0);
                 int edad = calcularEdadEnMeses(fechaFin);
-                if (edad <= 0) textRazaEdad.setText(raza + " · Edad: desc.");
-                else textRazaEdad.setText(raza + " · Edad: " + edad + " meses");
+                if (edad <= 0) {
+                    textRazaEdad.setText(raza + " · Edad: desc.");
+                } else {
+                    textRazaEdad.setText(raza + " · Edad: " + edad + " meses");
+                }
             } else {
                 textRazaEdad.setText(raza + " · Edad: desc.");
             }
@@ -125,18 +132,19 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
         }
         loteCursor.close();
 
-        // ✅ PINTAR CÍRCULO
+        // ✅ PINTAR CÍRCULO DE COLOR DEL LOTE (Itaca)
         View circleView = findViewById(R.id.view_color_lote);
-        String colorStr = obtenerColorLoteDesdeDB(codLote, codExplotacion);
+        String colorStr = obtenerColorLoteDesdeDB(idLote, idExplotacion);
         int color = ColorUtils.mapColorNameToHex(this, colorStr);
         circleView.getBackground().setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN);
     }
 
-    private String obtenerColorLoteDesdeDB(String codLote, String codExplotacion) {
+
+    private String obtenerColorLoteDesdeDB(String idLote, String idExplotacion) {
         DBHelper dbHelper = new DBHelper(this);
         Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
-                "SELECT color FROM itaca WHERE cod_lote = ? AND cod_explotacion = ?",
-                new String[]{codLote, codExplotacion}
+                "SELECT color FROM itaca WHERE id_lote = ? AND id_explotacion = ?",
+                new String[]{idLote, idExplotacion}
         );
         String color = null;
         if (cursor.moveToFirst()) {
@@ -145,6 +153,7 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
         cursor.close();
         return color;
     }
+
 
     private int calcularEdadEnMeses(String fechaFin) {
         if (fechaFin == null || fechaFin.isEmpty()) return 0;
@@ -178,8 +187,8 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
             return true;
         } else if (id == R.id.menu_ver_historial_pesajes) {
             startActivity(new Intent(this, PesarActivity.class)
-                    .putExtra("cod_lote", codLote)
-                    .putExtra("cod_explotacion", codExplotacion));
+                    .putExtra("id_lote", idLote)
+                    .putExtra("id_explotacion", idExplotacion));
             return true;
         } else if (id == R.id.menu_eliminar_lote) {
             mostrarDialogoEliminarLote();
@@ -206,8 +215,8 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
             if (idItaca != null) {
                 startActivityForResult(new Intent(this, ItacaActivity.class)
                         .putExtra("id_itaca", idItaca)
-                        .putExtra("cod_lote", codLote)
-                        .putExtra("cod_explotacion", codExplotacion), 1001);
+                        .putExtra("id_lote", idLote)
+                        .putExtra("id_explotacion", idExplotacion), 1001);
             } else {
                 Toast.makeText(this, "No se encontró Itaca", Toast.LENGTH_SHORT).show();
             }
@@ -232,7 +241,7 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
                 .setMessage("¿Seguro que deseas eliminar este lote y todos sus registros relacionados?")
                 .setPositiveButton("Eliminar", (dialog, which) -> {
                     DBHelper dbHelper = new DBHelper(this);
-                    if (dbHelper.eliminarLoteConRelaciones(codLote, codExplotacion)) {
+                    if (dbHelper.eliminarLoteConRelaciones(idLote, idExplotacion)) {
                         Toast.makeText(this, "Lote eliminado", Toast.LENGTH_SHORT).show();
                         setResult(RESULT_OK);
                         finish();
@@ -249,8 +258,8 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
             TextView textAnimales = findViewById(R.id.text_n_animales);
             DBHelper dbHelper = new DBHelper(this);
             Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
-                    "SELECT nDisponibles FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?",
-                    new String[]{codLote, codExplotacion}
+                    "SELECT nDisponibles FROM lotes WHERE id_lote = ? AND id_explotacion = ?",
+                    new String[]{idLote, idExplotacion}
             );
             if (cursor.moveToFirst())
                 textAnimales.setText(cursor.getInt(0) + " disponibles");
@@ -260,8 +269,8 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
 
     private void abrirDialogoMover(String tipoOrigen) {
         DBHelper dbHelper = new DBHelper(this);
-        int disponibles = dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, tipoOrigen);
-        MoverAlimentacionDialogFragment.newInstance(codLote, codExplotacion, tipoOrigen, disponibles)
+        int disponibles = dbHelper.obtenerAnimalesAlimentacion(idLote, idExplotacion, tipoOrigen);
+        MoverAlimentacionDialogFragment.newInstance(idLote, idExplotacion, tipoOrigen, disponibles)
                 .show(getSupportFragmentManager(), "MoverAlimentacionDialog");
     }
 
@@ -272,9 +281,9 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
 
     public void actualizarAlimentacionCardView() {
         DBHelper dbHelper = new DBHelper(this);
-        ((TextView) findViewById(R.id.text_bellota)).setText(String.valueOf(dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, "Bellota")));
-        ((TextView) findViewById(R.id.text_cebo_campo)).setText(String.valueOf(dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, "Cebo Campo")));
-        ((TextView) findViewById(R.id.text_cebo)).setText(String.valueOf(dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, "Cebo")));
+        ((TextView) findViewById(R.id.text_bellota)).setText(String.valueOf(dbHelper.obtenerAnimalesAlimentacion(idLote, idExplotacion, "Bellota")));
+        ((TextView) findViewById(R.id.text_cebo_campo)).setText(String.valueOf(dbHelper.obtenerAnimalesAlimentacion(idLote, idExplotacion, "Cebo Campo")));
+        ((TextView) findViewById(R.id.text_cebo)).setText(String.valueOf(dbHelper.obtenerAnimalesAlimentacion(idLote, idExplotacion, "Cebo")));
     }
     // Método para que SalidaDialogFragment llame y actualice después de registrar una salida
     public void refrescarResumenLote() {
@@ -290,20 +299,20 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
         Cursor cursor;
 
         cursor = dbHelper.getReadableDatabase().rawQuery(
-                "SELECT id FROM cubriciones WHERE cod_lote = ? AND cod_explotacion = ?",
-                new String[]{codLote, codExplotacion});
+                "SELECT id FROM cubriciones WHERE id = ? AND id_explotacion = ?",
+                new String[]{idLote, idExplotacion});
         if (cursor.moveToFirst()) idCubricion = cursor.getString(0);
         cursor.close();
 
         cursor = dbHelper.getReadableDatabase().rawQuery(
-                "SELECT id FROM parideras WHERE cod_lote = ? AND cod_explotacion = ?",
-                new String[]{codLote, codExplotacion});
+                "SELECT id FROM parideras WHERE id = ? AND id_explotacion = ?",
+                new String[]{idLote, idExplotacion});
         if (cursor.moveToFirst()) idParidera = cursor.getString(0);
         cursor.close();
 
         cursor = dbHelper.getReadableDatabase().rawQuery(
-                "SELECT id FROM itaca WHERE cod_lote = ? AND cod_explotacion = ?",
-                new String[]{codLote, codExplotacion});
+                "SELECT id FROM itaca WHERE id = ? AND id_explotacion = ?",
+                new String[]{idLote, idExplotacion});
         if (cursor.moveToFirst()) idItaca = cursor.getString(0);
         cursor.close();
 

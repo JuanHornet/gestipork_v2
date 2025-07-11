@@ -26,7 +26,7 @@ public class PesarDialogFragment extends DialogFragment {
         PesarDialogFragment frag = new PesarDialogFragment();
         Bundle args = new Bundle();
         args.putString("cod_explotacion", codExplotacion);
-        args.putString("cod_lote", codLote);
+        args.putString("id_lote", codLote);
         frag.setArguments(args);
         return frag;
     }
@@ -34,7 +34,7 @@ public class PesarDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         codExplotacion = getArguments().getString("cod_explotacion");
-        codLote = getArguments().getString("cod_lote");
+        codLote = getArguments().getString("id_lote");
 
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_pesar, null);
         EditText etPeso = view.findViewById(R.id.etPeso);

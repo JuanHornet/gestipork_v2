@@ -22,11 +22,11 @@ import com.example.gestipork_v2.data.DBHelper;
 public class DashboardAdapter extends RecyclerView.Adapter<DashboardAdapter.ResumenViewHolder> {
 
     private final Context context;
-    private final String codExplotacion;
+    private final String idExplotacion;
 
-    public DashboardAdapter(Context context, String codExplotacion) {
+    public DashboardAdapter(Context context, String idExplotacion) {
         this.context = context;
-        this.codExplotacion = codExplotacion;
+        this.idExplotacion = idExplotacion;
     }
 
     @NonNull
@@ -41,15 +41,15 @@ public class DashboardAdapter extends RecyclerView.Adapter<DashboardAdapter.Resu
     public void onBindViewHolder(@NonNull ResumenViewHolder holder, int position) {
         DBHelper db = new DBHelper(context);
 
-        int totalIb100 = db.obtenerAnimalesPorRaza(codExplotacion, "Ibérico 100%");
-        int totalCruz50 = db.obtenerAnimalesPorRaza(codExplotacion, "Cruzado 50%");
+        int totalIb100 = db.obtenerAnimalesPorRaza(idExplotacion, "Ibérico 100%");
+        int totalCruz50 = db.obtenerAnimalesPorRaza(idExplotacion, "Cruzado 50%");
         int totalAnimales = totalIb100 + totalCruz50;
 
         holder.txtIb100.setText(String.valueOf(totalIb100));
         holder.txtCruz50.setText(String.valueOf(totalCruz50));
         holder.txtTotal.setText(String.valueOf(totalAnimales));
 
-        int aforo = db.obtenerAforo(codExplotacion);
+        int aforo = db.obtenerAforo(idExplotacion);
 
         actualizarTextoAforo(holder, totalAnimales, aforo);
 
@@ -68,7 +68,7 @@ public class DashboardAdapter extends RecyclerView.Adapter<DashboardAdapter.Resu
                 if (!valor.isEmpty()) {
                     try {
                         int nuevoAforo = Integer.parseInt(valor);
-                        db.guardarAforo(codExplotacion, nuevoAforo);
+                        db.guardarAforo(idExplotacion, nuevoAforo);
                         actualizarTextoAforo(holder, totalAnimales, nuevoAforo);
                         Toast.makeText(context, "Aforo actualizado", Toast.LENGTH_SHORT).show();
                     } catch (NumberFormatException e) {

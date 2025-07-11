@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -30,19 +29,17 @@ public class AccionDialogFragment extends DialogFragment {
     private Spinner spinnerTipo;
     private EditText editFecha, editCantidad, editObservaciones;
 
-    private Button btnGuardar, btnCancelar;
-
-    private Accion accionExistente; // Si es null, es una nueva acción
-    private String codLote, codExplotacion;
+    private Accion accionExistente;
+    private String idLote, idExplotacion;
     private OnAccionGuardadaListener callback;
 
     public interface OnAccionGuardadaListener {
-        void onAccionGuardada(); // Para refrescar el RecyclerView
+        void onAccionGuardada();
     }
 
-    public AccionDialogFragment(String codLote, String codExplotacion, Accion accion, OnAccionGuardadaListener callback) {
-        this.codLote = codLote;
-        this.codExplotacion = codExplotacion;
+    public AccionDialogFragment(String idLote, String idExplotacion, Accion accion, OnAccionGuardadaListener callback) {
+        this.idLote = idLote;
+        this.idExplotacion = idExplotacion;
         this.accionExistente = accion;
         this.callback = callback;
     }
@@ -112,7 +109,7 @@ public class AccionDialogFragment extends DialogFragment {
                                 ContentValues values = new ContentValues();
                                 values.put("nDisponibles", cantidad);
                                 values.put("nIniciales", cantidad);
-                                dbHelper.getWritableDatabase().update("lotes", values, "cod_lote = ? AND cod_explotacion = ?", new String[]{codLote, codExplotacion});
+                                dbHelper.getWritableDatabase().update("lotes", values, "id = ?", new String[]{idLote});
                                 if (callback != null) callback.onAccionGuardada();
                                 dialog.dismiss();
                             })
@@ -120,7 +117,7 @@ public class AccionDialogFragment extends DialogFragment {
                             .show();
                 } else {
                     if (accionExistente == null) {
-                        dbHelper.insertarAccion(tipo, cantidad, fecha, codLote, codExplotacion, observacion);
+                        dbHelper.insertarAccion(tipo, cantidad, fecha, idLote, idExplotacion, observacion);
 
                         if (tipo.equalsIgnoreCase("Destete") && getActivity() instanceof DetalleLoteActivity) {
                             ((DetalleLoteActivity) getActivity()).actualizarAnimalesDisponibles();
@@ -132,7 +129,6 @@ public class AccionDialogFragment extends DialogFragment {
 
                     if (callback != null) callback.onAccionGuardada();
                     dialog.dismiss();
-
                 }
             });
         });
@@ -140,14 +136,12 @@ public class AccionDialogFragment extends DialogFragment {
         return dialog;
     }
 
-
     private void mostrarDatePicker() {
-        // Asegurar que se usa idioma español
         Locale spanish = new Locale("es", "ES");
         Locale.setDefault(spanish);
 
         Calendar calendar = Calendar.getInstance();
-        calendar.setFirstDayOfWeek(Calendar.MONDAY); // Esto se usará internamente
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
 
         DatePickerDialog picker = new DatePickerDialog(
                 requireContext(),
@@ -162,8 +156,4 @@ public class AccionDialogFragment extends DialogFragment {
 
         picker.show();
     }
-
-
-
-
 }

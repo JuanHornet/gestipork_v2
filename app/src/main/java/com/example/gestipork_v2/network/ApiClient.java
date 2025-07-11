@@ -37,4 +37,11 @@ public class ApiClient {
         }
         return retrofit;
     }
+    public static String getToken() {
+        return SupabaseConfig.getAuthHeader(); // ya incluye el "Bearer"
+    }
+
+    public static String getApiKey() {
+        return SupabaseConfig.getApiKey();
+    }
 }

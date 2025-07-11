@@ -36,7 +36,7 @@ public class NotasDialogFragment extends DialogFragment {
     public static NotasDialogFragment newInstance(String codLote, String codExplotacion) {
         NotasDialogFragment frag = new NotasDialogFragment();
         Bundle args = new Bundle();
-        args.putString("cod_lote", codLote);
+        args.putString("id_lote", codLote);
         args.putString("cod_explotacion", codExplotacion);
         frag.setArguments(args);
         return frag;
@@ -44,7 +44,7 @@ public class NotasDialogFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        codLote = getArguments().getString("cod_lote");
+        codLote = getArguments().getString("id_lote");
         codExplotacion = getArguments().getString("cod_explotacion");
 
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_nota, null);

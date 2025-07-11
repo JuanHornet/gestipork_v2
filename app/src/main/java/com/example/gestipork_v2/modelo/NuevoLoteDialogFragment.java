@@ -85,7 +85,7 @@ public class NuevoLoteDialogFragment extends DialogFragment {
         String idExplotacion = codExplotacion;
 
         // Verificar si ya existe ese lote para esta explotación
-        Cursor cursor = db.rawQuery("SELECT id FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?",
+        Cursor cursor = db.rawQuery("SELECT id FROM lotes WHERE id_lote = ? AND cod_explotacion = ?",
                 new String[]{codLote, idExplotacion});
         if (cursor.moveToFirst()) {
             cursor.close();
@@ -99,7 +99,7 @@ public class NuevoLoteDialogFragment extends DialogFragment {
 
         ContentValues values = new ContentValues();
         values.put("id", uuidLote);
-        values.put("cod_lote", codLote);
+        values.put("id_lote", codLote);
         values.put("raza", raza);
         values.put("cod_explotacion", idExplotacion); // UUID real
         values.put("estado", 1);

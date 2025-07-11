@@ -79,10 +79,10 @@ public class NuevoExplotacionDialogFragment extends DialogFragment {
         }
 
         String uuidExplotacion = UUID.randomUUID().toString();
-        String codExplotacion = "EXP_" + uuidUsuario.substring(0, 8) + "_" + uuidExplotacion.substring(0, 8);
+
 
         DBHelper dbHelper = new DBHelper(requireContext());
-        boolean insertado = dbHelper.insertarExplotacionNueva(nombre, uuidUsuario, uuidExplotacion, codExplotacion);
+        boolean insertado = dbHelper.insertarExplotacionNueva(nombre, uuidUsuario, uuidExplotacion);
 
         if (insertado) {
             if (isAdded()) {
@@ -93,7 +93,7 @@ public class NuevoExplotacionDialogFragment extends DialogFragment {
             if (listener != null) listener.onExplotacionCreada();
 
             // Luego crear el objeto y subirlo a Supabase
-            Explotacion nuevaExplotacion = new Explotacion(uuidExplotacion, nombre, uuidUsuario, codExplotacion);
+            Explotacion nuevaExplotacion = new Explotacion(uuidExplotacion, nombre, uuidUsuario);
 
             ExplotacionService service = ApiClient.getClient().create(ExplotacionService.class);
             Call<Void> call = service.insertarExplotacion(

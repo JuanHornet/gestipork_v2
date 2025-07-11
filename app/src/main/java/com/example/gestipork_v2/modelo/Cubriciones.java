@@ -6,6 +6,7 @@ import com.google.gson.annotations.SerializedName;
 public class Cubriciones {
 
     @Expose
+    @SerializedName("id")
     private String id;
 
     @Expose
@@ -13,46 +14,47 @@ public class Cubriciones {
     private String cod_cubricion;
 
     @Expose
-    @SerializedName("cod_explotacion")
-    private String cod_explotacion;
+    @SerializedName("id_explotacion")
+    private String id_explotacion;
 
     @Expose
-    @SerializedName("cod_lote")
-    private String cod_lote;
+    @SerializedName("id_lote")
+    private String id_lote;
 
     @Expose
-    @SerializedName("nMadres")
+    @SerializedName("nmadres") // <-- minúsculas
     private int nMadres;
 
     @Expose
-    @SerializedName("nPadres")
+    @SerializedName("npadres") // <-- minúsculas
     private int nPadres;
 
     @Expose
-    @SerializedName("fechaInicioCubricion")
+    @SerializedName("fechainiciocubricion") // <-- minúsculas
     private String fechaInicioCubricion;
 
     @Expose
-    @SerializedName("fechaFinCubricion")
+    @SerializedName("fechafincubricion") // <-- minúsculas
     private String fechaFinCubricion;
 
     @Expose
     @SerializedName("fecha_actualizacion")
     private String fechaActualizacion;
 
-    @Expose(serialize = false) // Solo local, no se envía a Supabase
+    @Expose(deserialize = true, serialize = false) // Este campo es solo local
     private int sincronizado;
+
 
     public Cubriciones() {
     }
 
-    public Cubriciones(String id, String cod_cubricion, String cod_explotacion, String cod_lote,
+    public Cubriciones(String id, String cod_cubricion, String id_explotacion, String id_lote,
                        int nMadres, int nPadres, String fechaInicioCubricion, String fechaFinCubricion,
                        int sincronizado, String fechaActualizacion) {
         this.id = id;
         this.cod_cubricion = cod_cubricion;
-        this.cod_explotacion = cod_explotacion;
-        this.cod_lote = cod_lote;
+        this.id_explotacion = id_explotacion;
+        this.id_lote = id_lote;
         this.nMadres = nMadres;
         this.nPadres = nPadres;
         this.fechaInicioCubricion = fechaInicioCubricion;
@@ -71,13 +73,13 @@ public class Cubriciones {
 
     public void setCod_cubricion(String cod_cubricion) { this.cod_cubricion = cod_cubricion; }
 
-    public String getCod_explotacion() { return cod_explotacion; }
+    public String getId_explotacion() { return id_explotacion; }
 
-    public void setCod_explotacion(String cod_explotacion) { this.cod_explotacion = cod_explotacion; }
+    public void setId_explotacion(String id_explotacion) { this.id_explotacion = id_explotacion; }
 
-    public String getCod_lote() { return cod_lote; }
+    public String getid_lote() { return id_lote; }
 
-    public void setCod_lote(String cod_lote) { this.cod_lote = cod_lote; }
+    public void setid_lote(String id_lote) { this.id_lote = id_lote; }
 
     public int getnMadres() { return nMadres; }
 

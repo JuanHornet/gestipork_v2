@@ -33,8 +33,8 @@ public class LotesActivity extends BaseActivity {
     private DBHelper dbHelper;
 
     private TextView txtVacio;
-    private String codExplotacionSeleccionada;
-    private String codLoteSeleccionado = null;
+    private String idExplotacionSeleccionada;
+    private String idLoteSeleccionado = null;
 
 
     @Override
@@ -42,10 +42,10 @@ public class LotesActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lotes);
 
-        codExplotacionSeleccionada = getIntent().getStringExtra("cod_explotacion");
-        Log.d("LotesActivity", "Recibido cod_explotacion: " + codExplotacionSeleccionada);
+        idExplotacionSeleccionada = getIntent().getStringExtra("id_explotacion");
+        Log.d("LotesActivity", "Recibido id_explotacion: " + idExplotacionSeleccionada);
 
-        if (codExplotacionSeleccionada == null || codExplotacionSeleccionada.isEmpty()) {
+        if (idExplotacionSeleccionada == null || idExplotacionSeleccionada.isEmpty()) {
             Toast.makeText(this, "No se recibió cod_explotacion", Toast.LENGTH_SHORT).show();
             finish();
             return;
@@ -74,7 +74,7 @@ public class LotesActivity extends BaseActivity {
 
         adapter = new LoteAdapter(this, listaLotes);
         recyclerView.setAdapter(adapter);
-        adapter.setOnLoteClickListener(lote -> codLoteSeleccionado = lote.getCod_lote());
+        adapter.setOnLoteClickListener(lote -> idLoteSeleccionado = lote.getNombre_lote());
 
 
 
@@ -87,10 +87,10 @@ public class LotesActivity extends BaseActivity {
         View parentLayout = findViewById(android.R.id.content); //necesario para Snackbar
 
         if (id == R.id.nav_contar) {
-            if (codExplotacionSeleccionada != null && codLoteSeleccionado != null) {
+            if (idExplotacionSeleccionada != null && idLoteSeleccionado != null) {
                 Intent intent = new Intent(this, ContarActivity.class);
-                intent.putExtra("cod_explotacion", codExplotacionSeleccionada);
-                intent.putExtra("cod_lote", codLoteSeleccionado);
+                intent.putExtra("id_explotacion", idExplotacionSeleccionada);
+                intent.putExtra("id_lote", idLoteSeleccionado);
                 startActivity(intent);
             } else {
                 Snackbar.make(parentLayout,
@@ -101,10 +101,10 @@ public class LotesActivity extends BaseActivity {
         }
 
         if (id == R.id.nav_pesar) {
-            if (codExplotacionSeleccionada != null && codLoteSeleccionado != null) {
+            if (idExplotacionSeleccionada != null && idLoteSeleccionado != null) {
                 Intent intent = new Intent(this, com.example.gestipork_v2.modelo.CargarPesosActivity.class);
-                intent.putExtra("cod_explotacion", codExplotacionSeleccionada);
-                intent.putExtra("cod_lote", codLoteSeleccionado);
+                intent.putExtra("id_explotacion", idExplotacionSeleccionada);
+                intent.putExtra("id_lote", idLoteSeleccionado);
                 startActivity(intent);
             } else {
                 Snackbar.make(parentLayout,
@@ -116,8 +116,8 @@ public class LotesActivity extends BaseActivity {
 
 
         if (id == R.id.nav_baja) {
-            if (codExplotacionSeleccionada != null && codLoteSeleccionado != null) {
-                BajaDialogFragment dialog = BajaDialogFragment.newInstance(codLoteSeleccionado, codExplotacionSeleccionada);
+            if (idExplotacionSeleccionada != null && idLoteSeleccionado != null) {
+                BajaDialogFragment dialog = BajaDialogFragment.newInstance(idLoteSeleccionado, idExplotacionSeleccionada);
                 dialog.show(getSupportFragmentManager(), "BajaDialogFragment");
             } else {
                 Snackbar.make(parentLayout,
@@ -128,10 +128,10 @@ public class LotesActivity extends BaseActivity {
         }
 
         if (id == R.id.nav_notas) {
-            if (codExplotacionSeleccionada != null && codLoteSeleccionado != null) {
+            if (idExplotacionSeleccionada != null && idLoteSeleccionado != null) {
                 Intent intent = new Intent(this, NotasActivity.class);
-                intent.putExtra("cod_explotacion", codExplotacionSeleccionada);
-                intent.putExtra("cod_lote", codLoteSeleccionado);
+                intent.putExtra("id_explotacion", idExplotacionSeleccionada);
+                intent.putExtra("id_lote", idLoteSeleccionado);
                 startActivity(intent);
             } else {
                 Snackbar.make(findViewById(android.R.id.content),
@@ -150,8 +150,8 @@ public class LotesActivity extends BaseActivity {
     private List<String> obtenerLotesExplotacion() {
         List<String> lotes = new ArrayList<>();
         Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
-                "SELECT cod_lote FROM lotes WHERE estado = 1 AND cod_explotacion = ?",
-                new String[]{codExplotacionSeleccionada}
+                "SELECT id_lote FROM lotes WHERE estado = 1 AND id_explotacion = ?",
+                new String[]{idExplotacionSeleccionada}
         );
         if (cursor.moveToFirst()) {
             do {
@@ -166,11 +166,11 @@ public class LotesActivity extends BaseActivity {
         listaLotes.clear();
 
         Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
-                "SELECT id, cod_explotacion, nDisponibles, nIniciales, cod_lote, cod_paridera, " +
+                "SELECT id, id_explotacion, nDisponibles, nIniciales, nombre_lote, cod_paridera, " +
                         "cod_cubricion, cod_itaca, raza, estado, color " +                     // lee lotes.color
                         "FROM lotes " +
-                        "WHERE estado = 1 AND cod_explotacion = ?",
-                new String[]{codExplotacionSeleccionada}
+                        "WHERE estado = 1 AND id_explotacion = ?",
+                new String[]{idExplotacionSeleccionada}
         );
 
 
@@ -178,10 +178,10 @@ public class LotesActivity extends BaseActivity {
             do {
                 Lotes lote = new Lotes();
                 lote.setId(cursor.getString(cursor.getColumnIndexOrThrow("id")));
-                lote.setCod_explotacion(cursor.getString(1));
+                lote.setId_explotacion(cursor.getString(1));
                 lote.setnDisponibles(cursor.getInt(2));
                 lote.setnIniciales(cursor.getInt(3));
-                lote.setCod_lote(cursor.getString(4));
+                lote.setNombre_lote(cursor.getString(4));
                 lote.setCod_paridera(cursor.getString(5));
                 lote.setCod_cubricion(cursor.getString(6));
                 lote.setCod_itaca(cursor.getString(7));
@@ -212,7 +212,7 @@ public class LotesActivity extends BaseActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_add_lote) {
             // LLAMADA AL NUEVO FRAGMENT
-            NuevoLoteDialogFragment dialog = NuevoLoteDialogFragment.newInstance(codExplotacionSeleccionada);
+            NuevoLoteDialogFragment dialog = NuevoLoteDialogFragment.newInstance(idExplotacionSeleccionada);
             dialog.show(getSupportFragmentManager(), "NuevoLoteDialog");
             return true;
         }

@@ -13,19 +13,19 @@ public class Itaca {
     @Expose
     private String cod_itaca;
 
-    @SerializedName("DCER")
+    @SerializedName("dcer")
     @Expose
     private String DCER;
 
-    @SerializedName("nAnimales")
+    @SerializedName("nanimales")
     @Expose
     private int nAnimales;
 
-    @SerializedName("nMadres")
+    @SerializedName("nmadres")
     @Expose
     private int nMadres;
 
-    @SerializedName("nPadres")
+    @SerializedName("npadres")
     @Expose
     private int nPadres;
 
@@ -46,23 +46,23 @@ public class Itaca {
     @Expose
     private String color;
 
-    @SerializedName("crotalesSolicitados")
+    @SerializedName("crotalessolicitados")
     @Expose
     private int crotalesSolicitados;
 
-    @SerializedName("cod_lote")
+    @SerializedName("id_lote")
     @Expose
-    private String cod_lote;
+    private String id_lote;
 
-    @SerializedName("cod_explotacion")
+    @SerializedName("id_explotacion")
     @Expose
-    private String cod_explotacion;
+    private String id_explotacion;
 
     @SerializedName("sincronizado")
     @Expose
     private int sincronizado;
 
-    @SerializedName("fechaActualizacion")
+    @SerializedName("fecha_actualizacion")
     @Expose
     private String fechaActualizacion;
 
@@ -70,7 +70,7 @@ public class Itaca {
 
     public Itaca(String id, String cod_itaca, String DCER, int nAnimales, int nMadres, int nPadres,
                  String fechaPNacimiento, String fechaUltNacimiento, String raza, String color,
-                 int crotalesSolicitados, String cod_lote, String cod_explotacion,
+                 int crotalesSolicitados, String id_lote, String id_explotacion,
                  int sincronizado, String fechaActualizacion) {
         this.id = id;
         this.cod_itaca = cod_itaca;
@@ -83,8 +83,8 @@ public class Itaca {
         this.raza = raza;
         this.color = color;
         this.crotalesSolicitados = crotalesSolicitados;
-        this.cod_lote = cod_lote;
-        this.cod_explotacion = cod_explotacion;
+        this.id_lote = id_lote;
+        this.id_explotacion = id_explotacion;
         this.sincronizado = sincronizado;
         this.fechaActualizacion = fechaActualizacion;
     }
@@ -178,20 +178,20 @@ public class Itaca {
         this.crotalesSolicitados = crotalesSolicitados;
     }
 
-    public String getCod_lote() {
-        return cod_lote;
+    public String getid_lote() {
+        return id_lote;
     }
 
-    public void setCod_lote(String cod_lote) {
-        this.cod_lote = cod_lote;
+    public void setid_lote(String id_lote) {
+        this.id_lote = id_lote;
     }
 
-    public String getCod_explotacion() {
-        return cod_explotacion;
+    public String getId_explotacion() {
+        return id_explotacion;
     }
 
-    public void setCod_explotacion(String cod_explotacion) {
-        this.cod_explotacion = cod_explotacion;
+    public void setId_explotacion(String id_explotacion) {
+        this.id_explotacion = id_explotacion;
     }
 
     public int getSincronizado() {

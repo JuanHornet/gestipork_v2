@@ -72,7 +72,7 @@ public class PesarAdapter extends RecyclerView.Adapter<PesarAdapter.ViewHolder> 
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, CargarPesosActivity.class);
             intent.putExtra("cod_explotacion", codExplotacion);
-            intent.putExtra("cod_lote", codLote);
+            intent.putExtra("id_lote", codLote);
             intent.putExtra("fecha", fecha);               // PASAMOS FECHA
             context.startActivity(intent);
         });

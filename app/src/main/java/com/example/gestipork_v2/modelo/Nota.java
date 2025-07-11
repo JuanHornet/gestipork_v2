@@ -3,25 +3,25 @@ package com.example.gestipork_v2.modelo;
 public class Nota {
     private int id;
     private String codLote;
-    private String codExplotacion;
+    private String id_explotacion;
     private String fecha;
     private String observacion;
 
     private int sincronizado; // nuevo
     private String fechaActualizacion; // nuevo
 
-    public Nota(int id, String codLote, String codExplotacion, String fecha, String observacion) {
+    public Nota(int id, String codLote, String id_explotacion, String fecha, String observacion) {
         this.id = id;
         this.codLote = codLote;
-        this.codExplotacion = codExplotacion;
+        this.id_explotacion = id_explotacion;
         this.fecha = fecha;
         this.observacion = observacion;
     }
 
-    public Nota(int id, String codLote, String codExplotacion, String fecha, String observacion, int sincronizado, String fechaActualizacion) {
+    public Nota(int id, String codLote, String id_explotacion, String fecha, String observacion, int sincronizado, String fechaActualizacion) {
         this.id = id;
         this.codLote = codLote;
-        this.codExplotacion = codExplotacion;
+        this.id_explotacion = id_explotacion;
         this.fecha = fecha;
         this.observacion = observacion;
         this.sincronizado = sincronizado;
@@ -36,8 +36,8 @@ public class Nota {
         return codLote;
     }
 
-    public String getCodExplotacion() {
-        return codExplotacion;
+    public String getId_explotacion() {
+        return id_explotacion;
     }
 
     public String getFecha() {
@@ -56,8 +56,8 @@ public class Nota {
         this.codLote = codLote;
     }
 
-    public void setCodExplotacion(String codExplotacion) {
-        this.codExplotacion = codExplotacion;
+    public void setId_explotacion(String id_explotacion) {
+        this.id_explotacion = id_explotacion;
     }
 
     public void setFecha(String fecha) {

@@ -27,7 +27,7 @@ public class AccionesFragment extends Fragment {
     private AccionAdapter adapter;
     private List<Accion> listaAcciones;
 
-    private String codLote, codExplotacion;
+    private String idLote, idExplotacion;
 
     public AccionesFragment() {}
 
@@ -35,10 +35,10 @@ public class AccionesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View vista = inflater.inflate(R.layout.fragment_acciones, container, false);
 
-        // Leer valores de cod_lote y cod_explotacion del bundle primero
+        // Leer valores de id_lote y cod_explotacion del bundle primero
         if (getArguments() != null) {
-            codLote = getArguments().getString("cod_lote");
-            codExplotacion = getArguments().getString("cod_explotacion");
+            idLote = getArguments().getString("id_lote");
+            idExplotacion = getArguments().getString("cod_explotacion");
         }
 
         recyclerView = vista.findViewById(R.id.recycler_acciones);
@@ -47,8 +47,8 @@ public class AccionesFragment extends Fragment {
         fabAdd = vista.findViewById(R.id.fab_add_accion);
         fabAdd.setOnClickListener(v -> {
             AccionDialogFragment dialog = new AccionDialogFragment(
-                    codLote,
-                    codExplotacion,
+                    idLote,
+                    idExplotacion,
                     null,
                     () -> {
                         cargarAcciones(); // Recarga la lista
@@ -56,8 +56,8 @@ public class AccionesFragment extends Fragment {
                         // Verificar si fue destete
                         DBHelper dbHelper = new DBHelper(getContext());
                         Cursor c = dbHelper.getReadableDatabase().rawQuery(
-                                "SELECT tipoAccion FROM acciones WHERE cod_lote = ? AND cod_explotacion = ? ORDER BY id DESC LIMIT 1",
-                                new String[]{codLote, codExplotacion}
+                                "SELECT tipoAccion FROM acciones WHERE id_lote = ? AND cod_explotacion = ? ORDER BY fechaAccion DESC LIMIT 1",
+                                new String[]{idLote, idExplotacion}
                         );
 
                         if (c.moveToFirst()) {
@@ -85,16 +85,16 @@ public class AccionesFragment extends Fragment {
         DBHelper dbHelper = new DBHelper(getContext());
         listaAcciones = new ArrayList<>();
 
-        Cursor cursor = dbHelper.obtenerAcciones(codLote, codExplotacion);
+        Cursor cursor = dbHelper.obtenerAcciones(idLote, idExplotacion);
         while (cursor.moveToNext()) {
-            int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+            String id = cursor.getString(cursor.getColumnIndexOrThrow("id"));
             String tipo = cursor.getString(cursor.getColumnIndexOrThrow("tipoAccion"));
             String fecha = cursor.getString(cursor.getColumnIndexOrThrow("fechaAccion"));
             int cantidad = cursor.getInt(cursor.getColumnIndexOrThrow("nAnimales"));
             String observacion = cursor.getString(cursor.getColumnIndexOrThrow("observacion"));
 
-
             listaAcciones.add(new Accion(id, tipo, fecha, cantidad, observacion));
+
 
         }
         cursor.close();
@@ -103,8 +103,8 @@ public class AccionesFragment extends Fragment {
             @Override
             public void onEditarAccion(Accion accion) {
                 AccionDialogFragment dialog = new AccionDialogFragment(
-                        codLote,
-                        codExplotacion,
+                        idLote,
+                        idExplotacion,
                         accion,
                         () -> {
                             cargarAcciones();
@@ -143,8 +143,8 @@ public class AccionesFragment extends Fragment {
                                 dbHelper.getWritableDatabase().update(
                                         "lotes",
                                         values,
-                                        "cod_lote = ? AND cod_explotacion = ?",
-                                        new String[]{codLote, codExplotacion}
+                                        "id = ?",
+                                        new String[]{idLote}
                                 );
                             }
 

@@ -9,15 +9,15 @@ public class Parideras {
     @Expose
     private String id;
 
-    @SerializedName("nacidosVivos")
+    @SerializedName("nacidosvivos")
     @Expose
     private int nacidosVivos;
 
-    @SerializedName("nParidas")
+    @SerializedName("nparidas")
     @Expose
     private int nParidas;
 
-    @SerializedName("nVacias")
+    @SerializedName("nvacias")
     @Expose
     private int nVacias;
 
@@ -25,19 +25,19 @@ public class Parideras {
     @Expose
     private String cod_paridera;
 
-    @SerializedName("cod_explotacion")
+    @SerializedName("id_explotacion")
     @Expose
-    private String cod_explotacion;
+    private String id_explotacion;
 
-    @SerializedName("cod_lote")
+    @SerializedName("id_lote")
     @Expose
-    private String cod_lote;
+    private String id_lote;
 
-    @SerializedName("fechaInicioParidera")
+    @SerializedName("fechainicioparidera")
     @Expose
     private String fechaInicioParidera;
 
-    @SerializedName("fechaFinParidera")
+    @SerializedName("fechafinparidera")
     @Expose
     private String fechaFinParidera;
 
@@ -51,16 +51,16 @@ public class Parideras {
 
     public Parideras() {}
 
-    public Parideras(String id, int nacidosVivos, int nParidas, int nVacias, String cod_paridera, String cod_explotacion,
-                     String cod_lote, String fechaInicioParidera, String fechaFinParidera,
+    public Parideras(String id, int nacidosVivos, int nParidas, int nVacias, String cod_paridera, String id_explotacion,
+                     String id_lote, String fechaInicioParidera, String fechaFinParidera,
                      int sincronizado, String fechaActualizacion) {
         this.id = id;
         this.nacidosVivos = nacidosVivos;
         this.nParidas = nParidas;
         this.nVacias = nVacias;
         this.cod_paridera = cod_paridera;
-        this.cod_explotacion = cod_explotacion;
-        this.cod_lote = cod_lote;
+        this.id_explotacion = id_explotacion;
+        this.id_lote = id_lote;
         this.fechaInicioParidera = fechaInicioParidera;
         this.fechaFinParidera = fechaFinParidera;
         this.sincronizado = sincronizado;
@@ -107,20 +107,20 @@ public class Parideras {
         this.cod_paridera = cod_paridera;
     }
 
-    public String getCod_explotacion() {
-        return cod_explotacion;
+    public String getId_explotacion() {
+        return id_explotacion;
     }
 
-    public void setCod_explotacion(String cod_explotacion) {
-        this.cod_explotacion = cod_explotacion;
+    public void setId_explotacion(String id_explotacion) {
+        this.id_explotacion = id_explotacion;
     }
 
-    public String getCod_lote() {
-        return cod_lote;
+    public String getid_lote() {
+        return id_lote;
     }
 
-    public void setCod_lote(String cod_lote) {
-        this.cod_lote = cod_lote;
+    public void setid_lote(String id_lote) {
+        this.id_lote = id_lote;
     }
 
     public String getFechaInicioParidera() {

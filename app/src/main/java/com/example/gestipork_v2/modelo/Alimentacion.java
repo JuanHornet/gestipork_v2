@@ -5,7 +5,7 @@ import java.util.Date;
 public class Alimentacion {
 
     private int id, nAnimales;
-    private String tipoAlimentacion, cod_lote, cod_explotacion;
+    private String tipoAlimentacion, id_lote, id_explotacion;
     private Date fechaInicioAlimentacion;
     private int sincronizado;
     private String fechaActualizacion;
@@ -13,21 +13,21 @@ public class Alimentacion {
     public Alimentacion() {
     }
 
-    public Alimentacion(int id, int nAnimales, String tipoAlimentacion, String cod_lote, String cod_explotacion, Date fechaInicioAlimentacion) {
+    public Alimentacion(int id, int nAnimales, String tipoAlimentacion, String id_lote, String id_explotacion, Date fechaInicioAlimentacion) {
         this.id = id;
         this.nAnimales = nAnimales;
         this.tipoAlimentacion = tipoAlimentacion;
-        this.cod_lote = cod_lote;
-        this.cod_explotacion = cod_explotacion;
+        this.id_lote = id_lote;
+        this.id_explotacion = id_explotacion;
         this.fechaInicioAlimentacion = fechaInicioAlimentacion;
     }
 
-    public Alimentacion(int id, int nAnimales, String tipoAlimentacion, String cod_lote, String cod_explotacion, Date fechaInicioAlimentacion, int sincronizado, String fechaActualizacion) {
+    public Alimentacion(int id, int nAnimales, String tipoAlimentacion, String id_lote, String id_explotacion, Date fechaInicioAlimentacion, int sincronizado, String fechaActualizacion) {
         this.id = id;
         this.nAnimales = nAnimales;
         this.tipoAlimentacion = tipoAlimentacion;
-        this.cod_lote = cod_lote;
-        this.cod_explotacion = cod_explotacion;
+        this.id_lote = id_lote;
+        this.id_explotacion = id_explotacion;
         this.fechaInicioAlimentacion = fechaInicioAlimentacion;
         this.sincronizado = sincronizado;
         this.fechaActualizacion = fechaActualizacion;
@@ -57,20 +57,24 @@ public class Alimentacion {
         this.tipoAlimentacion = tipoAlimentacion;
     }
 
-    public String getCod_lote() {
-        return cod_lote;
+    public String getid_lote() {
+
+        return id_lote;
     }
 
-    public void setCod_lote(String cod_lote) {
-        this.cod_lote = cod_lote;
+    public void setid_lote(String id_lote) {
+
+        this.id_lote = id_lote;
     }
 
-    public String getCod_explotacion() {
-        return cod_explotacion;
+    public String getId_explotacion() {
+
+        return id_explotacion;
     }
 
-    public void setCod_explotacion(String cod_explotacion) {
-        this.cod_explotacion = cod_explotacion;
+    public void setId_explotacion(String id_explotacion) {
+
+        this.id_explotacion = id_explotacion;
     }
 
     public Date getFechaInicioAlimentacion() {

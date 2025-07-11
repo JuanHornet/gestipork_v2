@@ -35,7 +35,7 @@ public class MoverAlimentacionDialogFragment extends DialogFragment {
     public static MoverAlimentacionDialogFragment newInstance(String codLote, String codExplotacion, String tipoOrigen, int disponibles) {
         MoverAlimentacionDialogFragment frag = new MoverAlimentacionDialogFragment();
         Bundle args = new Bundle();
-        args.putString("cod_lote", codLote);
+        args.putString("id_lote", codLote);
         args.putString("cod_explotacion", codExplotacion);
         args.putString("tipo_origen", tipoOrigen);
         args.putInt("disponibles", disponibles);
@@ -50,7 +50,7 @@ public class MoverAlimentacionDialogFragment extends DialogFragment {
         View view = LayoutInflater.from(context).inflate(R.layout.dialog_mover_alimentacion, null);
 
         assert getArguments() != null;
-        codLote = getArguments().getString("cod_lote");
+        codLote = getArguments().getString("id_lote");
         codExplotacion = getArguments().getString("cod_explotacion");
         tipoOrigen = getArguments().getString("tipo_origen");
         disponibles = getArguments().getInt("disponibles");

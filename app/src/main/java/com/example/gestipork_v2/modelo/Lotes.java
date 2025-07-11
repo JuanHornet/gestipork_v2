@@ -13,11 +13,11 @@ public class Lotes {
     @SerializedName("niniciales")
     private int nIniciales;
     @Expose
-    @SerializedName("cod_lote")
-    private String cod_lote;
+    @SerializedName("nombre_lote")
+    private String nombre_lote;
     @Expose
-    @SerializedName("cod_explotacion")
-    private String cod_explotacion;
+    @SerializedName("id_explotacion")
+    private String id_explotacion;
     @Expose
     @SerializedName("cod_paridera")
     private String cod_paridera;
@@ -44,12 +44,12 @@ public class Lotes {
 
     // Constructor completo si lo necesitas
 
-    public Lotes(String id, int nDisponibles, int nIniciales, String cod_lote, String cod_explotacion, String cod_paridera, String cod_cubricion, String cod_itaca, String raza, String color, int estado, String fecha_actualizacion, int sincronizado) {
+    public Lotes(String id, int nDisponibles, int nIniciales, String nombre_lote, String id_explotacion, String cod_paridera, String cod_cubricion, String cod_itaca, String raza, String color, int estado, String fecha_actualizacion, int sincronizado) {
         this.id = id;
         this.nDisponibles = nDisponibles;
         this.nIniciales = nIniciales;
-        this.cod_lote = cod_lote;
-        this.cod_explotacion = cod_explotacion;
+        this.nombre_lote = nombre_lote;
+        this.id_explotacion = id_explotacion;
         this.cod_paridera = cod_paridera;
         this.cod_cubricion = cod_cubricion;
         this.cod_itaca = cod_itaca;
@@ -84,23 +84,24 @@ public class Lotes {
     }
 
     public void setnIniciales(int nIniciales) {
+
         this.nIniciales = nIniciales;
     }
 
-    public String getCod_lote() {
-        return cod_lote;
+    public String getNombre_lote() {
+        return nombre_lote;
     }
 
-    public void setCod_lote(String cod_lote) {
-        this.cod_lote = cod_lote;
+    public void setNombre_lote(String nombre_lote) {
+        this.nombre_lote = nombre_lote;
     }
 
-    public String getCod_explotacion() {
-        return cod_explotacion;
+    public String getId_explotacion() {
+        return id_explotacion;
     }
 
-    public void setCod_explotacion(String cod_explotacion) {
-        this.cod_explotacion = cod_explotacion;
+    public void setId_explotacion(String id_explotacion) {
+        this.id_explotacion = id_explotacion;
     }
 
     public String getCod_paridera() {

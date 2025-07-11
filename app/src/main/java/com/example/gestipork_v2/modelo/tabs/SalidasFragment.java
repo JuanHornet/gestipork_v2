@@ -40,7 +40,7 @@ public class SalidasFragment extends Fragment {
         View vista = inflater.inflate(R.layout.fragment_salidas, container, false);
 
         if (getArguments() != null) {
-            codLote = getArguments().getString("cod_lote");
+            codLote = getArguments().getString("id_lote");
             codExplotacion = getArguments().getString("cod_explotacion");
         }
 

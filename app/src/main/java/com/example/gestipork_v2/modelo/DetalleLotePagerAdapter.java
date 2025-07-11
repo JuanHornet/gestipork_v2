@@ -12,21 +12,21 @@ import com.example.gestipork_v2.modelo.tabs.SalidasFragment;
 
 public class DetalleLotePagerAdapter extends FragmentStateAdapter {
 
-    private final String codLote;
-    private final String codExplotacion;
+    private final String idLote;
+    private final String idExplotacion;
 
-    public DetalleLotePagerAdapter(@NonNull FragmentActivity activity, String codLote, String codExplotacion) {
+    public DetalleLotePagerAdapter(@NonNull FragmentActivity activity, String idLote, String idExplotacion) {
         super(activity);
-        this.codLote = codLote;
-        this.codExplotacion = codExplotacion;
+        this.idLote = idLote;
+        this.idExplotacion = idExplotacion;
     }
 
     @NonNull
     @Override
     public Fragment createFragment(int position) {
         Bundle args = new Bundle();
-        args.putString("cod_lote", codLote);
-        args.putString("cod_explotacion", codExplotacion);
+        args.putString("id_lote", idLote);
+        args.putString("id_explotacion", idExplotacion);
 
         Fragment fragment;
         if (position == 0) {

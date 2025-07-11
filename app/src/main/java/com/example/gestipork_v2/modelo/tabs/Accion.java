@@ -1,7 +1,9 @@
 package com.example.gestipork_v2.modelo.tabs;
 
 public class Accion {
-    private int id;
+    private String id; // UUID
+    private String id_lote;
+    private String id_explotacion;
     private String tipo;
     private String fecha;
     private int cantidad;
@@ -9,15 +11,10 @@ public class Accion {
     private int sincronizado;
     private String fechaActualizacion;
 
-    public Accion(int id, String tipo, String fecha, int cantidad) {
+    public Accion(String id, String id_lote, String id_explotacion, String tipo, String fecha, int cantidad, String observaciones, int sincronizado, String fechaActualizacion) {
         this.id = id;
-        this.tipo = tipo;
-        this.fecha = fecha;
-        this.cantidad = cantidad;
-    }
-
-    public Accion(int id, String tipo, String fecha, int cantidad, String observaciones, int sincronizado, String fechaActualizacion) {
-        this.id = id;
+        this.id_lote = id_lote;
+        this.id_explotacion = id_explotacion;
         this.tipo = tipo;
         this.fecha = fecha;
         this.cantidad = cantidad;
@@ -25,8 +22,7 @@ public class Accion {
         this.sincronizado = sincronizado;
         this.fechaActualizacion = fechaActualizacion;
     }
-
-    public Accion(int id, String tipo, String fecha, int cantidad, String observaciones) {
+    public Accion(String id, String tipo, String fecha, int cantidad, String observaciones) {
         this.id = id;
         this.tipo = tipo;
         this.fecha = fecha;
@@ -34,12 +30,30 @@ public class Accion {
         this.observaciones = observaciones;
     }
 
-    public int getId() {
+
+    // Getters y Setters
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
+    }
+
+    public String getId_lote() {
+        return id_lote;
+    }
+
+    public void setId_lote(String id_lote) {
+        this.id_lote = id_lote;
+    }
+
+    public String getId_explotacion() {
+        return id_explotacion;
+    }
+
+    public void setId_explotacion(String id_explotacion) {
+        this.id_explotacion = id_explotacion;
     }
 
     public String getTipo() {
@@ -90,5 +104,3 @@ public class Accion {
         this.fechaActualizacion = fechaActualizacion;
     }
 }
-
-

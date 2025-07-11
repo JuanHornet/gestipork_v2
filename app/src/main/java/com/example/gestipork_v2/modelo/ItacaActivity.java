@@ -33,7 +33,7 @@ public class ItacaActivity extends AppCompatActivity {
     private AutoCompleteTextView spinnerRaza, spinnerColor;
 
     private String idItaca;
-    private String codLote, codExplotacion; // todavía lo usamos para actualizar color del lote
+    private String idLote, idExplotacion; // todavía lo usamos para actualizar color del lote
 
     private String inicialAnimales, inicialMadres, inicialPadres, inicialPrimero, inicialUltimo, inicialRaza, inicialColor, inicialCrotales, inicialDCER;
 
@@ -43,8 +43,8 @@ public class ItacaActivity extends AppCompatActivity {
         setContentView(R.layout.activity_itaca);
 
         idItaca = getIntent().getStringExtra("id_itaca");
-        codLote = getIntent().getStringExtra("cod_lote");
-        codExplotacion = getIntent().getStringExtra("cod_explotacion");
+        idLote = getIntent().getStringExtra("id_lote");
+        idExplotacion = getIntent().getStringExtra("id_explotacion");
 
         editNAnimales = findViewById(R.id.edit_n_animales);
         editNMadres = findViewById(R.id.edit_n_madres);
@@ -96,7 +96,7 @@ public class ItacaActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Itaca " + codLote);
+            getSupportActionBar().setTitle("Itaca " + idLote);
         }
 
         toolbar.setNavigationOnClickListener(v -> finish());
@@ -164,8 +164,8 @@ public class ItacaActivity extends AppCompatActivity {
                 new Object[]{animales, madres, padres, primero, ultimo, raza, color, crotales, dcer, idItaca}
         );
 
-        db.execSQL("UPDATE lotes SET color = ? WHERE cod_lote = ? AND cod_explotacion = ?",
-                new Object[]{color, codLote, codExplotacion});
+        db.execSQL("UPDATE lotes SET color = ? WHERE id_lote = ? AND cod_explotacion = ?",
+                new Object[]{color, idLote, idExplotacion});
 
         db.close();
         Toast.makeText(this, "Datos de Itaca actualizados", Toast.LENGTH_SHORT).show();

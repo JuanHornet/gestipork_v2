@@ -24,14 +24,14 @@ import java.util.Locale;
 
 public class BajaDialogFragment extends DialogFragment {
 
-    private String codLote;
-    private String codExplotacion;
+    private String idLote;
+    private String idExplotacion;
     private static final String[] TIPOS_ALIMENTACION = {"Bellota", "Cebo Campo", "Cebo"};
 
     public static BajaDialogFragment newInstance(String codLote, String codExplotacion) {
         BajaDialogFragment frag = new BajaDialogFragment();
         Bundle args = new Bundle();
-        args.putString("cod_lote", codLote);
+        args.putString("id_lote", codLote);
         args.putString("cod_explotacion", codExplotacion);
         frag.setArguments(args);
         return frag;
@@ -40,8 +40,8 @@ public class BajaDialogFragment extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        codLote = getArguments().getString("cod_lote");
-        codExplotacion = getArguments().getString("cod_explotacion");
+        idLote = getArguments().getString("id_lote");
+        idExplotacion = getArguments().getString("id_explotacion");
 
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_baja, null);
 
@@ -78,7 +78,7 @@ public class BajaDialogFragment extends DialogFragment {
                     DBHelper dbHelper = new DBHelper(getContext());
 
                     // Validar animales disponibles
-                    int disponibles = dbHelper.obtenerAnimalesAlimentacion(codLote, codExplotacion, tipoAlimentacion);
+                    int disponibles = dbHelper.obtenerAnimalesAlimentacion(idLote, idExplotacion, tipoAlimentacion);
                     if (cantidad > disponibles) {
                         Toast.makeText(getContext(),
                                 "No hay suficientes animales en " + tipoAlimentacion + ". Disponibles: " + disponibles,
@@ -88,7 +88,7 @@ public class BajaDialogFragment extends DialogFragment {
 
                     // Registrar la baja
                     dbHelper.insertarSalida("Muerte", tipoAlimentacion, cantidad,
-                            fecha, codLote, codExplotacion, observaciones);
+                            fecha, idLote, idExplotacion, observaciones);
 
                     Toast.makeText(getContext(), "Baja registrada correctamente", Toast.LENGTH_SHORT).show();
 

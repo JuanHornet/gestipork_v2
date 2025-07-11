@@ -28,7 +28,7 @@ import java.util.Locale;
 
 public class ContarDialogDesdeLotesFragment extends DialogFragment {
 
-    private static final String ARG_COD_EXPLOTACION = "cod_explotacion";
+    private static final String ARG_COD_EXPLOTACION = "id_explotacion";
     private static final String ARG_LOTES = "lista_lotes";
 
     private String codExplotacion;
@@ -91,8 +91,8 @@ public class ContarDialogDesdeLotesFragment extends DialogFragment {
                     SQLiteDatabase db = dbHelper.getWritableDatabase();
 
                     ContentValues values = new ContentValues();
-                    values.put("cod_explotacion", codExplotacion);
-                    values.put("cod_lote", codLote);
+                    values.put("id_explotacion", codExplotacion);
+                    values.put("id_lote", codLote);
                     values.put("nAnimales", nAnimales);
                     values.put("observaciones", observaciones);
                     values.put("fecha", obtenerFechaActual());
@@ -118,7 +118,7 @@ public class ContarDialogDesdeLotesFragment extends DialogFragment {
     public static ContarDialogDesdeLotesFragment newInstanceSeleccionarLote(String codExplotacion, List<String> listaLotes) {
         ContarDialogDesdeLotesFragment fragment = new ContarDialogDesdeLotesFragment();
         Bundle args = new Bundle();
-        args.putString("cod_explotacion", codExplotacion);
+        args.putString("id_explotacion", codExplotacion);
         args.putStringArrayList("lista_lotes", new ArrayList<>(listaLotes));
         fragment.setArguments(args);
         return fragment;

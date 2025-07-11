@@ -48,7 +48,7 @@ public class LoteAdapter extends RecyclerView.Adapter<LoteAdapter.LoteViewHolder
     public void onBindViewHolder(@NonNull LoteViewHolder holder, @SuppressLint("RecyclerView") int position) {
         final Lotes lote = listaLotes.get(position);
 
-        holder.txtCodLote.setText(lote.getCod_lote());
+        holder.txtCodLote.setText(lote.getNombre_lote());
         holder.txtRaza.setText(lote.getRaza());
         holder.txtDisponibles.setText(String.valueOf(lote.getnDisponibles()));
 
@@ -56,8 +56,8 @@ public class LoteAdapter extends RecyclerView.Adapter<LoteAdapter.LoteViewHolder
         DBHelper dbHelper = new DBHelper(context);
         String dcer = "";
         Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
-                "SELECT DCER FROM itaca WHERE cod_lote = ? AND cod_explotacion = ?",
-                new String[]{lote.getCod_lote(), lote.getCod_explotacion()}
+                "SELECT DCER FROM itaca WHERE id_lote = ? AND id_explotacion = ?",
+                new String[]{lote.getNombre_lote(), lote.getId_explotacion()}
         );
         if (cursor.moveToFirst()) {
             dcer = cursor.getString(0);
@@ -81,10 +81,11 @@ public class LoteAdapter extends RecyclerView.Adapter<LoteAdapter.LoteViewHolder
 
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, DetalleLoteActivity.class);
-            intent.putExtra("cod_lote", lote.getCod_lote());
-            intent.putExtra("cod_explotacion", lote.getCod_explotacion());
+            intent.putExtra("id_lote", lote.getId());  // UUID de la tabla lotes
+            intent.putExtra("id_explotacion", lote.getId_explotacion());  // UUID de la explotación
             ((AppCompatActivity) context).startActivityForResult(intent, 1001);
         });
+
 
         holder.itemView.setOnLongClickListener(v -> {
             if (selectedPosition == position) {
@@ -113,7 +114,7 @@ public class LoteAdapter extends RecyclerView.Adapter<LoteAdapter.LoteViewHolder
 
         public LoteViewHolder(@NonNull View itemView) {
             super(itemView);
-            txtCodLote = itemView.findViewById(R.id.txt_cod_lote);
+            txtCodLote = itemView.findViewById(R.id.txt_id_lote);
             txtCodItaca = itemView.findViewById(R.id.txt_cod_itaca);
             txtRaza = itemView.findViewById(R.id.txt_raza);
             txtDisponibles = itemView.findViewById(R.id.txt_n_disponibles);

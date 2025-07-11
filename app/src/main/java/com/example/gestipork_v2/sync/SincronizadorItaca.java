@@ -38,8 +38,8 @@ public class SincronizadorItaca {
                     cursor.getString(cursor.getColumnIndexOrThrow("raza")),
                     cursor.getString(cursor.getColumnIndexOrThrow("color")),
                     cursor.getInt(cursor.getColumnIndexOrThrow("crotalesSolicitados")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("cod_lote")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("cod_explotacion")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("id_lote")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("id_explotacion")),
                     0,
                     cursor.getString(cursor.getColumnIndexOrThrow("fecha_actualizacion"))
             );

@@ -10,8 +10,8 @@ import retrofit2.http.POST;
 
 public interface ParideraService {
 
-    @Headers("Content-Type: application/json")
-    @POST("parideras")
+    @Headers("Prefer: resolution=merge-duplicates")
+    @POST("parideras?on_conflict=id")
     Call<Void> insertarParidera(
             @Body Parideras paridera,
             @Header("Authorization") String authHeader,

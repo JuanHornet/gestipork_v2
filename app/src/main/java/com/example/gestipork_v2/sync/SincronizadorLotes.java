@@ -51,7 +51,7 @@ public class SincronizadorLotes {
                 public void onResponse(Call<Void> call, Response<Void> response) {
                     if (response.isSuccessful()) {
                         loteRepository.marcarLoteComoSincronizado(lote.getId(), lote.getFecha_actualizacion());
-                        Log.d("SINCRONIZADOR_LOTES", "✅ Lote subido y sincronizado: " + lote.getCod_lote());
+                        Log.d("SINCRONIZADOR_LOTES", "✅ Lote subido y sincronizado: " + lote.getId());
                     } else {
                         Log.e("SINCRONIZADOR_LOTES", "❌ Error Supabase al subir lote: " + response.code());
                     }
@@ -84,7 +84,7 @@ public class SincronizadorLotes {
                     List<Lotes> nuevos = response.body();
                     for (Lotes lote : nuevos) {
                         loteRepository.insertarOActualizarLote(lote);
-                        Log.d("SINCRONIZADOR_LOTES", "⬇️ Lote actualizado o insertado: " + lote.getCod_lote());
+                        Log.d("SINCRONIZADOR_LOTES", "⬇️ Lote actualizado o insertado: " + lote.getId());
                     }
 
                     prefs.edit().putString("ultimaFechaLotes", getFechaActual()).apply();

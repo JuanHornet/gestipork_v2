@@ -26,16 +26,16 @@ import java.util.Locale;
 public class ContarDialogFragment extends DialogFragment {
 
     private static final String ARG_COD_EXPLOTACION = "cod_explotacion";
-    private static final String ARG_COD_LOTE = "cod_lote";
+    private static final String ARG_id_lote = "id_lote";
 
-    private String codExplotacion;
-    private String codLote;
+    private String idExplotacion;
+    private String idLote;
 
     public static ContarDialogFragment newInstance(String codExplotacion, String codLote) {
         ContarDialogFragment fragment = new ContarDialogFragment();
         Bundle args = new Bundle();
         args.putString(ARG_COD_EXPLOTACION, codExplotacion);
-        args.putString(ARG_COD_LOTE, codLote);
+        args.putString(ARG_id_lote, codLote);
         fragment.setArguments(args);
         return fragment;
     }
@@ -44,8 +44,8 @@ public class ContarDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         if (getArguments() != null) {
-            codExplotacion = getArguments().getString(ARG_COD_EXPLOTACION);
-            codLote = getArguments().getString(ARG_COD_LOTE);
+            idExplotacion = getArguments().getString(ARG_COD_EXPLOTACION);
+            idLote = getArguments().getString(ARG_id_lote);
         }
 
         View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_contar, null);
@@ -81,8 +81,8 @@ public class ContarDialogFragment extends DialogFragment {
                     SQLiteDatabase db = dbHelper.getWritableDatabase();
 
                     ContentValues values = new ContentValues();
-                    values.put("cod_explotacion", codExplotacion);
-                    values.put("cod_lote", codLote);
+                    values.put("id_explotacion", idExplotacion);
+                    values.put("id_lote", idLote);
                     values.put("nAnimales", nAnimales);
                     values.put("observaciones", observaciones);
                     values.put("fecha", obtenerFechaActual());

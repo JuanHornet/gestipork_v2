@@ -20,7 +20,7 @@ import java.util.List;
 
 public class NotasActivity extends AppCompatActivity {
 
-    private String codLote, codExplotacion;
+    private String idLote, idExplotacion;
     private NotasAdapter adapter;
     private DBHelper dbHelper;
     private List<Nota> listaNotas;
@@ -31,8 +31,8 @@ public class NotasActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notas);
 
-        codLote = getIntent().getStringExtra("cod_lote");
-        codExplotacion = getIntent().getStringExtra("cod_explotacion");
+        idLote = getIntent().getStringExtra("id_lote");
+        idExplotacion = getIntent().getStringExtra("cod_explotacion");
 
         dbHelper = new DBHelper(this);
 
@@ -48,13 +48,13 @@ public class NotasActivity extends AppCompatActivity {
         RecyclerView recyclerView = findViewById(R.id.recycler_notas);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        textoVacioNotas = findViewById(R.id.texto_vacio_notas); // Referencia al texto vacío
+        textoVacioNotas = findViewById(R.id.texto_vacio_notas);
 
         listaNotas = cargarNotas();
         adapter = new NotasAdapter(listaNotas);
         recyclerView.setAdapter(adapter);
 
-        comprobarNotasVacias();  // Comprobar al inicio
+        comprobarNotasVacias();
     }
 
     @Override
@@ -69,12 +69,12 @@ public class NotasActivity extends AppCompatActivity {
             finish();
             return true;
         } else if (item.getItemId() == R.id.action_add_nota) {
-            NotasDialogFragment dialog = NotasDialogFragment.newInstance(codLote, codExplotacion);
+            NotasDialogFragment dialog = NotasDialogFragment.newInstance(idLote, idExplotacion);
             dialog.setOnNotaGuardadaListener(() -> {
                 listaNotas.clear();
                 listaNotas.addAll(cargarNotas());
                 adapter.notifyDataSetChanged();
-                comprobarNotasVacias(); // Comprobar despues de añadir
+                comprobarNotasVacias();
             });
             dialog.show(getSupportFragmentManager(), "NotasDialog");
             return true;
@@ -84,7 +84,7 @@ public class NotasActivity extends AppCompatActivity {
 
     private List<Nota> cargarNotas() {
         List<Nota> notas = new ArrayList<>();
-        Cursor cursor = dbHelper.obtenerNotas(codExplotacion, codLote);
+        Cursor cursor = dbHelper.obtenerNotas(idExplotacion, idLote);
         if (cursor.moveToFirst()) {
             do {
                 Nota nota = new Nota(
@@ -100,7 +100,6 @@ public class NotasActivity extends AppCompatActivity {
         cursor.close();
         return notas;
     }
-
 
     public void comprobarNotasVacias() {
         if (listaNotas.isEmpty()) {

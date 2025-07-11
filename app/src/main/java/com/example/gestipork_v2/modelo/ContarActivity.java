@@ -8,7 +8,6 @@ import android.view.View;
 import android.widget.TextView;
 import android.util.Log;
 
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -22,7 +21,7 @@ import java.util.List;
 
 public class ContarActivity extends BaseActivity {
 
-    private String codExplotacion, codLote;
+    private String idExplotacion, idLote;
     private DBHelper dbHelper;
     private RecyclerView recyclerView;
     private ContarAdapter adapter;
@@ -33,10 +32,9 @@ public class ContarActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contar);
 
-        codExplotacion = getIntent().getStringExtra("cod_explotacion");
-        codLote = getIntent().getStringExtra("cod_lote");
-        // LÍNEA para depuración
-        Log.d("ContarActivity", "cod_explotacion: " + codExplotacion + ", cod_lote: " + codLote);
+        idExplotacion = getIntent().getStringExtra("id_explotacion");
+        idLote = getIntent().getStringExtra("id_lote");
+        Log.d("ContarActivity", "id_explotacion: " + idExplotacion + ", id_lote: " + idLote);
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar_estandar);
         configurarToolbar(toolbar, "Conteos", R.menu.menu_contar, true);
@@ -45,12 +43,11 @@ public class ContarActivity extends BaseActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         dbHelper = new DBHelper(this);
-
         cargarConteos();
     }
 
     private void cargarConteos() {
-        listaConteos = dbHelper.obtenerConteosLista(codExplotacion, codLote);
+        listaConteos = dbHelper.obtenerConteosLista(idExplotacion, idLote);
         adapter = new ContarAdapter(listaConteos);
         recyclerView.setAdapter(adapter);
         actualizarResumen();
@@ -60,10 +57,9 @@ public class ContarActivity extends BaseActivity {
         int total = listaConteos.size();
         int nDisponibles = 0;
 
-        // Consultar nDisponibles desde tabla lotes
         Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
-                "SELECT nDisponibles FROM lotes WHERE cod_lote = ? AND cod_explotacion = ?",
-                new String[]{codLote, codExplotacion}
+                "SELECT nDisponibles FROM lotes WHERE id = ? AND id_explotacion = ?",
+                new String[]{idLote, idExplotacion}
         );
 
         if (cursor.moveToFirst()) {
@@ -78,25 +74,21 @@ public class ContarActivity extends BaseActivity {
         if (total > 0) {
             txtTotalConteos.setVisibility(View.VISIBLE);
             txtSaldoActual.setVisibility(View.VISIBLE);
-            txtVacio.setVisibility(View.GONE);              //  ocultar mensaje vacío
+            txtVacio.setVisibility(View.GONE);
         } else {
             txtTotalConteos.setVisibility(View.GONE);
             txtSaldoActual.setVisibility(View.GONE);
-            txtVacio.setVisibility(View.VISIBLE);           // mostrar mensaje vacío
+            txtVacio.setVisibility(View.VISIBLE);
         }
 
         txtTotalConteos.setText("Total registros: " + total);
         txtSaldoActual.setText("Saldo actual: " + nDisponibles);
     }
 
-
-
-
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.menu_add_conteo) {
-            // Mostrar diálogo para añadir conteo
-            ContarDialogFragment dialog = ContarDialogFragment.newInstance(codExplotacion, codLote);
+            ContarDialogFragment dialog = ContarDialogFragment.newInstance(idExplotacion, idLote);
             dialog.show(getSupportFragmentManager(), "ContarDialog");
             return true;
         }
@@ -105,14 +97,14 @@ public class ContarActivity extends BaseActivity {
 
     public void recargarLista() {
         listaConteos.clear();
-        listaConteos.addAll(dbHelper.obtenerConteosLista(codExplotacion, codLote));
+        listaConteos.addAll(dbHelper.obtenerConteosLista(idExplotacion, idLote));
         adapter.notifyDataSetChanged();
         actualizarResumen();
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_contar, menu);
         return true;
     }
-
 }

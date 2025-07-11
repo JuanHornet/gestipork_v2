@@ -15,6 +15,7 @@ import com.example.gestipork_v2.data.ConstantesPrefs;
 import com.example.gestipork_v2.data.DBHelper;
 import com.example.gestipork_v2.modelo.DashboardActivity;
 
+import com.example.gestipork_v2.network.ApiClient;
 import com.google.android.material.textfield.TextInputEditText;
 
 import com.example.gestipork_v2.R;
@@ -106,22 +107,31 @@ public class LoginActivity extends AppCompatActivity {
 
     }
     private void loginExitoso(String uuid, String email) {
+        SharedPreferences preferences = getSharedPreferences(ConstantesPrefs.PREFS_LOGIN, MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
+
         editor.putBoolean(ConstantesPrefs.PREFS_IS_LOGGED_IN, true);
         editor.putString(ConstantesPrefs.PREFS_USER_EMAIL, email);
         editor.putString(ConstantesPrefs.PREFS_USER_UUID, uuid);
-        editor.putString("authHeader", "Bearer TU_TOKEN_REAL");
-        editor.putString("apiKey", "TU_API_KEY_REAL");
+
+        // ⚠️ Obtener el token y API key reales desde la clase ApiClient
+        String tokenReal = ApiClient.getToken();     // o el método correcto que estés usando
+        String apiKeyReal = ApiClient.getApiKey();   // o el método correcto que estés usando
+
+        editor.putString(ConstantesPrefs.PREFS_SUPABASE_TOKEN, tokenReal);
+        editor.putString(ConstantesPrefs.PREFS_SUPABASE_APIKEY, apiKeyReal);
+
         editor.apply();
 
         dbHelper.importarExplotacionesSiNoExisten(uuid, this, () -> {
-        new com.example.gestipork_v2.sync.SincronizadorLotes(LoginActivity.this).sincronizarLotes();
+            new com.example.gestipork_v2.sync.SincronizadorLotes(LoginActivity.this).sincronizarLotes();
 
-        Intent intent = new Intent(LoginActivity.this, DashboardActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            Intent intent = new Intent(LoginActivity.this, DashboardActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         });
     }
+
 
 }

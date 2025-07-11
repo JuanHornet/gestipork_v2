@@ -35,10 +35,10 @@ public class LoteRepository {
             do {
                 Lotes lote = new Lotes();
                 lote.setId(cursor.getString(cursor.getColumnIndexOrThrow("id")));
-                lote.setCod_explotacion(cursor.getString(cursor.getColumnIndexOrThrow("cod_explotacion")));
+                lote.setId_explotacion(cursor.getString(cursor.getColumnIndexOrThrow("id_explotacion")));
                 lote.setnDisponibles(cursor.getInt(cursor.getColumnIndexOrThrow("nDisponibles")));
                 lote.setnIniciales(cursor.getInt(cursor.getColumnIndexOrThrow("nIniciales")));
-                lote.setCod_lote(cursor.getString(cursor.getColumnIndexOrThrow("cod_lote")));
+                lote.setNombre_lote(cursor.getString(cursor.getColumnIndexOrThrow("nombre_lote")));
                 lote.setCod_paridera(cursor.getString(cursor.getColumnIndexOrThrow("cod_paridera")));
                 lote.setCod_cubricion(cursor.getString(cursor.getColumnIndexOrThrow("cod_cubricion")));
                 lote.setCod_itaca(cursor.getString(cursor.getColumnIndexOrThrow("cod_itaca")));
@@ -69,10 +69,10 @@ public class LoteRepository {
 
         ContentValues values = new ContentValues();
         values.put("id", lote.getId());
-        values.put("cod_explotacion", lote.getCod_explotacion());
+        values.put("id_explotacion", lote.getId_explotacion());
         values.put("nDisponibles", lote.getnDisponibles());
         values.put("nIniciales", lote.getnIniciales());
-        values.put("cod_lote", lote.getCod_lote());
+        values.put("nombre_lote", lote.getNombre_lote());
         values.put("cod_paridera", lote.getCod_paridera());
         values.put("cod_cubricion", lote.getCod_cubricion());
         values.put("cod_itaca", lote.getCod_itaca());

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,6 +24,7 @@ import com.example.gestipork_v2.base.BaseActivity;
 import com.example.gestipork_v2.data.ConstantesPrefs;
 import com.example.gestipork_v2.data.DBHelper;
 import com.example.gestipork_v2.login.LoginActivity;
+import com.example.gestipork_v2.repository.CubricionRepository;
 import com.example.gestipork_v2.sync.SyncWorker;
 import com.google.android.material.appbar.MaterialToolbar;
 
@@ -43,7 +45,7 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
     private RecyclerView recyclerResumen;
     private DashboardAdapter adapter;
     private TextView txtVacio;
-    private String codExplotacionSeleccionada = "";
+    private String idExplotacionSeleccionada = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,9 +149,9 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
         );
 
         if (cursor.moveToFirst()) {
-            codExplotacionSeleccionada = cursor.getString(0);
+            idExplotacionSeleccionada = cursor.getString(0);
             cursor.close();
-            adapter = new DashboardAdapter(this, codExplotacionSeleccionada);
+            adapter = new DashboardAdapter(this, idExplotacionSeleccionada);
             recyclerResumen.setAdapter(adapter);
         } else {
             cursor.close();
@@ -224,7 +226,7 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
     }
 
     public void irALotes() {
-        if (codExplotacionSeleccionada == null || codExplotacionSeleccionada.isEmpty()) {
+        if (idExplotacionSeleccionada == null || idExplotacionSeleccionada.isEmpty()) {
             Toast.makeText(this, "Selecciona una explotación", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -232,7 +234,7 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
         String nombreSeleccionado = spinnerExplotaciones.getSelectedItem().toString();
 
         Intent intent = new Intent(this, LotesActivity.class);
-        intent.putExtra("cod_explotacion", codExplotacionSeleccionada);
+        intent.putExtra("id_explotacion", idExplotacionSeleccionada);
         intent.putExtra("nombre_explotacion", nombreSeleccionado);
         startActivity(intent);
     }
@@ -244,7 +246,15 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
     }
 
     public void sincronizarManualAhora() {
+        // Lanza sincronización manual con WorkManager
         OneTimeWorkRequest syncNow = new OneTimeWorkRequest.Builder(SyncWorker.class).build();
         WorkManager.getInstance(this).enqueue(syncNow);
+
+        // Logs útiles (opcional)
+        CubricionRepository repo = new CubricionRepository(this);
+        List<Cubriciones> pendientes = repo.obtenerCubricionesNoSincronizadas();
+        Log.d("SYNC_MANUAL", "Cubriciones pendientes por subir: " + pendientes.size());
     }
+
 }
+

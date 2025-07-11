@@ -32,7 +32,7 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/txt_cod_lote"
+                android:id="@+id/txt_id_lote"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="LOTE"

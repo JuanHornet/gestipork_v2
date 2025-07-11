@@ -18,7 +18,7 @@ import java.util.List;
 
 public class PesarActivity extends AppCompatActivity {
 
-    private String codExplotacion, codLote;
+    private String idExplotacion, idLote;
     private DBHelper dbHelper;
     private PesarAdapter adapter;
 
@@ -27,9 +27,9 @@ public class PesarActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pesar);
 
-        // Recibir datos
-        codExplotacion = getIntent().getStringExtra("cod_explotacion");
-        codLote = getIntent().getStringExtra("cod_lote");
+        // Recibir UUIDs
+        idExplotacion = getIntent().getStringExtra("cod_explotacion");
+        idLote = getIntent().getStringExtra("id_lote");
 
         dbHelper = new DBHelper(this);
 
@@ -49,8 +49,8 @@ public class PesarActivity extends AppCompatActivity {
         // Obtener fechas de pesajes
         List<String> fechas = obtenerFechasPesajes();
 
-        // Adaptador
-        adapter = new PesarAdapter(this, codExplotacion, codLote, fechas);
+        // Adaptador con UUIDs
+        adapter = new PesarAdapter(this, idExplotacion, idLote, fechas);
         recyclerView.setAdapter(adapter);
 
         TextView textEmpty = findViewById(R.id.textEmptyPesajes);
@@ -64,7 +64,7 @@ public class PesarActivity extends AppCompatActivity {
 
     private List<String> obtenerFechasPesajes() {
         List<String> fechas = new ArrayList<>();
-        Cursor cursor = dbHelper.obtenerFechasPesajes(codExplotacion, codLote);
+        Cursor cursor = dbHelper.obtenerFechasPesajes(idExplotacion, idLote);
         if (cursor.moveToFirst()) {
             do {
                 fechas.add(cursor.getString(0));
@@ -72,7 +72,5 @@ public class PesarActivity extends AppCompatActivity {
         }
         cursor.close();
         return fechas;
-
-
     }
 }

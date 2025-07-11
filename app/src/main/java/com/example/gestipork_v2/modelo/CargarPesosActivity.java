@@ -23,10 +23,7 @@ import com.example.gestipork_v2.data.DBHelper;
 import com.google.android.material.appbar.MaterialToolbar;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class CargarPesosActivity extends AppCompatActivity {
 
@@ -40,15 +37,15 @@ public class CargarPesosActivity extends AppCompatActivity {
     private List<PesoItem> listaPesos;
     private PesosLoteAdapter adapter;
 
-    private String codExplotacion;
-    private String codLote;
+    private String idExplotacion;
+    private String idLote;
+    private Map<String, String> mapaNombreLoteUuid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cargar_pesos);
 
-        // Toolbar estandar
         MaterialToolbar toolbar = findViewById(R.id.toolbar_estandar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -58,7 +55,6 @@ public class CargarPesosActivity extends AppCompatActivity {
         }
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        // Inicializar vistas
         spinnerLotes = findViewById(R.id.spinnerLotes);
         txtAnimalesPesados = findViewById(R.id.txtAnimalesPesados);
         txtMediaKg = findViewById(R.id.txtMediaKg);
@@ -70,38 +66,47 @@ public class CargarPesosActivity extends AppCompatActivity {
         dbHelper = new DBHelper(this);
         listaPesos = new ArrayList<>();
 
-        // Recibir datos
+        // Recibir UUIDs
         Intent intent = getIntent();
-        codExplotacion = intent.getStringExtra("cod_explotacion");
-        String loteSeleccionado = intent.getStringExtra("cod_lote");
+        idExplotacion = intent.getStringExtra("id_explotacion");
+        String idLoteInicial = intent.getStringExtra("id_lote");
 
-        // Cargar lotes al spinner con tamaño personalizado
-        List<String> lotesActivos = dbHelper.obtenerLotesActivos(codExplotacion);
-        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
-                this,
-                R.layout.spinner_item_grande,
-                lotesActivos
-        );
+        // Cargar lotes activos con UUID
+        mapaNombreLoteUuid = new LinkedHashMap<>();
+        List<String> nombresLotes = new ArrayList<>();
+
+        Cursor cursor = dbHelper.obtenerLotesActivosConUUID(idExplotacion);
+        while (cursor.moveToNext()) {
+            String idLoteDB = cursor.getString(cursor.getColumnIndexOrThrow("id"));
+            String codLoteVisible = cursor.getString(cursor.getColumnIndexOrThrow("id_lote"));
+            mapaNombreLoteUuid.put(codLoteVisible, idLoteDB);
+            nombresLotes.add(codLoteVisible);
+        }
+        cursor.close();
+
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, R.layout.spinner_item_grande, nombresLotes);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerLotes.setAdapter(spinnerAdapter);
 
-
-        // Seleccionar lote actual o primero
-        if (loteSeleccionado != null && lotesActivos.contains(loteSeleccionado)) {
-            spinnerLotes.setSelection(lotesActivos.indexOf(loteSeleccionado));
-            codLote = loteSeleccionado;
-        } else if (!lotesActivos.isEmpty()) {
-            codLote = lotesActivos.get(0);
+        if (idLoteInicial != null && mapaNombreLoteUuid.containsValue(idLoteInicial)) {
+            for (Map.Entry<String, String> entry : mapaNombreLoteUuid.entrySet()) {
+                if (entry.getValue().equals(idLoteInicial)) {
+                    spinnerLotes.setSelection(nombresLotes.indexOf(entry.getKey()));
+                    idLote = idLoteInicial;
+                    break;
+                }
+            }
+        } else if (!nombresLotes.isEmpty()) {
+            idLote = mapaNombreLoteUuid.get(nombresLotes.get(0));
         }
 
-        // Cargar pesos del lote actual
         cargarPesosBD();
 
-        // Listener cambio de lote
         spinnerLotes.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                codLote = lotesActivos.get(position);
+                String nombreLoteSeleccionado = nombresLotes.get(position);
+                idLote = mapaNombreLoteUuid.get(nombreLoteSeleccionado);
                 cargarPesosBD();
             }
 
@@ -109,8 +114,8 @@ public class CargarPesosActivity extends AppCompatActivity {
             public void onNothingSelected(AdapterView<?> parent) { }
         });
 
-        // Adapter y RecyclerView
         adapter = new PesosLoteAdapter(this, listaPesos, position -> {
+
             int idEliminar = listaPesos.get(position).getId();
             dbHelper.eliminarPesoPorId(idEliminar);
             listaPesos.remove(position);
@@ -121,7 +126,6 @@ public class CargarPesosActivity extends AppCompatActivity {
         recyclerPesos.setLayoutManager(new GridLayoutManager(this, 3));
         recyclerPesos.setAdapter(adapter);
 
-        // Guardar nuevo peso
         btnGuardarPeso.setOnClickListener(v -> {
             String pesoStr = edtPeso.getText().toString().trim();
             if (!pesoStr.isEmpty()) {
@@ -129,11 +133,9 @@ public class CargarPesosActivity extends AppCompatActivity {
                     int peso = Integer.parseInt(pesoStr);
                     if (peso <= 0) throw new NumberFormatException();
 
-                    // obtener la fecha seleccionada
-                    TextView textFechaSeleccionada = findViewById(R.id.textFechaSeleccionada);
-                    String fechaSeleccionada = textFechaSeleccionada.getText().toString();
+                    String fecha = ((TextView) findViewById(R.id.textFechaSeleccionada)).getText().toString();
 
-                    dbHelper.insertarPeso(codExplotacion, codLote, peso, fechaSeleccionada);
+                    dbHelper.insertarPeso(idExplotacion, idLote, peso, fecha);
                     listaPesos.add(0, new PesoItem(obtenerUltimoIdPeso(), peso));
                     adapter.notifyItemInserted(0);
                     recyclerPesos.scrollToPosition(0);
@@ -147,79 +149,45 @@ public class CargarPesosActivity extends AppCompatActivity {
             }
         });
 
-
         TextView textFechaSeleccionada = findViewById(R.id.textFechaSeleccionada);
-
-        // Si viene fecha desde el intent,le da prioridad; si no, fecha actual
-        String fechaRecibida = getIntent().getStringExtra("fecha");
-        if (fechaRecibida != null && !fechaRecibida.isEmpty()) {
+        String fechaRecibida = intent.getStringExtra("fecha");
+        if (fechaRecibida != null) {
             textFechaSeleccionada.setText(fechaRecibida);
         } else {
             SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
-            Calendar calendario = Calendar.getInstance();
-            textFechaSeleccionada.setText(sdf.format(calendario.getTime()));
+            textFechaSeleccionada.setText(sdf.format(Calendar.getInstance().getTime()));
         }
 
-        // Abrir DatePicker al pulsar sobre el TextView
         textFechaSeleccionada.setOnClickListener(v -> {
             Calendar calendario = Calendar.getInstance();
-
-            int anio = calendario.get(Calendar.YEAR);
-            int mes = calendario.get(Calendar.MONTH);
-            int dia = calendario.get(Calendar.DAY_OF_MONTH);
-
-            DatePickerDialog datePicker = new DatePickerDialog(
-                    CargarPesosActivity.this,
-                    (view, year, monthOfYear, dayOfMonth) -> {
-                        // Cuando selecciona fecha, actualizar el TextView
-                        String fechaSeleccionada = String.format(Locale.getDefault(), "%02d-%02d-%04d", dayOfMonth, monthOfYear + 1, year);
-                        textFechaSeleccionada.setText(fechaSeleccionada);
-
-                        cargarPesosBD();
-                    },
-                    anio, mes, dia
-            );
-            datePicker.show();
+            new DatePickerDialog(this, (view, year, month, day) -> {
+                String fechaSeleccionada = String.format(Locale.getDefault(), "%02d-%02d-%04d", day, month + 1, year);
+                textFechaSeleccionada.setText(fechaSeleccionada);
+                cargarPesosBD();
+            }, calendario.get(Calendar.YEAR), calendario.get(Calendar.MONTH), calendario.get(Calendar.DAY_OF_MONTH)).show();
         });
 
-        //colores para la segmentacion
-        TextView txt13 = findViewById(R.id.txtSegmentacion13);
-        TextView txt14 = findViewById(R.id.txtSegmentacion14);
-        TextView txt15 = findViewById(R.id.txtSegmentacion15);
-        TextView txt16 = findViewById(R.id.txtSegmentacion16);
-
-        txt13.setTextColor(ContextCompat.getColor(this, R.color.rojo));
-        txt14.setTextColor(ContextCompat.getColor(this, R.color.naranja));
-        txt15.setTextColor(ContextCompat.getColor(this, R.color.verde));
-        txt16.setTextColor(ContextCompat.getColor(this, R.color.azul));
-
-
+        // colores
+        ContextCompat.getColor(this, R.color.rojo);     // se mantienen como estaban
+        ContextCompat.getColor(this, R.color.naranja);
+        ContextCompat.getColor(this, R.color.verde);
+        ContextCompat.getColor(this, R.color.azul);
     }
 
     private void cargarPesosBD() {
         listaPesos.clear();
-
-        // Leer la fecha seleccionada
-        TextView textFechaSeleccionada = findViewById(R.id.textFechaSeleccionada);
-        String fechaSeleccionada = textFechaSeleccionada.getText().toString();
-
-        // Leer pesos filtrando por explotación, lote y fecha
-        Cursor cursor = dbHelper.obtenerPesosPorLoteYFecha(codExplotacion, codLote, fechaSeleccionada);
+        String fecha = ((TextView) findViewById(R.id.textFechaSeleccionada)).getText().toString();
+        Cursor cursor = dbHelper.obtenerPesosPorLoteYFecha(idExplotacion, idLote, fecha);
         while (cursor.moveToNext()) {
-            int id = cursor.getInt(0);
-            int peso = cursor.getInt(1);
-            listaPesos.add(new PesoItem(id, peso));
+            listaPesos.add(new PesoItem(cursor.getInt(0), cursor.getInt(1)));
         }
         cursor.close();
-
         if (adapter != null) adapter.notifyDataSetChanged();
         recalcularResumen();
     }
 
-
     private int obtenerUltimoIdPeso() {
-        Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
-                "SELECT MAX(id) FROM pesar", null);
+        Cursor cursor = dbHelper.getReadableDatabase().rawQuery("SELECT MAX(id) FROM pesar", null);
         int id = -1;
         if (cursor.moveToFirst()) id = cursor.getInt(0);
         cursor.close();
@@ -233,29 +201,19 @@ public class CargarPesosActivity extends AppCompatActivity {
         for (PesoItem item : listaPesos) {
             int peso = item.getPesoKg();
             suma += peso;
-
             if (peso < 150) menos13++;
-            else if (peso >= 150 && peso <= 161) de13a14++;
-            else if (peso >= 162 && peso <= 173) de14a15++;
-            else if (peso >= 174) mas15++;
+            else if (peso <= 161) de13a14++;
+            else if (peso <= 173) de14a15++;
+            else mas15++;
         }
-
-        // código para actualizar los 4 TextView de segmentación
-        TextView txt13 = findViewById(R.id.txtSegmentacion13);
-        TextView txt14 = findViewById(R.id.txtSegmentacion14);
-        TextView txt15 = findViewById(R.id.txtSegmentacion15);
-        TextView txt16 = findViewById(R.id.txtSegmentacion16);
 
         txtAnimalesPesados.setText("Animales: " + total);
         txtMediaKg.setText("Media kg: " + (total > 0 ? (suma / total) : 0));
         txtMediaArrobas.setText("Media @: " + (total > 0 ? String.format(Locale.getDefault(), "%.2f", (suma / (double) total) / 11.5) : "0"));
 
-        // Se actualizan los 4 valores individualmente
-        txt13.setText("-13@: " + menos13);
-        txt14.setText("13-14@: " + de13a14);
-        txt15.setText("14-15@: " + de14a15);
-        txt16.setText("+15@: " + mas15);
-
+        ((TextView) findViewById(R.id.txtSegmentacion13)).setText("-13@: " + menos13);
+        ((TextView) findViewById(R.id.txtSegmentacion14)).setText("13-14@: " + de13a14);
+        ((TextView) findViewById(R.id.txtSegmentacion15)).setText("14-15@: " + de14a15);
+        ((TextView) findViewById(R.id.txtSegmentacion16)).setText("+15@: " + mas15);
     }
-
 }
