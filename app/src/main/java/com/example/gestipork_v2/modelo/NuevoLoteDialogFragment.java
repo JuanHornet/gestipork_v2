@@ -25,16 +25,17 @@ import com.example.gestipork_v2.data.DBHelper;
 
 public class NuevoLoteDialogFragment extends DialogFragment {
 
-    private static final String ARG_COD_EXPLOTACION = "cod_explotacion";
+    private static final String ARG_COD_EXPLOTACION = "id_explotacion";
 
-    private String codExplotacion;
+    private String idExplotacion;
     private EditText inputCodLote;
     private Spinner spinnerRaza;
 
-    public static NuevoLoteDialogFragment newInstance(String codExplotacion) {
+
+    public static NuevoLoteDialogFragment newInstance(String idExplotacion) {
         NuevoLoteDialogFragment fragment = new NuevoLoteDialogFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_COD_EXPLOTACION, codExplotacion);
+        args.putString(ARG_COD_EXPLOTACION, idExplotacion);
         fragment.setArguments(args);
         return fragment;
     }
@@ -43,13 +44,15 @@ public class NuevoLoteDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         if (getArguments() != null) {
-            codExplotacion = getArguments().getString(ARG_COD_EXPLOTACION);
+            idExplotacion = getArguments().getString(ARG_COD_EXPLOTACION);
         }
 
         View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_nuevo_lote, null);
 
         inputCodLote = view.findViewById(R.id.editTextCodLote);
         spinnerRaza = view.findViewById(R.id.spinnerRaza);
+
+
 
         String[] opcionesRaza = {"Selecciona raza", "Ibérico 100%", "Cruzado 50%"};
         ArrayAdapter<String> adapterRaza = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, opcionesRaza);
@@ -65,10 +68,10 @@ public class NuevoLoteDialogFragment extends DialogFragment {
     }
 
     private void guardarLote() {
-        String codLote = inputCodLote.getText().toString().trim();
+        String idLote = inputCodLote.getText().toString().trim();
         String raza = spinnerRaza.getSelectedItem().toString();
 
-        if (TextUtils.isEmpty(codLote)) {
+        if (TextUtils.isEmpty(idLote)) {
             Toast.makeText(getContext(), "El código del lote es obligatorio", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -82,11 +85,11 @@ public class NuevoLoteDialogFragment extends DialogFragment {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         // Ya recibimos el UUID correcto de la explotación
-        String idExplotacion = codExplotacion;
+        String idExplotacion = this.idExplotacion;
 
         // Verificar si ya existe ese lote para esta explotación
-        Cursor cursor = db.rawQuery("SELECT id FROM lotes WHERE id_lote = ? AND cod_explotacion = ?",
-                new String[]{codLote, idExplotacion});
+        Cursor cursor = db.rawQuery("SELECT id FROM lotes WHERE id = ? AND id_explotacion = ?",
+                new String[]{idLote, idExplotacion});
         if (cursor.moveToFirst()) {
             cursor.close();
             db.close();
@@ -99,9 +102,9 @@ public class NuevoLoteDialogFragment extends DialogFragment {
 
         ContentValues values = new ContentValues();
         values.put("id", uuidLote);
-        values.put("id_lote", codLote);
+        values.put("nombre_lote", idLote);
         values.put("raza", raza);
-        values.put("cod_explotacion", idExplotacion); // UUID real
+        values.put("id_explotacion", idExplotacion); // UUID real
         values.put("estado", 1);
         values.put("color", "#F7F1F9");
         values.put("nDisponibles", 0);

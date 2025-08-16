@@ -1,5 +1,9 @@
 package com.example.gestipork_v2.network;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+
 public class SupabaseConfig {
 
     // URL base de Supabase REST
@@ -25,6 +29,21 @@ public class SupabaseConfig {
 
     public static String getContentType() {
         return CONTENT_TYPE;
+    }
+
+    public static boolean hayConexionInternet(Context context) {
+        ConnectivityManager cm = (ConnectivityManager)
+                context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if (cm != null) {
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            return activeNetwork != null && activeNetwork.isConnected();
+        }
+
+        return false;
+    }
+    public static String getBaseUrl() {
+        return "https://muwcidvjzvmjctqlvlhv.supabase.co/rest/v1";
     }
 }
 

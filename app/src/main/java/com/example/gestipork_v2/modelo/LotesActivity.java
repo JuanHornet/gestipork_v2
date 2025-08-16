@@ -150,7 +150,7 @@ public class LotesActivity extends BaseActivity {
     private List<String> obtenerLotesExplotacion() {
         List<String> lotes = new ArrayList<>();
         Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
-                "SELECT id_lote FROM lotes WHERE estado = 1 AND id_explotacion = ?",
+                "SELECT id FROM lotes WHERE estado = 1 AND id_explotacion = ?",
                 new String[]{idExplotacionSeleccionada}
         );
         if (cursor.moveToFirst()) {

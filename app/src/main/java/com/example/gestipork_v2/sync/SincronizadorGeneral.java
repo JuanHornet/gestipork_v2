@@ -32,6 +32,9 @@ public class SincronizadorGeneral {
         SincronizadorCubriciones.sincronizar(context, authHeader, apiKey);
         SincronizadorParideras.sincronizar(context, authHeader, apiKey);
         SincronizadorItaca.sincronizar(context, authHeader, apiKey);
+        SincronizadorAcciones.sincronizar(context, authHeader, apiKey);
+
+
     }
 }
 

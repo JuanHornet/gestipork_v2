@@ -31,13 +31,13 @@ public class ContarDialogDesdeLotesFragment extends DialogFragment {
     private static final String ARG_COD_EXPLOTACION = "id_explotacion";
     private static final String ARG_LOTES = "lista_lotes";
 
-    private String codExplotacion;
+    private String idExplotacion;
     private List<String> listaLotes;
 
-    public static ContarDialogDesdeLotesFragment newInstance(String codExplotacion, List<String> listaLotes) {
+    public static ContarDialogDesdeLotesFragment newInstance(String idExplotacion, List<String> listaLotes) {
         ContarDialogDesdeLotesFragment fragment = new ContarDialogDesdeLotesFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_COD_EXPLOTACION, codExplotacion);
+        args.putString(ARG_COD_EXPLOTACION, idExplotacion);
         args.putStringArrayList(ARG_LOTES, new ArrayList<>(listaLotes));
         fragment.setArguments(args);
         return fragment;
@@ -47,7 +47,7 @@ public class ContarDialogDesdeLotesFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         if (getArguments() != null) {
-            codExplotacion = getArguments().getString(ARG_COD_EXPLOTACION);
+            idExplotacion = getArguments().getString(ARG_COD_EXPLOTACION);
             listaLotes = getArguments().getStringArrayList(ARG_LOTES);
         }
 
@@ -69,7 +69,7 @@ public class ContarDialogDesdeLotesFragment extends DialogFragment {
         builder.setTitle("Nuevo conteo")
                 .setView(view)
                 .setPositiveButton("Guardar", (dialog, which) -> {
-                    String codLote = spinnerLote.getSelectedItem().toString();
+                    String nombreLote = spinnerLote.getSelectedItem().toString();
                     String nAnimalesStr = editNumero.getText().toString().trim();
                     String observaciones = editObservaciones.getText().toString().trim();
 
@@ -91,8 +91,8 @@ public class ContarDialogDesdeLotesFragment extends DialogFragment {
                     SQLiteDatabase db = dbHelper.getWritableDatabase();
 
                     ContentValues values = new ContentValues();
-                    values.put("id_explotacion", codExplotacion);
-                    values.put("id_lote", codLote);
+                    values.put("id_explotacion", idExplotacion);
+                    values.put("id_lote", nombreLote);
                     values.put("nAnimales", nAnimales);
                     values.put("observaciones", observaciones);
                     values.put("fecha", obtenerFechaActual());

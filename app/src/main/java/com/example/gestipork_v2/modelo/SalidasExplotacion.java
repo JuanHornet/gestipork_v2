@@ -1,17 +1,88 @@
 package com.example.gestipork_v2.modelo;
 
-import java.util.Date;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 public class SalidasExplotacion {
 
-    private int id, nAnimales;
-    private String tipoSalida, tipoAlimentacion, id_lote, id_explotacion, observacion;
-    private Date fechaSalida;
+    @SerializedName("id")
+    @Expose
+    private String id; // UUID
+
+    @SerializedName("id_lote")
+    @Expose
+    private String id_lote;
+
+    @SerializedName("id_explotacion")
+    @Expose
+    private String id_explotacion;
+
+    @SerializedName("tipo_salida")
+    @Expose
+    private String tipoSalida;
+
+    @SerializedName("tipo_alimentacion")
+    @Expose
+    private String tipoAlimentacion;
+
+    @SerializedName("fecha_salida")
+    @Expose
+    private String fechaSalida;  // en formato ISO: yyyy-MM-dd
+
+    @SerializedName("n_animales")
+    @Expose
+    private int nAnimales;
+
+    @SerializedName("observacion")
+    @Expose
+    private String observacion;
+
+    @SerializedName("fecha_actualizacion")
+    @Expose
+    private String fechaActualizacion;
+
+    @SerializedName("sincronizado")
+    @Expose
+    private int sincronizado;
+
+    @SerializedName("eliminado")
+    @Expose
+    private int eliminado;
+
+    @SerializedName("fecha_eliminado")
+    @Expose
+    private String fechaEliminado;
 
     public SalidasExplotacion() {
     }
 
-    public SalidasExplotacion(int id, int nAnimales, String tipoSalida, String tipoAlimentacion, String id_lote, String id_explotacion, String observacion, Date fechaSalida) {
+    public SalidasExplotacion(String id, String id_lote, String id_explotacion, String tipoSalida, String tipoAlimentacion,
+                              String fechaSalida, int nAnimales, String observacion,
+                              int sincronizado, String fechaActualizacion,
+                              int eliminado, String fechaEliminado) {
+        this.id = id;
+        this.id_lote = id_lote;
+        this.id_explotacion = id_explotacion;
+        this.tipoSalida = tipoSalida;
+        this.tipoAlimentacion = tipoAlimentacion;
+        this.fechaSalida = fechaSalida;
+        this.nAnimales = nAnimales;
+        this.observacion = observacion;
+        this.sincronizado = sincronizado;
+        this.fechaActualizacion = fechaActualizacion;
+        this.eliminado = eliminado;
+        this.fechaEliminado = fechaEliminado;
+    }
+    public SalidasExplotacion(
+            String id,
+            int nAnimales,
+            String tipoSalida,
+            String tipoAlimentacion,
+            String id_lote,
+            String id_explotacion,
+            String observacion,
+            java.util.Date fechaDate
+    ) {
         this.id = id;
         this.nAnimales = nAnimales;
         this.tipoSalida = tipoSalida;
@@ -19,70 +90,52 @@ public class SalidasExplotacion {
         this.id_lote = id_lote;
         this.id_explotacion = id_explotacion;
         this.observacion = observacion;
-        this.fechaSalida = fechaSalida;
+
+        // Convertir fecha Date a formato ISO yyyy-MM-dd
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault());
+        this.fechaSalida = (fechaDate != null) ? sdf.format(fechaDate) : null;
+
+        this.sincronizado = 1; // Al cargar desde SQLite, ya está sincronizado
+        this.fechaActualizacion = null;
+        this.eliminado = 0;
+        this.fechaEliminado = null;
     }
 
-    public int getId() {
-        return id;
-    }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    // Getters y setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public int getnAnimales() {
-        return nAnimales;
-    }
+    public String getId_lote() { return id_lote; }
+    public void setId_lote(String id_lote) { this.id_lote = id_lote; }
 
-    public void setnAnimales(int nAnimales) {
-        this.nAnimales = nAnimales;
-    }
+    public String getId_explotacion() { return id_explotacion; }
+    public void setId_explotacion(String id_explotacion) { this.id_explotacion = id_explotacion; }
 
-    public String getTipoSalida() {
-        return tipoSalida;
-    }
+    public String getTipoSalida() { return tipoSalida; }
+    public void setTipoSalida(String tipoSalida) { this.tipoSalida = tipoSalida; }
 
-    public void setTipoSalida(String tipoSalida) {
-        this.tipoSalida = tipoSalida;
-    }
+    public String getTipoAlimentacion() { return tipoAlimentacion; }
+    public void setTipoAlimentacion(String tipoAlimentacion) { this.tipoAlimentacion = tipoAlimentacion; }
 
-    public String getTipoAlimentacion() {
-        return tipoAlimentacion;
-    }
+    public String getFechaSalida() { return fechaSalida; }
+    public void setFechaSalida(String fechaSalida) { this.fechaSalida = fechaSalida; }
 
-    public void setTipoAlimentacion(String tipoAlimentacion) {
-        this.tipoAlimentacion = tipoAlimentacion;
-    }
+    public int getnAnimales() { return nAnimales; }
+    public void setnAnimales(int nAnimales) { this.nAnimales = nAnimales; }
 
-    public String getid_lote() {
-        return id_lote;
-    }
+    public String getObservacion() { return observacion; }
+    public void setObservacion(String observacion) { this.observacion = observacion; }
 
-    public void setid_lote(String id_lote) {
-        this.id_lote = id_lote;
-    }
+    public String getFechaActualizacion() { return fechaActualizacion; }
+    public void setFechaActualizacion(String fechaActualizacion) { this.fechaActualizacion = fechaActualizacion; }
 
-    public String getId_explotacion() {
-        return id_explotacion;
-    }
+    public int getSincronizado() { return sincronizado; }
+    public void setSincronizado(int sincronizado) { this.sincronizado = sincronizado; }
 
-    public void setId_explotacion(String id_explotacion) {
-        this.id_explotacion = id_explotacion;
-    }
+    public int getEliminado() { return eliminado; }
+    public void setEliminado(int eliminado) { this.eliminado = eliminado; }
 
-    public String getObservacion() {
-        return observacion;
-    }
-
-    public void setObservacion(String observacion) {
-        this.observacion = observacion;
-    }
-
-    public Date getFechaSalida() {
-        return fechaSalida;
-    }
-
-    public void setFechaSalida(Date fechaSalida) {
-        this.fechaSalida = fechaSalida;
-    }
+    public String getFechaEliminado() { return fechaEliminado; }
+    public void setFechaEliminado(String fechaEliminado) { this.fechaEliminado = fechaEliminado; }
 }

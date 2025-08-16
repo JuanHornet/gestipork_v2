@@ -32,7 +32,7 @@ public class NotasActivity extends AppCompatActivity {
         setContentView(R.layout.activity_notas);
 
         idLote = getIntent().getStringExtra("id_lote");
-        idExplotacion = getIntent().getStringExtra("cod_explotacion");
+        idExplotacion = getIntent().getStringExtra("id_explotacion");
 
         dbHelper = new DBHelper(this);
 
@@ -88,7 +88,7 @@ public class NotasActivity extends AppCompatActivity {
         if (cursor.moveToFirst()) {
             do {
                 Nota nota = new Nota(
-                        cursor.getInt(0),
+                        cursor.getString(0),
                         cursor.getString(1),
                         cursor.getString(2),
                         cursor.getString(3),

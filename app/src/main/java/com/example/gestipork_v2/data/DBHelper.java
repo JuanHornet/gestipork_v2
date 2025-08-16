@@ -11,6 +11,9 @@ import com.example.gestipork_v2.base.FechaUtils;
 import com.example.gestipork_v2.login.Usuario;
 import com.example.gestipork_v2.modelo.Conteo;
 import com.example.gestipork_v2.modelo.Explotacion;
+import com.example.gestipork_v2.modelo.Nota;
+import com.example.gestipork_v2.modelo.SalidasExplotacion;
+import com.example.gestipork_v2.modelo.tabs.Accion;
 import com.example.gestipork_v2.network.ApiClient;
 import com.example.gestipork_v2.network.ExplotacionService;
 import com.example.gestipork_v2.network.SupabaseConfig;
@@ -21,6 +24,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 import retrofit2.Call;
@@ -31,7 +35,7 @@ import retrofit2.Response;
 public class DBHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "gestipork.db";
-    private static final int DB_VERSION = 4;
+    private static final int DB_VERSION = 5;
 
     public DBHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -53,6 +57,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_PESAR);
         db.execSQL(CREATE_TABLE_NOTAS);
         db.execSQL(CREATE_TABLE_AFORO);
+        db.execSQL(CREATE_TABLE_ELIMINACIONES);
     }
 
     @Override
@@ -71,6 +76,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS pesar");
         db.execSQL("DROP TABLE IF EXISTS notas");
         db.execSQL("DROP TABLE IF EXISTS aforo_explotacion");
+        db.execSQL("DROP TABLE IF EXISTS eliminaciones_pendientes");
         onCreate(db);
     }
 
@@ -184,7 +190,9 @@ public class DBHelper extends SQLiteOpenHelper {
             "observacion TEXT, " +
             "sincronizado INTEGER DEFAULT 0, " +
             "fecha_actualizacion TEXT, " +
-            "estado INTEGER DEFAULT 1" +
+            "estado INTEGER DEFAULT 1, " +
+            "eliminado INTEGER DEFAULT 0, " +
+            "fecha_eliminado TEXT" +
             ")";
 
 
@@ -196,11 +204,14 @@ public class DBHelper extends SQLiteOpenHelper {
             "fechaSalida TEXT, " +
             "id_lote TEXT, " +
             "id_explotacion TEXT, " +
-            "tipoAlimentacion TEXT," +
+            "tipoAlimentacion TEXT, " +
             "sincronizado INTEGER DEFAULT 0, " +
             "fecha_actualizacion TEXT, " +
-            "observacion TEXT" +
+            "observacion TEXT, " +
+            "eliminado INTEGER DEFAULT 0, " +
+            "fecha_eliminado TEXT" +
             ")";
+
 
     // TABLA CONTEOS
 
@@ -212,7 +223,9 @@ public class DBHelper extends SQLiteOpenHelper {
             "fecha TEXT NOT NULL, " +
             "sincronizado INTEGER DEFAULT 0, " +
             "fecha_actualizacion TEXT, " +// guardaremos fecha como String (yyyy-MM-dd)
-            "observaciones TEXT" +
+            "observaciones TEXT," +
+            "eliminado INTEGER DEFAULT 0, " +
+            "fecha_eliminado TEXT" +
             ")";
 
     // TABLA PESAR
@@ -226,14 +239,18 @@ public class DBHelper extends SQLiteOpenHelper {
             "fecha TEXT NOT NULL)";
 
     //TABLA NOTAS
-    private static final String CREATE_TABLE_NOTAS = "CREATE TABLE notas (" +
+    private static final String CREATE_TABLE_NOTAS = "CREATE TABLE IF NOT EXISTS notas (" +
             "id TEXT PRIMARY KEY, " +
             "id_lote TEXT NOT NULL, " +
             "id_explotacion TEXT NOT NULL, " +
             "fecha TEXT NOT NULL, " +
+            "observacion TEXT NOT NULL, " +
             "sincronizado INTEGER DEFAULT 0, " +
             "fecha_actualizacion TEXT, " +
-            "observacion TEXT NOT NULL)";
+            "eliminado INTEGER DEFAULT 0, " +
+            "fecha_eliminado TEXT" +
+            ")";
+
 
     //TABLA AFOROS
     private static final String CREATE_TABLE_AFORO = "CREATE TABLE IF NOT EXISTS aforo_explotacion (" +
@@ -244,6 +261,14 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
 
+    private static final String CREATE_TABLE_ELIMINACIONES = "CREATE TABLE IF NOT EXISTS eliminaciones_pendientes (" +
+            "id TEXT PRIMARY KEY, " +
+            "id_registro TEXT NOT NULL, " +
+            "tabla TEXT NOT NULL, " +
+            "fecha_eliminado TEXT NOT NULL, " +
+            "sincronizado INTEGER DEFAULT 0)";
+
+
     public boolean registrarUsuarioConUUID(Usuario usuario) {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -251,7 +276,7 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put("id", usuario.getId());
         values.put("email", usuario.getEmail());
         values.put("password", usuario.getPassword());
-        values.put("fecha_actualizacion", obtenerFechaActual());
+        values.put("fecha_actualizacion", FechaUtils.obtenerFechaActual());
         values.put("sincronizado", 1); // ya está en Supabase
 
         long result = db.insert("usuarios", null, values);
@@ -390,29 +415,44 @@ public class DBHelper extends SQLiteOpenHelper {
         }
     }
 
-
-
-
-    public boolean eliminarLoteConRelaciones(String codLote, String idExplotacion) {
+    public boolean eliminarLoteConRelaciones(String idLote, String idExplotacion) {
         SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+        try {
+            String[] args = new String[]{idLote, idExplotacion};
 
-        // Eliminar primero las relaciones
-        int filasItaca = db.delete("itaca", "id_lote = ? AND id_explotacion = ?", new String[]{codLote, idExplotacion});
-        int filasParideras = db.delete("parideras", "id_lote = ? AND id_explotacion = ?", new String[]{codLote, idExplotacion});
-        int filasCubriciones = db.delete("cubriciones", "id_lote = ? AND id_explotacion = ?", new String[]{codLote, idExplotacion});
+            // Eliminar registros relacionados en las tablas hijas
+            db.delete("acciones", "id_lote = ? AND id_explotacion = ?", args);
+            db.delete("salidas", "id_lote = ? AND id_explotacion = ?", args);
+            db.delete("alimentacion", "id_lote = ? AND id_explotacion = ?", args);
+            db.delete("parideras", "id_lote = ? AND id_explotacion = ?", args);
+            db.delete("cubriciones", "id_lote = ? AND id_explotacion = ?", args);
+            db.delete("itaca", "id_lote = ? AND id_explotacion = ?", args);
+            db.delete("contar", "id_lote = ? AND id_explotacion = ?", args);
+            db.delete("pesar", "id_lote = ? AND id_explotacion = ?", args);
+            db.delete("notas", "id_lote = ? AND id_explotacion = ?", args);
 
-        // Luego eliminar el lote
-        int filasLotes = db.delete("lotes", "id_lote = ? AND id_explotacion = ?", new String[]{codLote, idExplotacion});
+            // Finalmente eliminar el lote
+            db.delete("lotes", "id = ? AND id_explotacion = ?", args);
 
-        return filasLotes > 0;
+            db.setTransactionSuccessful();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            db.endTransaction();
+            db.close();
+        }
     }
 
 
-    public Cursor obtenerAcciones(String codLote, String idExplotacion) {
+
+    public Cursor obtenerAcciones(String idLote, String idExplotacion) {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery(
-                "SELECT * FROM acciones WHERE id_lote = ? AND id_explotacion = ? AND estado = 1",
-                new String[]{codLote, idExplotacion});
+                "SELECT * FROM acciones WHERE id_lote = ? AND id_explotacion = ?",
+                new String[]{idLote, idExplotacion});
     }
 
 
@@ -440,6 +480,8 @@ public class DBHelper extends SQLiteOpenHelper {
             loteUpdate.put("nIniciales", cantidad);
             loteUpdate.put("fecha_actualizacion", FechaUtils.obtenerFechaActual());
             db.update("lotes", loteUpdate, "id = ?", new String[]{idLote});
+            marcarLoteComoNoSincronizado(idLote);
+
 
             // 2. Insertar alimentación
             String[] tipos = {"Bellota", "Cebo Campo", "Cebo"};
@@ -460,6 +502,13 @@ public class DBHelper extends SQLiteOpenHelper {
             }
         }
     }
+    public void marcarLoteComoNoSincronizado(String idLote) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("sincronizado", 0);
+        db.update("lotes", values, "id = ?", new String[]{idLote});
+    }
+
 
 
 
@@ -478,55 +527,91 @@ public class DBHelper extends SQLiteOpenHelper {
     public boolean eliminarAccion(String id) {
         SQLiteDatabase db = this.getWritableDatabase();
 
+        // Si es tipo Destete, actualiza el lote
         Cursor c = db.rawQuery("SELECT tipoAccion, id_lote FROM acciones WHERE id = ?", new String[]{id});
         if (c.moveToFirst()) {
             String tipo = c.getString(0);
-            String codLote = c.getString(1);
+            String idLote = c.getString(1);
 
             if (tipo.equalsIgnoreCase("Destete")) {
                 ContentValues values = new ContentValues();
                 values.put("nDisponibles", 0);
                 values.put("nIniciales", 0);
                 values.put("fecha_actualizacion", FechaUtils.obtenerFechaActual());
-                db.update("lotes", values, "id = ?", new String[]{codLote}); // ← aquí sí falta el ID
+                db.update("lotes", values, "id = ?", new String[]{idLote});
             }
         }
         c.close();
 
+        // Eliminar físicamente
         int filas = db.delete("acciones", "id = ?", new String[]{id});
         return filas > 0;
     }
 
 
+    public void marcarAccionComoSincronizada(String id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("sincronizado", 1);
+        db.update("acciones", values, "id = ?", new String[]{id});
+    }
+    public void insertarOActualizarAccion(Accion accion) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put("id", accion.getId());
+        values.put("id_lote", accion.getId_lote());
+        values.put("id_explotacion", accion.getId_explotacion());
+        values.put("tipoAccion", accion.getTipo());
+        values.put("fechaAccion", accion.getFecha());
+        values.put("nAnimales", accion.getCantidad());
+        values.put("observacion", accion.getObservaciones());
+        values.put("fecha_actualizacion", accion.getFechaActualizacion());
+        values.put("sincronizado", 1); // ya viene sincronizada desde Supabase
+        values.put("estado", 1); // activa
+        values.put("eliminado", accion.getEliminado());
+        values.put("fecha_eliminado", accion.getFechaEliminado());
+
+        db.insertWithOnConflict("acciones", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+    }
+
+
 
     public void insertarSalida(String tipoSalida, String tipoAlimentacion, int nAnimales,
-                               String fechaSalida, String codLote, String idExplotacion, String observacion) {
+                               String fechaSalida, String idLote, String idExplotacion, String observacion) {
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
+
+        String idSalida = UUID.randomUUID().toString();
+        values.put("id", idSalida);
 
         values.put("tipoSalida", tipoSalida);
         values.put("tipoAlimentacion", tipoAlimentacion);
         values.put("nAnimales", nAnimales);
         values.put("fechaSalida", fechaSalida);
-        values.put("id_lote", codLote);
+        values.put("id_lote", idLote);
         values.put("id_explotacion", idExplotacion);
         values.put("observacion", observacion);
+        values.put("sincronizado", 0);
+        values.put("fecha_actualizacion", FechaUtils.obtenerFechaActual());
+        values.put("eliminado", 0);
+        values.put("fecha_eliminado", (String) null);
 
         db.insert("salidas", null, values);
 
         // restar animales al lote y alimentación
-        int disponibles = obtenerAnimalesDisponiblesLote(codLote, idExplotacion);
+        int disponibles = obtenerAnimalesDisponiblesLote(idLote, idExplotacion);
         int nuevosDisponibles = Math.max(0, disponibles - nAnimales);
 
         ContentValues loteUpdate = new ContentValues();
         loteUpdate.put("nDisponibles", nuevosDisponibles);
         db.update("lotes", loteUpdate,
-                "id_lote = ? AND id_explotacion = ?",
-                new String[]{codLote, idExplotacion});
+                "id = ? AND id_explotacion = ?",
+                new String[]{idLote, idExplotacion});
 
         // Restar animales en alimentación
-        restarAnimalesAlimentacion(codLote, idExplotacion, tipoAlimentacion, nAnimales);
+        restarAnimalesAlimentacion(idLote, idExplotacion, tipoAlimentacion, nAnimales);
 
         db.close();
     }
@@ -534,7 +619,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
 
-    public void actualizarSalida(int id, String tipoSalida, String tipoAlimentacion, int nAnimales,
+    public void actualizarSalida(String id, String tipoSalida, String tipoAlimentacion, int nAnimales,
                                  String fechaSalida, String observacion) {
 
         SQLiteDatabase db = this.getWritableDatabase();
@@ -545,18 +630,18 @@ public class DBHelper extends SQLiteOpenHelper {
 
         if (cursor.moveToFirst()) {
             int cantidadAnterior = cursor.getInt(cursor.getColumnIndexOrThrow("nAnimales"));
-            String codLote = cursor.getString(cursor.getColumnIndexOrThrow("id_lote"));
+            String idLote = cursor.getString(cursor.getColumnIndexOrThrow("id_lote"));
             String idExplotacion = cursor.getString(cursor.getColumnIndexOrThrow("id_explotacion"));
             String alimentacionAnterior = cursor.getString(cursor.getColumnIndexOrThrow("tipoAlimentacion"));
 
             // Revertir la salida anterior
-            sumarAnimalesAlimentacion(codLote, idExplotacion, alimentacionAnterior, cantidadAnterior);
+            sumarAnimalesAlimentacion(idLote, idExplotacion, alimentacionAnterior, cantidadAnterior);
 
-            int disponiblesActuales = obtenerAnimalesDisponiblesLote(codLote, idExplotacion);
+            int disponiblesActuales = obtenerAnimalesDisponiblesLote(idLote, idExplotacion);
             ContentValues loteUpdate = new ContentValues();
             loteUpdate.put("nDisponibles", disponiblesActuales + cantidadAnterior);
-            db.update("lotes", loteUpdate, "id_lote = ? AND id_explotacion = ?",
-                    new String[]{codLote, idExplotacion});
+            db.update("lotes", loteUpdate, "id = ? AND id_explotacion = ?",
+                    new String[]{idLote, idExplotacion});
 
             // Actualizar la salida
             ContentValues values = new ContentValues();
@@ -565,34 +650,38 @@ public class DBHelper extends SQLiteOpenHelper {
             values.put("nAnimales", nAnimales);
             values.put("fechaSalida", fechaSalida);
             values.put("observacion", observacion);
-            db.update("salidas", values, "id = ?", new String[]{String.valueOf(id)});
+            values.put("sincronizado", 0); // se modificó localmente
+            values.put("fecha_actualizacion", FechaUtils.obtenerFechaActual()); // usa tu función base
+
+            db = this.getWritableDatabase();
+            db.update("salidas", values, "id = ?", new String[]{id});
 
             // Aplicar nueva salida
-            restarAnimalesAlimentacion(codLote, idExplotacion, tipoAlimentacion, nAnimales);
-            int disponiblesFinal = obtenerAnimalesDisponiblesLote(codLote, idExplotacion);
+            restarAnimalesAlimentacion(idLote, idExplotacion, tipoAlimentacion, nAnimales);
+            int disponiblesFinal = obtenerAnimalesDisponiblesLote(idLote, idExplotacion);
             ContentValues loteUpdateFinal = new ContentValues();
             loteUpdateFinal.put("nDisponibles", Math.max(0, disponiblesFinal - nAnimales));
-            db.update("lotes", loteUpdateFinal, "id_lote = ? AND id_explotacion = ?",
-                    new String[]{codLote, idExplotacion});
+            db.update("lotes", loteUpdateFinal, "id = ? AND id_explotacion = ?",
+                    new String[]{idLote, idExplotacion});
         }
 
         cursor.close();
         db.close();
     }
 
-    public Cursor obtenerSalidas(String codLote, String idExplotacion) {
+    public Cursor obtenerSalidas(String idLote, String idExplotacion) {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery("SELECT * FROM salidas WHERE id_lote = ? AND id_explotacion = ?",
-                new String[]{codLote, idExplotacion});
+                new String[]{idLote, idExplotacion});
     }
 
 
     // Obtener animales actuales en un tipo de alimentación
-    public int obtenerAnimalesAlimentacion(String codLote, String idExplotacion, String tipoAlimentacion) {
+    public int obtenerAnimalesAlimentacion(String idLote, String idExplotacion, String tipoAlimentacion) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(
                 "SELECT nAnimales FROM alimentacion WHERE id_lote = ? AND id_explotacion = ? AND tipoAlimentacion = ?",
-                new String[]{codLote, idExplotacion, tipoAlimentacion});
+                new String[]{idLote, idExplotacion, tipoAlimentacion});
 
         int cantidad = 0;
         if (cursor.moveToFirst()) {
@@ -604,51 +693,51 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
     // Restar animales de un tipo de alimentación
-    public void restarAnimalesAlimentacion(String codLote, String idExplotacion, String tipoAlimentacion, int cantidad) {
-        int actuales = obtenerAnimalesAlimentacion(codLote, idExplotacion, tipoAlimentacion);
+    public void restarAnimalesAlimentacion(String idLote, String idExplotacion, String tipoAlimentacion, int cantidad) {
+        int actuales = obtenerAnimalesAlimentacion(idLote, idExplotacion, tipoAlimentacion);
         int nuevos = Math.max(0, actuales - cantidad);
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("nAnimales", nuevos);
         db.update("alimentacion", values, "id_lote = ? AND id_explotacion = ? AND tipoAlimentacion = ?",
-                new String[]{codLote, idExplotacion, tipoAlimentacion});
+                new String[]{idLote, idExplotacion, tipoAlimentacion});
     }
 
 
     // Sumar animales a un tipo de alimentación
-    public void sumarAnimalesAlimentacion(String codLote, String idExplotacion, String tipoAlimentacion, int cantidad) {
-        int actuales = obtenerAnimalesAlimentacion(codLote, idExplotacion, tipoAlimentacion);
+    public void sumarAnimalesAlimentacion(String idLote, String idExplotacion, String tipoAlimentacion, int cantidad) {
+        int actuales = obtenerAnimalesAlimentacion(idLote, idExplotacion, tipoAlimentacion);
         int nuevos = actuales + cantidad;
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("nAnimales", nuevos);
         db.update("alimentacion", values, "id_lote = ? AND id_explotacion = ? AND tipoAlimentacion = ?",
-                new String[]{codLote, idExplotacion, tipoAlimentacion});
+                new String[]{idLote, idExplotacion, tipoAlimentacion});
     }
 
-    public void sumarAnimalesAlimentacionConFecha(String codLote, String idExplotacion, String tipoAlimentacion, int cantidad, String fecha) {
-        int actuales = obtenerAnimalesAlimentacion(codLote, idExplotacion, tipoAlimentacion);
+    public void sumarAnimalesAlimentacionConFecha(String idLote, String idExplotacion, String tipoAlimentacion, int cantidad, String fecha) {
+        int actuales = obtenerAnimalesAlimentacion(idLote, idExplotacion, tipoAlimentacion);
         int nuevos = actuales + cantidad;
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("nAnimales", nuevos);
         values.put("fechaInicioAlimentacion", fecha);
         db.update("alimentacion", values, "id_lote = ? AND id_explotacion = ? AND tipoAlimentacion = ?",
-                new String[]{codLote, idExplotacion, tipoAlimentacion});
+                new String[]{idLote, idExplotacion, tipoAlimentacion});
     }
 
-    public List<Conteo> obtenerConteosLista(String idExplotacion, String codLote) {
+    public List<Conteo> obtenerConteosLista(String idExplotacion, String idLote) {
         List<Conteo> lista = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
         Cursor cursor = db.rawQuery("SELECT id, id_explotacion, id_lote, nAnimales, observaciones, fecha " +
                         "FROM contar WHERE id_explotacion = ? AND id_lote = ? ORDER BY id DESC",
-                new String[]{idExplotacion, codLote});
+                new String[]{idExplotacion, idLote});
 
         if (cursor.moveToFirst()) {
             do {
                 Conteo conteo = new Conteo();
-                conteo.setId(cursor.getInt(0));
+                conteo.setId(cursor.getString(0));
                 conteo.setId_explotacion(cursor.getString(1));
                 conteo.setId_lote(cursor.getString(2));
                 conteo.setnAnimales(cursor.getInt(3));
@@ -666,10 +755,10 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
 
-    public int obtenerAnimalesDisponiblesLote(String codLote, String idExplotacion) {
+    public int obtenerAnimalesDisponiblesLote(String idLote, String idExplotacion) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT nDisponibles FROM lotes WHERE id_lote = ? AND id_explotacion = ?",
-                new String[]{codLote, idExplotacion});
+        Cursor cursor = db.rawQuery("SELECT nDisponibles FROM lotes WHERE id = ? AND id_explotacion = ?",
+                new String[]{idLote, idExplotacion});
         int disponibles = 0;
         if (cursor.moveToFirst()) {
             disponibles = cursor.getInt(0);
@@ -679,19 +768,22 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
 
-    public Cursor obtenerFechasPesajes(String idExplotacion, String codLote) {
+    public Cursor obtenerFechasPesajes(String idExplotacion, String idLote) {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery("SELECT DISTINCT fecha FROM pesar WHERE id_explotacion = ? AND id_lote = ? ORDER BY fecha DESC",
-                new String[]{idExplotacion, codLote});
+                new String[]{idExplotacion, idLote});
     }
 
 
     // Insertar nueva nota
-    public void insertarNota(String codLote, String codExplotacion, String fecha, String observacion) {
+    public void insertarNota(String idLote, String idExplotacion, String fecha, String observacion) {
         SQLiteDatabase db = this.getWritableDatabase();
+
+        String uuid = UUID.randomUUID().toString();  // Generar UUID para id de la nota
         ContentValues values = new ContentValues();
-        values.put("id_lote", codLote);
-        values.put("cod_explotacion", codExplotacion);
+        values.put("id", uuid);  // Aquí insertamos el UUID generado
+        values.put("id_lote", idLote);
+        values.put("id_explotacion", idExplotacion);
         values.put("fecha", fecha);
         values.put("observacion", observacion);
         db.insert("notas", null, values);
@@ -700,9 +792,10 @@ public class DBHelper extends SQLiteOpenHelper {
     // Obtener notas de un lote
     public Cursor obtenerNotas(String idExplotacion, String idLote) {
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT * FROM notas WHERE id_explotacion = ? AND id_lote = ? ORDER BY id DESC",
+        return db.rawQuery("SELECT id, id_lote, id_explotacion, fecha, observacion FROM notas WHERE id_explotacion = ? AND id_lote = ? ORDER BY id DESC",
                 new String[]{idExplotacion, idLote});
     }
+
 
 
 
@@ -711,7 +804,7 @@ public class DBHelper extends SQLiteOpenHelper {
         List<String> lotes = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(
-                "SELECT id_lote FROM lotes WHERE estado = 1 AND id_explotacion = ? ORDER BY id_lote ASC",
+                "SELECT id FROM lotes WHERE estado = 1 AND id_explotacion = ? ORDER BY id ASC",
                 new String[]{idExplotacion}
         );
 
@@ -883,7 +976,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public Cursor obtenerLotesActivosConUUID(String idExplotacion) {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery(
-                "SELECT id, id_lote FROM lotes WHERE id_explotacion = ? AND estado = 1",
+                "SELECT id FROM lotes WHERE id_explotacion = ? AND estado = 1",
                 new String[]{idExplotacion}
         );
     }
@@ -908,6 +1001,198 @@ public class DBHelper extends SQLiteOpenHelper {
     public void eliminarPesoPorId(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete("pesar", "id = ?", new String[]{String.valueOf(id)});
+    }
+
+    public boolean eliminarExplotacionPorUUID(String uuidExplotacion) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int filas = db.delete("explotaciones", "id = ?", new String[]{uuidExplotacion});
+        return filas > 0;
+    }
+
+    public List<Nota> obtenerNotasNoSincronizadas() {
+        List<Nota> lista = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM notas WHERE sincronizado = 0", null);
+        if (cursor.moveToFirst()) {
+            do {
+                Nota nota = new Nota(
+                        cursor.getString(cursor.getColumnIndexOrThrow("id")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("id_lote")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("id_explotacion")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("fecha")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("observacion")),
+                        cursor.getInt(cursor.getColumnIndexOrThrow("sincronizado")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("fecha_actualizacion"))
+                );
+                lista.add(nota);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return lista;
+    }
+
+    public void marcarNotaComoSincronizada(String idNota) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("sincronizado", 1);
+        db.update("notas", values, "id = ?", new String[]{idNota});
+    }
+    public void insertarOActualizarNota(Nota nota) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT id FROM notas WHERE id = ?", new String[]{nota.getId()});
+        boolean existe = cursor.moveToFirst();
+        cursor.close();
+
+        ContentValues values = new ContentValues();
+        values.put("id", nota.getId());
+        values.put("id_lote", nota.getId_lote());
+        values.put("id_explotacion", nota.getId_explotacion());
+        values.put("fecha", nota.getFecha());
+        values.put("observacion", nota.getObservacion());
+        values.put("sincronizado", 1); // ya viene de Supabase
+        values.put("fecha_actualizacion", nota.getFechaActualizacion());
+
+        if (existe) {
+            db.update("notas", values, "id = ?", new String[]{nota.getId()});
+        } else {
+            db.insert("notas", null, values);
+        }
+    }
+
+    public Conteo obtenerConteoPorId(String id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM contar WHERE id = ?", new String[]{String.valueOf(id)});
+        Conteo c = null;
+        if (cursor.moveToFirst()) {
+            c = new Conteo();
+            c.setId(cursor.getString(cursor.getColumnIndexOrThrow("id")));
+            c.setId_explotacion(cursor.getString(cursor.getColumnIndexOrThrow("id_explotacion")));
+            c.setId_lote(cursor.getString(cursor.getColumnIndexOrThrow("id_lote")));
+            c.setnAnimales(cursor.getInt(cursor.getColumnIndexOrThrow("nAnimales")));
+            c.setObservaciones(cursor.getString(cursor.getColumnIndexOrThrow("observaciones")));
+            c.setFecha(cursor.getString(cursor.getColumnIndexOrThrow("fecha")));
+            c.setSincronizado(cursor.getInt(cursor.getColumnIndexOrThrow("sincronizado")));
+            c.setFechaActualizacion(cursor.getString(cursor.getColumnIndexOrThrow("fecha_actualizacion")));
+        }
+        cursor.close();
+        return c;
+    }
+
+    public void eliminarConteoLocalmente(String id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete("contar", "id = ?", new String[]{id});
+        db.close();
+    }
+
+    public List<Accion> obtenerAccionesNoSincronizadas() {
+        List<Accion> lista = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery(
+                "SELECT * FROM acciones WHERE sincronizado = 0 AND estado = 1",
+                null
+        );
+
+        while (cursor.moveToNext()) {
+            Accion a = new Accion(
+                    cursor.getString(cursor.getColumnIndexOrThrow("id")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("id_lote")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("id_explotacion")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("tipoAccion")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("fechaAccion")),
+                    cursor.getInt(cursor.getColumnIndexOrThrow("nAnimales")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("observacion")),
+                    0,
+                    cursor.getString(cursor.getColumnIndexOrThrow("fecha_actualizacion")),
+                    0,
+                    cursor.getString(cursor.getColumnIndexOrThrow("fecha_eliminado"))
+
+            );
+            lista.add(a);
+        }
+
+        cursor.close();
+        return lista;
+    }
+
+    public List<SalidasExplotacion> obtenerSalidasNoSincronizadas() {
+        List<SalidasExplotacion> lista = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT * FROM salidas WHERE sincronizado = 0 AND eliminado = 0", null);
+
+        while (cursor.moveToNext()) {
+            SalidasExplotacion salida = new SalidasExplotacion(
+                    cursor.getString(cursor.getColumnIndexOrThrow("id")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("id_lote")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("id_explotacion")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("tipoSalida")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("tipoAlimentacion")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("fechaSalida")),
+                    cursor.getInt(cursor.getColumnIndexOrThrow("nAnimales")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("observacion")),
+                    cursor.getInt(cursor.getColumnIndexOrThrow("sincronizado")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("fecha_actualizacion")),
+                    cursor.getInt(cursor.getColumnIndexOrThrow("eliminado")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("fecha_eliminado"))
+            );
+            lista.add(salida);
+        }
+
+        cursor.close();
+        return lista;
+    }
+
+    public void marcarSalidaComoSincronizada(String id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("sincronizado", 1);
+        db.update("salidas", values, "id = ?", new String[]{id});
+    }
+
+    public void insertarOActualizarSalidaDesdeServidor(SalidasExplotacion salida) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT id FROM salidas WHERE id = ?", new String[]{salida.getId()});
+
+        ContentValues values = new ContentValues();
+        values.put("id", salida.getId());
+        values.put("id_lote", salida.getId_lote());
+        values.put("id_explotacion", salida.getId_explotacion());
+        values.put("tipoSalida", salida.getTipoSalida());
+        values.put("tipoAlimentacion", salida.getTipoAlimentacion());
+        values.put("fechaSalida", salida.getFechaSalida());
+        values.put("nAnimales", salida.getnAnimales());
+        values.put("observacion", salida.getObservacion());
+        values.put("fecha_actualizacion", salida.getFechaActualizacion());
+        values.put("sincronizado", 1);
+        values.put("eliminado", salida.getEliminado());
+        values.put("fecha_eliminado", salida.getFechaEliminado());
+
+        if (cursor.moveToFirst()) {
+            db.update("salidas", values, "id = ?", new String[]{salida.getId()});
+        } else {
+            db.insert("salidas", null, values);
+        }
+
+        cursor.close();
+    }
+    public String obtenerUltimaFechaActualizacion(String tabla) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String fecha = "2000-01-01T00:00:00";
+
+        Cursor cursor = db.rawQuery(
+                "SELECT MAX(fecha_actualizacion) as ultima_fecha FROM " + tabla + " WHERE sincronizado = 1",
+                null
+        );
+
+        if (cursor.moveToFirst() && cursor.getString(0) != null) {
+            fecha = cursor.getString(0);
+        }
+
+        cursor.close();
+        return fecha;
     }
 
 

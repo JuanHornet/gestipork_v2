@@ -48,41 +48,60 @@ public class ContarAdapter extends RecyclerView.Adapter<ContarAdapter.ViewHolder
 
         holder.txtFecha.setText("Fecha: " + conteo.getFecha());
 
-        //  Papelera para eliminar
         holder.imgDelete.setOnClickListener(v -> new AlertDialog.Builder(holder.context)
                 .setTitle("Eliminar conteo")
                 .setMessage("¿Deseas eliminar este registro de conteo?")
                 .setPositiveButton("Eliminar", (dialog, which) -> {
                     DBHelper dbHelper = new DBHelper(holder.context);
-                    SQLiteDatabase db = dbHelper.getWritableDatabase();
-                    db.delete("contar", "id = ?", new String[]{String.valueOf(conteo.getId())});
-                    db.close();
+                    Conteo conteoDB = dbHelper.obtenerConteoPorId(conteo.getId()); // debes tener este método
 
-                    if (holder.context instanceof ContarActivity) {
-                        ((ContarActivity) holder.context).recargarLista();
+                    if (conteoDB != null) {
+                        String fechaEliminado = new java.text.SimpleDateFormat(
+                                "yyyy-MM-dd'T'HH:mm:ss",
+                                java.util.Locale.getDefault()
+                        ).format(new java.util.Date());
+
+                        boolean hayConexion = com.example.gestipork_v2.network.SupabaseConfig.hayConexionInternet(holder.context);
+
+                        // Borrar de SQLite
+                        dbHelper.eliminarConteoLocalmente(conteo.getId()); // este método debe hacer el delete y update en local
+
+                        if (hayConexion) {
+                            new com.example.gestipork_v2.sync.SincronizadorEliminaciones(holder.context)
+                                    .sincronizarEliminacionInmediata("contar", conteo.getId(), fechaEliminado);
+                        } else {
+                            new com.example.gestipork_v2.repository.EliminacionRepository(holder.context)
+                                    .insertarEliminacionPendiente(conteo.getId(), "contar", fechaEliminado);
+                        }
+
+                        if (holder.context instanceof ContarActivity) {
+                            ((ContarActivity) holder.context).recargarLista();
+                        }
                     }
                 })
                 .setNegativeButton("Cancelar", null)
                 .show());
     }
 
+
     @Override
-    public int getItemCount() {
-        return lista.size();
-    }
-
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView txtNumero, txtObservaciones, txtFecha;
-        ImageView imgDelete;
-        Context context;
-
-        public ViewHolder(@NonNull View itemView, Context context) {
-            super(itemView);
-            this.context = context;
-            txtNumero = itemView.findViewById(R.id.txtNumero);
-            txtObservaciones = itemView.findViewById(R.id.txtObservaciones);
-            txtFecha = itemView.findViewById(R.id.txtFecha);
-            imgDelete = itemView.findViewById(R.id.imgDelete);
+        public int getItemCount () {
+            return lista.size();
         }
+
+        public static class ViewHolder extends RecyclerView.ViewHolder {
+            TextView txtNumero, txtObservaciones, txtFecha;
+            ImageView imgDelete;
+            Context context;
+
+            public ViewHolder(@NonNull View itemView, Context context) {
+                super(itemView);
+                this.context = context;
+                txtNumero = itemView.findViewById(R.id.txtNumero);
+                txtObservaciones = itemView.findViewById(R.id.txtObservaciones);
+                txtFecha = itemView.findViewById(R.id.txtFecha);
+                imgDelete = itemView.findViewById(R.id.imgDelete);
+            }
+        }
+
     }
-}

@@ -95,21 +95,21 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
     };
 
     private void actualizarDatosLote() {
-        TextView textCodLote = findViewById(R.id.text_id_lote);
+        TextView textNombreLote = findViewById(R.id.text_nombre_lote);
         TextView textRazaEdad = findViewById(R.id.text_raza_edad);
 
         DBHelper dbHelper = new DBHelper(this);
 
         // ✅ Obtener id_lote visible y raza desde la tabla lotes
         Cursor loteCursor = dbHelper.getReadableDatabase().rawQuery(
-                "SELECT id_lote, raza FROM lotes WHERE id_lote = ? AND id_explotacion = ?",
+                "SELECT nombre_lote, raza FROM lotes WHERE id = ? AND id_explotacion = ?",
                 new String[]{idLote, idExplotacion}
         );
 
         if (loteCursor.moveToFirst()) {
-            String codLote = loteCursor.getString(0); // Solo visual
+            String nombreLote = loteCursor.getString(0); // Solo visual
             String raza = loteCursor.getString(1);
-            textCodLote.setText(codLote);
+            textNombreLote.setText(nombreLote);
 
             // ✅ Obtener la fecha fin paridera para calcular la edad
             Cursor parideraCursor = dbHelper.getReadableDatabase().rawQuery(
@@ -258,7 +258,7 @@ public class DetalleLoteActivity extends BaseActivity implements MoverAlimentaci
             TextView textAnimales = findViewById(R.id.text_n_animales);
             DBHelper dbHelper = new DBHelper(this);
             Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
-                    "SELECT nDisponibles FROM lotes WHERE id_lote = ? AND id_explotacion = ?",
+                    "SELECT nDisponibles FROM lotes WHERE id = ? AND id_explotacion = ?",
                     new String[]{idLote, idExplotacion}
             );
             if (cursor.moveToFirst())

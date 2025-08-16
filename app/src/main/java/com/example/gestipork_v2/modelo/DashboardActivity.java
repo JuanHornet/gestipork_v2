@@ -21,10 +21,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.gestipork_v2.R;
 import com.example.gestipork_v2.base.BaseActivity;
+import com.example.gestipork_v2.base.FechaUtils;
 import com.example.gestipork_v2.data.ConstantesPrefs;
 import com.example.gestipork_v2.data.DBHelper;
 import com.example.gestipork_v2.login.LoginActivity;
 import com.example.gestipork_v2.repository.CubricionRepository;
+import com.example.gestipork_v2.sync.SincronizadorEliminaciones;
 import com.example.gestipork_v2.sync.SyncWorker;
 import com.google.android.material.appbar.MaterialToolbar;
 
@@ -150,6 +152,10 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
 
         if (cursor.moveToFirst()) {
             idExplotacionSeleccionada = cursor.getString(0);
+            SharedPreferences.Editor editor = getSharedPreferences(ConstantesPrefs.PREFS_LOGIN, MODE_PRIVATE).edit();
+            editor.putString("id_explotacion_actual", idExplotacionSeleccionada);
+            editor.apply();
+
             cursor.close();
             adapter = new DashboardAdapter(this, idExplotacionSeleccionada);
             recyclerResumen.setAdapter(adapter);
@@ -204,9 +210,12 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
         }
 
         String nombreActual = spinnerExplotaciones.getSelectedItem().toString();
-        EditarExplotacionDialogFragment dialog = EditarExplotacionDialogFragment.newInstance(nombreActual);
+
+        // ✅ Usa el UUID que ya tienes almacenado
+        EditarExplotacionDialogFragment dialog = EditarExplotacionDialogFragment.newInstance(nombreActual, idExplotacionSeleccionada);
         dialog.show(getSupportFragmentManager(), "EditarExplotacionDialog");
     }
+
 
     private void eliminarExplotacionSeleccionada() {
         int posicion = spinnerExplotaciones.getSelectedItemPosition();
@@ -216,9 +225,14 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
         }
 
         String nombre = spinnerExplotaciones.getSelectedItem().toString();
-        EliminarExplotacionDialogFragment dialog = EliminarExplotacionDialogFragment.newInstance(nombre);
+        // 👇 Asegúrate de usar el UUID correcto (ya lo tienes en idExplotacionSeleccionada)
+        String uuidExplotacion = idExplotacionSeleccionada;
+
+        EliminarExplotacionDialogFragment dialog = EliminarExplotacionDialogFragment.newInstance(nombre, uuidExplotacion);
         dialog.show(getSupportFragmentManager(), "EliminarExplotacionDialog");
     }
+
+
 
     @Override
     public void onExplotacionCreada() {
@@ -250,11 +264,12 @@ public class DashboardActivity extends BaseActivity implements NuevoExplotacionD
         OneTimeWorkRequest syncNow = new OneTimeWorkRequest.Builder(SyncWorker.class).build();
         WorkManager.getInstance(this).enqueue(syncNow);
 
-        // Logs útiles (opcional)
-        CubricionRepository repo = new CubricionRepository(this);
-        List<Cubriciones> pendientes = repo.obtenerCubricionesNoSincronizadas();
-        Log.d("SYNC_MANUAL", "Cubriciones pendientes por subir: " + pendientes.size());
+        Log.d("PRUEBA_FECHA", FechaUtils.obtenerFechaActual());
+
+
     }
+
+
 
 }
 

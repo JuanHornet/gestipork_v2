@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.gestipork_v2.R;
 import com.example.gestipork_v2.data.DBHelper;
+import com.example.gestipork_v2.repository.NotaRepository;
+import com.example.gestipork_v2.base.FechaUtils;
 
 import java.util.List;
 
@@ -35,7 +37,7 @@ public class NotasAdapter extends RecyclerView.Adapter<NotasAdapter.ViewHolder> 
         holder.txtFecha.setText(nota.getFecha());
         holder.txtObservacion.setText(nota.getObservacion());
 
-        // ✅ Acción eliminar
+        // ✅ Acción eliminar lógica
         holder.btnEliminar.setOnClickListener(v -> {
             Context context = v.getContext();
             new AlertDialog.Builder(context)
@@ -43,11 +45,18 @@ public class NotasAdapter extends RecyclerView.Adapter<NotasAdapter.ViewHolder> 
                     .setMessage("¿Deseas eliminar esta nota?")
                     .setPositiveButton("Eliminar", (dialog, which) -> {
                         DBHelper dbHelper = new DBHelper(context);
-                        dbHelper.getWritableDatabase().delete(
-                                "notas",
-                                "id = ?",
-                                new String[]{String.valueOf(nota.getId())}
+                        String fechaActual = FechaUtils.obtenerFechaActual(); // Formato ISO
+
+                        dbHelper.getWritableDatabase().execSQL(
+                                "DELETE FROM notas WHERE id = ?",
+                                new Object[]{nota.getId()}
                         );
+
+
+                        // Registrar eliminación en Supabase
+                        NotaRepository notaRepository = new NotaRepository(context);
+                        notaRepository.marcarNotaComoEliminada(nota.getId(), fechaActual);
+
                         listaNotas.remove(position);
                         notifyItemRemoved(position);
                         notifyItemRangeChanged(position, listaNotas.size());

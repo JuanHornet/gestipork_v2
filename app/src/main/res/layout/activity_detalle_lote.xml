@@ -57,7 +57,7 @@
                         android:gravity="start">
 
                         <TextView
-                            android:id="@+id/text_id_lote"
+                            android:id="@+id/text_nombre_lote"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="LOTE 1/25"

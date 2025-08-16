@@ -57,7 +57,7 @@ public class LoteAdapter extends RecyclerView.Adapter<LoteAdapter.LoteViewHolder
         String dcer = "";
         Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
                 "SELECT DCER FROM itaca WHERE id_lote = ? AND id_explotacion = ?",
-                new String[]{lote.getNombre_lote(), lote.getId_explotacion()}
+                new String[]{lote.getId(), lote.getId_explotacion()}
         );
         if (cursor.moveToFirst()) {
             dcer = cursor.getString(0);

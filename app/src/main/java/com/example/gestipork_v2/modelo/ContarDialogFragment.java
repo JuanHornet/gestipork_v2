@@ -25,17 +25,17 @@ import java.util.Locale;
 
 public class ContarDialogFragment extends DialogFragment {
 
-    private static final String ARG_COD_EXPLOTACION = "cod_explotacion";
+    private static final String ARG_COD_EXPLOTACION = "id_explotacion";
     private static final String ARG_id_lote = "id_lote";
 
     private String idExplotacion;
     private String idLote;
 
-    public static ContarDialogFragment newInstance(String codExplotacion, String codLote) {
+    public static ContarDialogFragment newInstance(String idExplotacion, String idLote) {
         ContarDialogFragment fragment = new ContarDialogFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_COD_EXPLOTACION, codExplotacion);
-        args.putString(ARG_id_lote, codLote);
+        args.putString(ARG_COD_EXPLOTACION, idExplotacion);
+        args.putString(ARG_id_lote, idLote);
         fragment.setArguments(args);
         return fragment;
     }
@@ -80,12 +80,16 @@ public class ContarDialogFragment extends DialogFragment {
                     DBHelper dbHelper = new DBHelper(getContext());
                     SQLiteDatabase db = dbHelper.getWritableDatabase();
 
+                    String uuid = java.util.UUID.randomUUID().toString();  // <-- genera UUID
+
                     ContentValues values = new ContentValues();
+                    values.put("id", uuid);  // <-- añade el UUID como ID
                     values.put("id_explotacion", idExplotacion);
                     values.put("id_lote", idLote);
                     values.put("nAnimales", nAnimales);
                     values.put("observaciones", observaciones);
                     values.put("fecha", obtenerFechaActual());
+
 
                     long resultado = db.insert("contar", null, values);
                     db.close();

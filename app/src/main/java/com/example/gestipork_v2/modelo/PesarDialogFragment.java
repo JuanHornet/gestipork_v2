@@ -20,21 +20,21 @@ import java.util.Locale;
 
 public class PesarDialogFragment extends DialogFragment {
 
-    private String codExplotacion, codLote;
+    private String idExplotacion, idLote;
 
-    public static PesarDialogFragment newInstance(String codExplotacion, String codLote) {
+    public static PesarDialogFragment newInstance(String idExplotacion, String idLote) {
         PesarDialogFragment frag = new PesarDialogFragment();
         Bundle args = new Bundle();
-        args.putString("cod_explotacion", codExplotacion);
-        args.putString("id_lote", codLote);
+        args.putString("id_explotacion", idExplotacion);
+        args.putString("id_lote", idLote);
         frag.setArguments(args);
         return frag;
     }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        codExplotacion = getArguments().getString("cod_explotacion");
-        codLote = getArguments().getString("id_lote");
+        idExplotacion = getArguments().getString("id_explotacion");
+        idLote = getArguments().getString("id_lote");
 
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_pesar, null);
         EditText etPeso = view.findViewById(R.id.etPeso);
@@ -58,7 +58,7 @@ public class PesarDialogFragment extends DialogFragment {
 
                     int peso = Integer.parseInt(pesoStr);
                     DBHelper db = new DBHelper(getContext());
-                    db.insertarPeso(codExplotacion, codLote, peso, fecha);
+                    db.insertarPeso(idExplotacion, idLote, peso, fecha);
                     Toast.makeText(getContext(), "Peso registrado", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Cancelar", null)

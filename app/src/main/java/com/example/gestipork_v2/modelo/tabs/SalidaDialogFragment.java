@@ -26,8 +26,8 @@ public class SalidaDialogFragment extends DialogFragment {
 
     private Spinner spinnerTipoSalida, spinnerTipoAlimentacion;
     private EditText editFechaSalida, editCantidad, editObservaciones;
-    private String codLote, codExplotacion;
-    private Integer salidaId;
+    private String idLote, idExplotacion;
+    private String salidaId;
 
     public interface OnSalidaGuardadaListener {
         void onSalidaGuardada();
@@ -35,9 +35,9 @@ public class SalidaDialogFragment extends DialogFragment {
 
     private OnSalidaGuardadaListener callback;
 
-    public SalidaDialogFragment(String codLote, String codExplotacion, Integer salidaId, OnSalidaGuardadaListener callback) {
-        this.codLote = codLote;
-        this.codExplotacion = codExplotacion;
+    public SalidaDialogFragment(String idLote, String idExplotacion, String salidaId, OnSalidaGuardadaListener callback) {
+        this.idLote = idLote;
+        this.idExplotacion = idExplotacion;
         this.salidaId = salidaId;
         this.callback = callback;
     }
@@ -91,7 +91,7 @@ public class SalidaDialogFragment extends DialogFragment {
                 DBHelper dbHelper = new DBHelper(getContext());
 
                 if (salidaId == null) {
-                    dbHelper.insertarSalida(tipoSalida, tipoAlimentacion, cantidad, fecha, codLote, codExplotacion, observacion);
+                    dbHelper.insertarSalida(tipoSalida, tipoAlimentacion, cantidad, fecha, idLote, idExplotacion, observacion);
                 } else {
                     dbHelper.actualizarSalida(salidaId, tipoSalida, tipoAlimentacion, cantidad, fecha, observacion);
                 }

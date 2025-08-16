@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.gestipork_v2.R;
 import com.example.gestipork_v2.data.DBHelper;
 import com.example.gestipork_v2.modelo.DetalleLoteActivity;
+import com.example.gestipork_v2.repository.AccionRepository;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -26,6 +27,8 @@ public class AccionesFragment extends Fragment {
     private FloatingActionButton fabAdd;
     private AccionAdapter adapter;
     private List<Accion> listaAcciones;
+    private AccionRepository accionRepository;
+
 
     private String idLote, idExplotacion;
 
@@ -38,7 +41,7 @@ public class AccionesFragment extends Fragment {
         // Leer valores de id_lote y cod_explotacion del bundle primero
         if (getArguments() != null) {
             idLote = getArguments().getString("id_lote");
-            idExplotacion = getArguments().getString("cod_explotacion");
+            idExplotacion = getArguments().getString("id_explotacion");
         }
 
         recyclerView = vista.findViewById(R.id.recycler_acciones);
@@ -56,7 +59,7 @@ public class AccionesFragment extends Fragment {
                         // Verificar si fue destete
                         DBHelper dbHelper = new DBHelper(getContext());
                         Cursor c = dbHelper.getReadableDatabase().rawQuery(
-                                "SELECT tipoAccion FROM acciones WHERE id_lote = ? AND cod_explotacion = ? ORDER BY fechaAccion DESC LIMIT 1",
+                                "SELECT tipoAccion FROM acciones WHERE id_lote = ? AND id_explotacion = ? ORDER BY fechaAccion DESC LIMIT 1",
                                 new String[]{idLote, idExplotacion}
                         );
 
@@ -74,6 +77,7 @@ public class AccionesFragment extends Fragment {
             dialog.show(getChildFragmentManager(), "NuevaAccion");
         });
 
+        accionRepository = new AccionRepository(requireContext());
 
         cargarAcciones();
 
@@ -150,13 +154,16 @@ public class AccionesFragment extends Fragment {
 
                             boolean eliminado = dbHelper.eliminarAccion(accion.getId());
                             if (eliminado) {
+                                // Eliminar también en Supabase
+                                accionRepository.eliminarAccionEnSupabase(accion.getId());
+
                                 cargarAcciones();
 
-                                // ACTUALIZAR LA VISTA SUPERIOR DEL LOTE
                                 if (getActivity() instanceof DetalleLoteActivity) {
                                     ((DetalleLoteActivity) getActivity()).actualizarAnimalesDisponibles();
                                 }
                             }
+
                         })
                         .setNegativeButton("Cancelar", null)
                         .show();

@@ -20,7 +20,7 @@ import java.util.Locale;
 
 public class NotasDialogFragment extends DialogFragment {
 
-    private String codLote, codExplotacion;
+    private String idLote, idExplotacion;
 
     // INTERFAZ CALLBACK
     public interface OnNotaGuardadaListener {
@@ -33,19 +33,19 @@ public class NotasDialogFragment extends DialogFragment {
         this.listener = listener;
     }
 
-    public static NotasDialogFragment newInstance(String codLote, String codExplotacion) {
+    public static NotasDialogFragment newInstance(String idLote, String idExplotacion) {
         NotasDialogFragment frag = new NotasDialogFragment();
         Bundle args = new Bundle();
-        args.putString("id_lote", codLote);
-        args.putString("cod_explotacion", codExplotacion);
+        args.putString("id_lote", idLote);
+        args.putString("id_explotacion", idExplotacion);
         frag.setArguments(args);
         return frag;
     }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        codLote = getArguments().getString("id_lote");
-        codExplotacion = getArguments().getString("cod_explotacion");
+        idLote = getArguments().getString("id_lote");
+        idExplotacion = getArguments().getString("id_explotacion");
 
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_nota, null);
         EditText etFecha = view.findViewById(R.id.etFechaNota);
@@ -69,7 +69,7 @@ public class NotasDialogFragment extends DialogFragment {
                     }
 
                     DBHelper db = new DBHelper(getContext());
-                    db.insertarNota(codLote, codExplotacion, fecha, observacion);
+                    db.insertarNota(idLote, idExplotacion, fecha, observacion);
 
                     if (listener != null) {
                         listener.onNotaGuardada();   // AVISAR PARA REFRESCAR

@@ -27,8 +27,8 @@ public class MoverAlimentacionDialogFragment extends DialogFragment {
 
     private static final String[] TIPOS_ALIMENTACION = {"Bellota", "Cebo Campo", "Cebo"};
 
-    private String codLote;
-    private String codExplotacion;
+    private String idLote;
+    private String idExplotacion;
     private String tipoOrigen;
     private int disponibles;
 
@@ -36,7 +36,7 @@ public class MoverAlimentacionDialogFragment extends DialogFragment {
         MoverAlimentacionDialogFragment frag = new MoverAlimentacionDialogFragment();
         Bundle args = new Bundle();
         args.putString("id_lote", codLote);
-        args.putString("cod_explotacion", codExplotacion);
+        args.putString("id_explotacion", codExplotacion);
         args.putString("tipo_origen", tipoOrigen);
         args.putInt("disponibles", disponibles);
         frag.setArguments(args);
@@ -50,8 +50,8 @@ public class MoverAlimentacionDialogFragment extends DialogFragment {
         View view = LayoutInflater.from(context).inflate(R.layout.dialog_mover_alimentacion, null);
 
         assert getArguments() != null;
-        codLote = getArguments().getString("id_lote");
-        codExplotacion = getArguments().getString("cod_explotacion");
+        idLote = getArguments().getString("id_lote");
+        idExplotacion = getArguments().getString("id_explotacion");
         tipoOrigen = getArguments().getString("tipo_origen");
         disponibles = getArguments().getInt("disponibles");
 
@@ -111,8 +111,8 @@ public class MoverAlimentacionDialogFragment extends DialogFragment {
                 }
 
                 DBHelper dbHelper = new DBHelper(context);
-                dbHelper.restarAnimalesAlimentacion(codLote, codExplotacion, tipoOrigen, cantidad);
-                dbHelper.sumarAnimalesAlimentacionConFecha(codLote, codExplotacion, destino, cantidad, fechaCambio);
+                dbHelper.restarAnimalesAlimentacion(idLote, idExplotacion, tipoOrigen, cantidad);
+                dbHelper.sumarAnimalesAlimentacionConFecha(idLote, idExplotacion, destino, cantidad, fechaCambio);
 
                 Toast.makeText(context, "Movimiento realizado", Toast.LENGTH_SHORT).show();
 

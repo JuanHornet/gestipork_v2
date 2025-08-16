@@ -78,9 +78,9 @@ public class CargarPesosActivity extends AppCompatActivity {
         Cursor cursor = dbHelper.obtenerLotesActivosConUUID(idExplotacion);
         while (cursor.moveToNext()) {
             String idLoteDB = cursor.getString(cursor.getColumnIndexOrThrow("id"));
-            String codLoteVisible = cursor.getString(cursor.getColumnIndexOrThrow("id_lote"));
-            mapaNombreLoteUuid.put(codLoteVisible, idLoteDB);
-            nombresLotes.add(codLoteVisible);
+            String nombreLote = cursor.getString(cursor.getColumnIndexOrThrow("nombre_lote"));
+            mapaNombreLoteUuid.put(nombreLote, idLoteDB);
+            nombresLotes.add(nombreLote);
         }
         cursor.close();
 

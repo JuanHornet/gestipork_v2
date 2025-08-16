@@ -1,5 +1,6 @@
 package com.example.gestipork_v2.modelo.tabs;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -31,7 +32,7 @@ public class SalidasFragment extends Fragment {
     private List<SalidasExplotacion> listaSalidas;
     private FloatingActionButton fabAdd;
 
-    private String codLote, codExplotacion;
+    private String idLote, idExplotacion;
 
     public SalidasFragment() {}
 
@@ -40,8 +41,8 @@ public class SalidasFragment extends Fragment {
         View vista = inflater.inflate(R.layout.fragment_salidas, container, false);
 
         if (getArguments() != null) {
-            codLote = getArguments().getString("id_lote");
-            codExplotacion = getArguments().getString("cod_explotacion");
+            idLote = getArguments().getString("id_lote");
+            idExplotacion = getArguments().getString("id_explotacion");
         }
 
         recyclerView = vista.findViewById(R.id.recycler_salidas);
@@ -50,8 +51,8 @@ public class SalidasFragment extends Fragment {
 
         fabAdd.setOnClickListener(v -> {
             SalidaDialogFragment dialog = new SalidaDialogFragment(
-                    codLote,
-                    codExplotacion,
+                    idLote,
+                    idExplotacion,
                     null,
                     SalidasFragment.this::cargarSalidas
             );
@@ -66,12 +67,12 @@ public class SalidasFragment extends Fragment {
     private void cargarSalidas() {
         listaSalidas = new ArrayList<>();
         DBHelper dbHelper = new DBHelper(getContext());
-        Cursor cursor = dbHelper.obtenerSalidas(codLote, codExplotacion);
+        Cursor cursor = dbHelper.obtenerSalidas(idLote, idExplotacion);
 
         SimpleDateFormat formato = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
 
         while (cursor.moveToNext()) {
-            int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+            String id = cursor.getString(cursor.getColumnIndexOrThrow("id"));
             String tipo = cursor.getString(cursor.getColumnIndexOrThrow("tipoSalida"));
             String alimentacion = cursor.getString(cursor.getColumnIndexOrThrow("tipoAlimentacion"));
             int cantidad = cursor.getInt(cursor.getColumnIndexOrThrow("nAnimales"));
@@ -85,7 +86,7 @@ public class SalidasFragment extends Fragment {
                 e.printStackTrace();
             }
 
-            SalidasExplotacion salida = new SalidasExplotacion(id, cantidad, tipo, alimentacion, codLote, codExplotacion, obs, fecha);
+            SalidasExplotacion salida = new SalidasExplotacion(id, cantidad, tipo, alimentacion, idLote, idExplotacion, obs, fecha);
             listaSalidas.add(salida);
         }
         cursor.close();
@@ -94,8 +95,8 @@ public class SalidasFragment extends Fragment {
             @Override
             public void onEditarSalida(SalidasExplotacion salida) {
                 SalidaDialogFragment dialog = new SalidaDialogFragment(
-                        codLote,
-                        codExplotacion,
+                        idLote,
+                        idExplotacion,
                         salida.getId(),
                         SalidasFragment.this::cargarSalidas
                 );
@@ -109,16 +110,35 @@ public class SalidasFragment extends Fragment {
                         .setMessage("¿Estás seguro de que quieres eliminar esta salida?")
                         .setPositiveButton("Eliminar", (dialog, which) -> {
                             DBHelper dbHelper = new DBHelper(getContext());
-                            SQLiteDatabase db = dbHelper.getWritableDatabase();
-                            int filas = db.delete("salidas", "id = ?", new String[]{String.valueOf(salida.getId())});
-                            if (filas > 0) {
-                                cargarSalidas();
-                                // 👉 Notificar al Activity si implementa OnActualizarResumenListener
-                                if (getActivity() instanceof OnActualizarResumenListener) {
-                                    ((OnActualizarResumenListener) getActivity()).onActualizarResumenLote();
-                                }
+                            String fechaEliminado = com.example.gestipork_v2.base.FechaUtils.obtenerFechaActual(); // Asegúrate de tener esta utilidad
+
+                            // Marcar como eliminado en SQLite
+                            ContentValues values = new ContentValues();
+                            values.put("eliminado", 1);
+                            values.put("fecha_eliminado", fechaEliminado);
+                            values.put("fecha_actualizacion", fechaEliminado);
+                            values.put("sincronizado", 0); // pendiente de sincronizar
+
+                            dbHelper.getWritableDatabase().update("salidas", values, "id = ?", new String[]{salida.getId()});
+
+                            // Intentar sincronizar o registrar como eliminación pendiente
+                            if (com.example.gestipork_v2.network.SupabaseConfig.hayConexionInternet(getContext())) {
+                                // Subir directamente a Supabase
+                                new com.example.gestipork_v2.repository.SalidaRepository(getContext())
+                                        .marcarSalidaEliminadaEnSupabase(salida.getId(), fechaEliminado);
+                            } else {
+                                // Guardar en eliminaciones_pendientes
+                                new com.example.gestipork_v2.repository.EliminacionRepository(getContext())
+                                        .insertarEliminacionPendiente(salida.getId(), "salidas", fechaEliminado);
+                            }
+
+                            // Recargar lista y resumen
+                            cargarSalidas();
+                            if (getActivity() instanceof OnActualizarResumenListener) {
+                                ((OnActualizarResumenListener) getActivity()).onActualizarResumenLote();
                             }
                         })
+
                         .setNegativeButton("Cancelar", null)
                         .show();
             }

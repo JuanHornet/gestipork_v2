@@ -12,6 +12,7 @@
         android:hint="Código del lote"
         android:inputType="textCapCharacters" />
 
+
     <Spinner
         android:id="@+id/spinnerRaza"
         android:layout_width="match_parent"

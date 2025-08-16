@@ -28,11 +28,11 @@ public class BajaDialogFragment extends DialogFragment {
     private String idExplotacion;
     private static final String[] TIPOS_ALIMENTACION = {"Bellota", "Cebo Campo", "Cebo"};
 
-    public static BajaDialogFragment newInstance(String codLote, String codExplotacion) {
+    public static BajaDialogFragment newInstance(String idLote, String idExplotacion) {
         BajaDialogFragment frag = new BajaDialogFragment();
         Bundle args = new Bundle();
-        args.putString("id_lote", codLote);
-        args.putString("cod_explotacion", codExplotacion);
+        args.putString("id_lote", idLote);
+        args.putString("cod_explotacion", idExplotacion);
         frag.setArguments(args);
         return frag;
     }

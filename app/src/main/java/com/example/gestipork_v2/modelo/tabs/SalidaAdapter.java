@@ -46,7 +46,20 @@ public class SalidaAdapter extends RecyclerView.Adapter<SalidaAdapter.ViewHolder
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         SalidasExplotacion salida = lista.get(position);
         holder.textMotivo.setText(salida.getTipoSalida());
-        holder.textFecha.setText(new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(salida.getFechaSalida()));
+
+        // 🛠️ PARSEAR fechaSalida que ahora es un String
+        String fechaRaw = salida.getFechaSalida(); // ya es un String tipo "yyyy-MM-dd"
+        String fechaFormateada = "";
+
+        try {
+            SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            SimpleDateFormat destino = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+            fechaFormateada = destino.format(isoFormat.parse(fechaRaw));
+        } catch (Exception e) {
+            fechaFormateada = fechaRaw; // si falla, se muestra tal cual
+        }
+
+        holder.textFecha.setText(fechaFormateada);
         holder.textCantidad.setText(String.valueOf(salida.getnAnimales()));
 
         holder.itemView.setOnLongClickListener(v -> {
@@ -66,6 +79,7 @@ public class SalidaAdapter extends RecyclerView.Adapter<SalidaAdapter.ViewHolder
 
             popup.show();
 
+            // 🔴 Color rojo al botón eliminar
             MenuItem eliminarItem = popup.getMenu().findItem(R.id.menu_eliminar_accion);
             SpannableString s = new SpannableString(eliminarItem.getTitle());
             s.setSpan(new ForegroundColorSpan(Color.RED), 0, s.length(), 0);
@@ -74,6 +88,7 @@ public class SalidaAdapter extends RecyclerView.Adapter<SalidaAdapter.ViewHolder
             return true;
         });
     }
+
 
     @Override
     public int getItemCount() {

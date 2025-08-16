@@ -1,26 +1,71 @@
 package com.example.gestipork_v2.modelo;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 public class Nota {
-    private int id;
-    private String codLote;
+
+    @Expose
+    @SerializedName("id")
+    private String id;
+
+    @Expose
+    @SerializedName("id_lote")
+    private String id_lote;
+
+    @Expose
+    @SerializedName("id_explotacion")
     private String id_explotacion;
+
+    @Expose
+    @SerializedName("fecha")
     private String fecha;
+
+    @Expose
+    @SerializedName("observacion")
     private String observacion;
 
-    private int sincronizado; // nuevo
-    private String fechaActualizacion; // nuevo
+    @Expose(deserialize = true, serialize = false)
+    private int sincronizado;
 
-    public Nota(int id, String codLote, String id_explotacion, String fecha, String observacion) {
+    @Expose
+    @SerializedName("fecha_actualizacion")
+    private String fechaActualizacion;
+
+    @Expose
+    @SerializedName("eliminado")
+    private int eliminado;
+
+    @Expose
+    @SerializedName("fecha_eliminado")
+    private String fechaEliminado;
+
+    public Nota() {
+    }
+
+    public Nota(String id, String id_lote, String id_explotacion, String fecha, String observacion, int sincronizado, String fechaActualizacion, int eliminado, String fechaEliminado) {
         this.id = id;
-        this.codLote = codLote;
+        this.id_lote = id_lote;
+        this.id_explotacion = id_explotacion;
+        this.fecha = fecha;
+        this.observacion = observacion;
+        this.sincronizado = sincronizado;
+        this.fechaActualizacion = fechaActualizacion;
+        this.eliminado = eliminado;
+        this.fechaEliminado = fechaEliminado;
+    }
+
+    public Nota(String id, String id_lote, String id_explotacion, String fecha, String observacion) {
+        this.id = id;
+        this.id_lote = id_lote;
         this.id_explotacion = id_explotacion;
         this.fecha = fecha;
         this.observacion = observacion;
     }
 
-    public Nota(int id, String codLote, String id_explotacion, String fecha, String observacion, int sincronizado, String fechaActualizacion) {
+    public Nota(String id, String id_lote, String id_explotacion, String fecha, String observacion, int sincronizado, String fechaActualizacion) {
         this.id = id;
-        this.codLote = codLote;
+        this.id_lote = id_lote;
         this.id_explotacion = id_explotacion;
         this.fecha = fecha;
         this.observacion = observacion;
@@ -28,40 +73,40 @@ public class Nota {
         this.fechaActualizacion = fechaActualizacion;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public String getCodLote() {
-        return codLote;
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getId_lote() {
+        return id_lote;
+    }
+
+    public void setId_lote(String id_lote) {
+        this.id_lote = id_lote;
     }
 
     public String getId_explotacion() {
         return id_explotacion;
     }
 
-    public String getFecha() {
-        return fecha;
-    }
-
-    public String getObservacion() {
-        return observacion;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public void setCodLote(String codLote) {
-        this.codLote = codLote;
-    }
-
     public void setId_explotacion(String id_explotacion) {
         this.id_explotacion = id_explotacion;
     }
 
+    public String getFecha() {
+        return fecha;
+    }
+
     public void setFecha(String fecha) {
         this.fecha = fecha;
+    }
+
+    public String getObservacion() {
+        return observacion;
     }
 
     public void setObservacion(String observacion) {
@@ -82,5 +127,21 @@ public class Nota {
 
     public void setFechaActualizacion(String fechaActualizacion) {
         this.fechaActualizacion = fechaActualizacion;
+    }
+
+    public int getEliminado() {
+        return eliminado;
+    }
+
+    public void setEliminado(int eliminado) {
+        this.eliminado = eliminado;
+    }
+
+    public String getFechaEliminado() {
+        return fechaEliminado;
+    }
+
+    public void setFechaEliminado(String fechaEliminado) {
+        this.fechaEliminado = fechaEliminado;
     }
 }

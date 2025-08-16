@@ -28,7 +28,7 @@ public class PesarActivity extends AppCompatActivity {
         setContentView(R.layout.activity_pesar);
 
         // Recibir UUIDs
-        idExplotacion = getIntent().getStringExtra("cod_explotacion");
+        idExplotacion = getIntent().getStringExtra("id_explotacion");
         idLote = getIntent().getStringExtra("id_lote");
 
         dbHelper = new DBHelper(this);
